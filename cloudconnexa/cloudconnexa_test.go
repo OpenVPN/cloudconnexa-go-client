@@ -15,7 +15,6 @@ func setupMockServer() *httptest.Server {
 		switch r.URL.Path {
 		case "/api/beta/oauth/token":
 			if r.Method == "POST" {
-				log.Println("Mock server: received POST request for token")
 				w.Header().Set("Content-Type", "application/json")
 				response := Credentials{AccessToken: "mocked-token"}
 				err := json.NewEncoder(w).Encode(response)
