@@ -39,19 +39,15 @@ type NetworkPageResponse struct {
 	TotalPages       int       `json:"totalPages"`
 }
 
-const (
-	InternetAccessBlocked        = "BLOCKED"
-	InternetAccessGlobalInternet = "GLOBAL_INTERNET"
-	InternetAccessLocal          = "LOCAL"
-)
+type NetworksService service
 
-func (c *Client) GetNetworksByPage(page int, size int) (NetworkPageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/networks/page?page=%d&size=%d", c.BaseURL, page, size), nil)
+func (c *NetworksService) GetByPage(page int, size int) (NetworkPageResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/networks/page?page=%d&size=%d", c.client.BaseURL, page, size), nil)
 	if err != nil {
 		return NetworkPageResponse{}, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return NetworkPageResponse{}, err
 	}
@@ -65,13 +61,13 @@ func (c *Client) GetNetworksByPage(page int, size int) (NetworkPageResponse, err
 	return response, nil
 }
 
-func (c *Client) GetAllNetworks() ([]Network, error) {
+func (c *NetworksService) List() ([]Network, error) {
 	var allNetworks []Network
 	pageSize := 10
 	page := 1
 
 	for {
-		response, err := c.GetNetworksByPage(page, pageSize)
+		response, err := c.GetByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -86,8 +82,8 @@ func (c *Client) GetAllNetworks() ([]Network, error) {
 	return allNetworks, nil
 }
 
-func (c *Client) GetNetworkByName(name string) (*Network, error) {
-	networks, err := c.GetAllNetworks()
+func (c *NetworksService) GetByName(name string) (*Network, error) {
+	networks, err := c.List()
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +96,8 @@ func (c *Client) GetNetworkByName(name string) (*Network, error) {
 	return nil, nil
 }
 
-func (c *Client) GetNetworkById(networkId string) (*Network, error) {
-	networks, err := c.GetAllNetworks()
+func (c *NetworksService) Get(networkId string) (*Network, error) {
+	networks, err := c.List()
 	if err != nil {
 		return nil, err
 	}
@@ -114,18 +110,18 @@ func (c *Client) GetNetworkById(networkId string) (*Network, error) {
 	return nil, nil
 }
 
-func (c *Client) CreateNetwork(network Network) (*Network, error) {
+func (c *NetworksService) Create(network Network) (*Network, error) {
 	networkJson, err := json.Marshal(network)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/networks", c.BaseURL), bytes.NewBuffer(networkJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/networks", c.client.BaseURL), bytes.NewBuffer(networkJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -138,27 +134,27 @@ func (c *Client) CreateNetwork(network Network) (*Network, error) {
 	return &n, nil
 }
 
-func (c *Client) UpdateNetwork(network Network) error {
+func (c *NetworksService) Update(network Network) error {
 	networkJson, err := json.Marshal(network)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/networks/%s", c.BaseURL, network.Id), bytes.NewBuffer(networkJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/networks/%s", c.client.BaseURL, network.Id), bytes.NewBuffer(networkJson))
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }
 
-func (c *Client) DeleteNetwork(networkId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/networks/%s", c.BaseURL, networkId), nil)
+func (c *NetworksService) Delete(networkId string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/networks/%s", c.client.BaseURL, networkId), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }

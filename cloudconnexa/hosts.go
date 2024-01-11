@@ -26,13 +26,15 @@ type HostPageResponse struct {
 	TotalPages       int    `json:"totalPages"`
 }
 
-func (c *Client) GetHostsByPage(page int, size int) (HostPageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/hosts/page?page=%d&size=%d", c.BaseURL, page, size), nil)
+type HostsService service
+
+func (c *HostsService) GetHostsByPage(page int, size int) (HostPageResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/hosts/page?page=%d&size=%d", c.client.BaseURL, page, size), nil)
 	if err != nil {
 		return HostPageResponse{}, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return HostPageResponse{}, err
 	}
@@ -45,7 +47,7 @@ func (c *Client) GetHostsByPage(page int, size int) (HostPageResponse, error) {
 	return response, nil
 }
 
-func (c *Client) GetAllHosts() ([]Host, error) {
+func (c *HostsService) List() ([]Host, error) {
 	var allHosts []Host
 	pageSize := 10
 	page := 1
@@ -66,8 +68,8 @@ func (c *Client) GetAllHosts() ([]Host, error) {
 	return allHosts, nil
 }
 
-func (c *Client) GetHostByName(name string) (*Host, error) {
-	hosts, err := c.GetAllHosts()
+func (c *HostsService) GetByName(name string) (*Host, error) {
+	hosts, err := c.List()
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +82,8 @@ func (c *Client) GetHostByName(name string) (*Host, error) {
 	return nil, nil
 }
 
-func (c *Client) GetHostById(hostId string) (*Host, error) {
-	hosts, err := c.GetAllHosts()
+func (c *HostsService) Get(hostId string) (*Host, error) {
+	hosts, err := c.List()
 	if err != nil {
 		return nil, err
 	}
@@ -94,18 +96,18 @@ func (c *Client) GetHostById(hostId string) (*Host, error) {
 	return nil, nil
 }
 
-func (c *Client) CreateHost(host Host) (*Host, error) {
+func (c *HostsService) Create(host Host) (*Host, error) {
 	hostJson, err := json.Marshal(host)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/hosts", c.BaseURL), bytes.NewBuffer(hostJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/hosts", c.client.BaseURL), bytes.NewBuffer(hostJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -118,27 +120,27 @@ func (c *Client) CreateHost(host Host) (*Host, error) {
 	return &h, nil
 }
 
-func (c *Client) UpdateHost(host Host) error {
+func (c *HostsService) Update(host Host) error {
 	hostJson, err := json.Marshal(host)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/hosts/%s", c.BaseURL, host.Id), bytes.NewBuffer(hostJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/hosts/%s", c.client.BaseURL, host.Id), bytes.NewBuffer(hostJson))
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }
 
-func (c *Client) DeleteHost(hostId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/hosts/%s", c.BaseURL, hostId), nil)
+func (c *HostsService) Delete(hostId string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/hosts/%s", c.client.BaseURL, hostId), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }

@@ -25,14 +25,16 @@ type DnsRecordPageResponse struct {
 	TotalPages       int         `json:"totalPages"`
 }
 
-func (c *Client) GetDnsRecordsByPage(page int, pageSize int) (DnsRecordPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/dns-records/page?page=%d&size=%d", c.BaseURL, page, pageSize)
+type DNSRecordsService service
+
+func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DnsRecordPageResponse, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/dns-records/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return DnsRecordPageResponse{}, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return DnsRecordPageResponse{}, err
 	}
@@ -45,12 +47,12 @@ func (c *Client) GetDnsRecordsByPage(page int, pageSize int) (DnsRecordPageRespo
 	return response, nil
 }
 
-func (c *Client) GetDnsRecord(recordId string) (*DnsRecord, error) {
+func (c *DNSRecordsService) GetDnsRecord(recordId string) (*DnsRecord, error) {
 	pageSize := 10
 	page := 1
 
 	for {
-		response, err := c.GetDnsRecordsByPage(page, pageSize)
+		response, err := c.GetByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -69,18 +71,18 @@ func (c *Client) GetDnsRecord(recordId string) (*DnsRecord, error) {
 	return nil, fmt.Errorf("DNS record with ID %s not found", recordId)
 }
 
-func (c *Client) CreateDnsRecord(record DnsRecord) (*DnsRecord, error) {
+func (c *DNSRecordsService) Create(record DnsRecord) (*DnsRecord, error) {
 	recordJson, err := json.Marshal(record)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/dns-records", c.BaseURL), bytes.NewBuffer(recordJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/dns-records", c.client.BaseURL), bytes.NewBuffer(recordJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -93,27 +95,27 @@ func (c *Client) CreateDnsRecord(record DnsRecord) (*DnsRecord, error) {
 	return &d, nil
 }
 
-func (c *Client) UpdateDnsRecord(record DnsRecord) error {
+func (c *DNSRecordsService) Update(record DnsRecord) error {
 	recordJson, err := json.Marshal(record)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/dns-records/%s", c.BaseURL, record.Id), bytes.NewBuffer(recordJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/dns-records/%s", c.client.BaseURL, record.Id), bytes.NewBuffer(recordJson))
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }
 
-func (c *Client) DeleteDnsRecord(recordId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/dns-records/%s", c.BaseURL, recordId), nil)
+func (c *DNSRecordsService) Delete(recordId string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/dns-records/%s", c.client.BaseURL, recordId), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }

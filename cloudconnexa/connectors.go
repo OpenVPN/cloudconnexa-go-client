@@ -31,24 +31,16 @@ type ConnectorPageResponse struct {
 	TotalPages       int         `json:"totalPages"`
 }
 
-const (
-	NetworkItemTypeHost    = "HOST"
-	NetworkItemTypeNetwork = "NETWORK"
-)
+type ConnectorsService service
 
-const (
-	ConnectionStatusOffline ConnectionStatus = "OFFLINE"
-	ConnectionStatusOnline  ConnectionStatus = "ONLINE"
-)
-
-func (c *Client) GetConnectorsByPage(page int, pageSize int) (ConnectorPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/connectors/page?page=%d&size=%d", c.BaseURL, page, pageSize)
+func (c *ConnectorsService) GetByPage(page int, pageSize int) (ConnectorPageResponse, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/connectors/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return ConnectorPageResponse{}, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return ConnectorPageResponse{}, err
 	}
@@ -61,13 +53,13 @@ func (c *Client) GetConnectorsByPage(page int, pageSize int) (ConnectorPageRespo
 	return response, nil
 }
 
-func (c *Client) GetAllConnectors() ([]Connector, error) {
+func (c *ConnectorsService) GetAll() ([]Connector, error) {
 	var allConnectors []Connector
 	page := 1
 	pageSize := 10
 
 	for {
-		response, err := c.GetConnectorsByPage(page, pageSize)
+		response, err := c.GetByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -82,8 +74,8 @@ func (c *Client) GetAllConnectors() ([]Connector, error) {
 	return allConnectors, nil
 }
 
-func (c *Client) GetConnectorByName(name string) (*Connector, error) {
-	connectors, err := c.GetAllConnectors()
+func (c *ConnectorsService) GetByName(name string) (*Connector, error) {
+	connectors, err := c.GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -96,22 +88,22 @@ func (c *Client) GetConnectorByName(name string) (*Connector, error) {
 	return nil, nil
 }
 
-func (c *Client) GetConnectorById(connectorId string) (*Connector, error) {
-	connectors, err := c.GetAllConnectors()
+func (c *ConnectorsService) GetByID(connectorID string) (*Connector, error) {
+	connectors, err := c.GetAll()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, connector := range connectors {
-		if connector.Id == connectorId {
+		if connector.Id == connectorID {
 			return &connector, nil
 		}
 	}
 	return nil, nil
 }
 
-func (c *Client) GetConnectorsForNetwork(networkId string) ([]Connector, error) {
-	connectors, err := c.GetAllConnectors()
+func (c *ConnectorsService) GetByNetworkID(networkId string) ([]Connector, error) {
+	connectors, err := c.GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -125,31 +117,31 @@ func (c *Client) GetConnectorsForNetwork(networkId string) ([]Connector, error) 
 	return networkConnectors, nil
 }
 
-func (c *Client) GetConnectorProfile(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.BaseURL, id), nil)
+func (c *ConnectorsService) GetProfile(id string) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.client.BaseURL, id), nil)
 	if err != nil {
 		return "", err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return "", err
 	}
 	return string(body), nil
 }
 
-func (c *Client) CreateConnector(connector Connector, networkItemId string) (*Connector, error) {
+func (c *ConnectorsService) Create(connector Connector, networkItemId string) (*Connector, error) {
 	connectorJson, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors?networkItemId=%s&networkItemType=%s", c.BaseURL, networkItemId, connector.NetworkItemType), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors?networkItemId=%s&networkItemType=%s", c.client.BaseURL, networkItemId, connector.NetworkItemType), bytes.NewBuffer(connectorJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -162,12 +154,12 @@ func (c *Client) CreateConnector(connector Connector, networkItemId string) (*Co
 	return &conn, nil
 }
 
-func (c *Client) DeleteConnector(connectorId string, networkItemId string, networkItemType string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/connectors/%s?networkItemId=%s&networkItemType=%s", c.BaseURL, connectorId, networkItemId, networkItemType), nil)
+func (c *ConnectorsService) Delete(connectorId string, networkItemId string, networkItemType string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/connectors/%s?networkItemId=%s&networkItemType=%s", c.client.BaseURL, connectorId, networkItemId, networkItemType), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }

@@ -14,13 +14,15 @@ type VpnRegion struct {
 	RegionName string `json:"regionName"`
 }
 
-func (c *Client) GetVpnRegion(regionId string) (*VpnRegion, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/regions", c.BaseURL), nil)
+type VPNRegionsService service
+
+func (c *VPNRegionsService) GetVpnRegion(regionId string) (*VpnRegion, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/regions", c.client.BaseURL), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}

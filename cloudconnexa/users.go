@@ -38,14 +38,16 @@ type Device struct {
 	IPv6Address string `json:"ipV6Address"`
 }
 
-func (c *Client) GetUsersByPage(page int, pageSize int) (UserPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/users/page?page=%d&size=%d", c.BaseURL, page, pageSize)
+type UsersService service
+
+func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/users/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return UserPageResponse{}, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return UserPageResponse{}, err
 	}
@@ -58,12 +60,12 @@ func (c *Client) GetUsersByPage(page int, pageSize int) (UserPageResponse, error
 	return response, nil
 }
 
-func (c *Client) GetUser(username string, role string) (*User, error) {
+func (c *UsersService) List(username string, role string) (*User, error) {
 	pageSize := 10
 	page := 1
 
 	for {
-		response, err := c.GetUsersByPage(page, pageSize)
+		response, err := c.GetByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -82,12 +84,12 @@ func (c *Client) GetUser(username string, role string) (*User, error) {
 	return nil, fmt.Errorf("user with username %s and role %s not found", username, role)
 }
 
-func (c *Client) GetUserById(userId string) (*User, error) {
+func (c *UsersService) Get(userId string) (*User, error) {
 	pageSize := 10
 	page := 1
 
 	for {
-		response, err := c.GetUsersByPage(page, pageSize)
+		response, err := c.GetByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -106,18 +108,18 @@ func (c *Client) GetUserById(userId string) (*User, error) {
 	return nil, fmt.Errorf("user with ID %s not found", userId)
 }
 
-func (c *Client) CreateUser(user User) (*User, error) {
+func (c *UsersService) Create(user User) (*User, error) {
 	userJson, err := json.Marshal(user)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/users", c.BaseURL), bytes.NewBuffer(userJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/users", c.client.BaseURL), bytes.NewBuffer(userJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -130,30 +132,30 @@ func (c *Client) CreateUser(user User) (*User, error) {
 	return &u, nil
 }
 
-func (c *Client) UpdateUser(user User) error {
+func (c *UsersService) Update(user User) error {
 	userJson, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/users/%s", c.BaseURL, user.Id), bytes.NewBuffer(userJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/users/%s", c.client.BaseURL, user.Id), bytes.NewBuffer(userJson))
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Client) DeleteUser(userId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/users/%s", c.BaseURL, userId), nil)
+func (c *UsersService) Delete(userId string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/users/%s", c.client.BaseURL, userId), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	return err
 }

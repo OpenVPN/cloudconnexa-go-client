@@ -46,14 +46,16 @@ type IPServicePageResponse struct {
 	TotalPages       int         `json:"totalPages"`
 }
 
-func (c *Client) GetIPServicesByPage(page int, pageSize int) (IPServicePageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/page?page=%d&size=%d", c.BaseURL, page, pageSize)
+type IPServicesService service
+
+func (c *IPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return IPServicePageResponse{}, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return IPServicePageResponse{}, err
 	}
@@ -66,13 +68,13 @@ func (c *Client) GetIPServicesByPage(page int, pageSize int) (IPServicePageRespo
 	return response, nil
 }
 
-func (c *Client) GetAllIPServices() ([]IPService, error) {
+func (c *IPServicesService) List() ([]IPService, error) {
 	var allIPServices []IPService
 	page := 1
 	pageSize := 10
 
 	for {
-		response, err := c.GetIPServicesByPage(page, pageSize)
+		response, err := c.GetIPByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -86,14 +88,14 @@ func (c *Client) GetAllIPServices() ([]IPService, error) {
 	return allIPServices, nil
 }
 
-func (c *Client) GetServiceIPByID(serviceID string) (*IPService, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/single?serviceId=%s", c.BaseURL, serviceID)
+func (c *IPServicesService) Get(serviceID string) (*IPService, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services/single?serviceId=%s", c.client.BaseURL, serviceID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -106,21 +108,21 @@ func (c *Client) GetServiceIPByID(serviceID string) (*IPService, error) {
 	return &service, nil
 }
 
-func (c *Client) CreateIPService(ipService *IPService) (*IPService, error) {
+func (c *IPServicesService) Create(ipService *IPService) (*IPService, error) {
 	ipServiceJson, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
 	}
 
 	params := networkUrlParams(ipService.NetworkItemType, ipService.NetworkItemId)
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services?%s", c.BaseURL, params.Encode())
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services?%s", c.client.BaseURL, params.Encode())
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(ipServiceJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -133,20 +135,20 @@ func (c *Client) CreateIPService(ipService *IPService) (*IPService, error) {
 	return &s, nil
 }
 
-func (c *Client) UpdateIPService(id string, service *IPService) (*IPService, error) {
+func (c *IPServicesService) Update(id string, service *IPService) (*IPService, error) {
 	serviceJson, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.client.BaseURL, id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJson))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.DoRequest(req)
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -159,14 +161,14 @@ func (c *Client) UpdateIPService(id string, service *IPService) (*IPService, err
 	return &s, nil
 }
 
-func (c *Client) DeleteIPService(ipServiceId string) error {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.BaseURL, ipServiceId)
+func (c *IPServicesService) Delete(ipServiceId string) error {
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.client.BaseURL, ipServiceId)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	if err != nil {
 		return err
 	}
