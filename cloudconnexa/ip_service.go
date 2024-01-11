@@ -139,7 +139,7 @@ func (c *Client) UpdateIPService(id string, service *IPService) (*IPService, err
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s?%s", c.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.BaseURL, id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJson))
 	if err != nil {
@@ -160,7 +160,7 @@ func (c *Client) UpdateIPService(id string, service *IPService) (*IPService, err
 }
 
 func (c *Client) DeleteIPService(ipServiceId string) error {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s?%s", c.BaseURL, ipServiceId)
+	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.BaseURL, ipServiceId)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
