@@ -53,7 +53,7 @@ func (c *ConnectorsService) GetByPage(page int, pageSize int) (ConnectorPageResp
 	return response, nil
 }
 
-func (c *ConnectorsService) GetAll() ([]Connector, error) {
+func (c *ConnectorsService) List() ([]Connector, error) {
 	var allConnectors []Connector
 	page := 1
 	pageSize := 10
@@ -75,7 +75,7 @@ func (c *ConnectorsService) GetAll() ([]Connector, error) {
 }
 
 func (c *ConnectorsService) GetByName(name string) (*Connector, error) {
-	connectors, err := c.GetAll()
+	connectors, err := c.List()
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (c *ConnectorsService) GetByName(name string) (*Connector, error) {
 }
 
 func (c *ConnectorsService) GetByID(connectorID string) (*Connector, error) {
-	connectors, err := c.GetAll()
+	connectors, err := c.List()
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (c *ConnectorsService) GetByID(connectorID string) (*Connector, error) {
 }
 
 func (c *ConnectorsService) GetByNetworkID(networkId string) ([]Connector, error) {
-	connectors, err := c.GetAll()
+	connectors, err := c.List()
 	if err != nil {
 		return nil, err
 	}
