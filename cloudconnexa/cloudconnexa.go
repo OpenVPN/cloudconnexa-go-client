@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -79,8 +78,6 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("NewClient: response body: %s\n", string(body))
 
 	var credentials Credentials
 	err = json.Unmarshal(body, &credentials)
