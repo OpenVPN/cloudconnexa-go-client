@@ -1,6 +1,8 @@
-# CloudConnexa Go Client
+# Cloud Connexa Go Client
 
-This Go library enables access to the CloudConnexa API, as detailed in the [CloudConnexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api.html).
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa)
+
+This Go library enables access to the Cloud Connexa API, as detailed in the [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api.html).
 
 ## Installation Instructions
 
@@ -24,7 +26,7 @@ Instantiate a new CloudConnexa client. Subsequently, utilize the diverse service
 client := cloudconnexa.NewClient("api_url", "client_id", "client_secret")
 
 // List connectors
-connectors, _, err := client.Connectors.List(ctx, nil)
+connectors, _, err := client.Connectors.List()
 ```
 
 ## Authentication
