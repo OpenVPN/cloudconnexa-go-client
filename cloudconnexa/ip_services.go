@@ -20,20 +20,25 @@ type CustomIPServiceType struct {
 	Protocol string  `json:"protocol"`
 }
 
+type IPServiceRoute struct {
+	Description string `json:"description"`
+	Value       string `json:"value"`
+}
+
 type IPServiceConfig struct {
 	CustomServiceTypes []*CustomIPServiceType `json:"customServiceTypes"`
 	ServiceTypes       []string               `json:"serviceTypes"`
 }
 
 type IPService struct {
-	Name            string           `json:"name"`
-	Description     string           `json:"description"`
-	NetworkItemType string           `json:"networkItemType"`
-	NetworkItemId   string           `json:"networkItemId"`
-	Id              string           `json:"id"`
-	Type            string           `json:"type"`
-	Routes          []*Route         `json:"routes"`
-	Config          *IPServiceConfig `json:"config"`
+	Name            string            `json:"name"`
+	Description     string            `json:"description"`
+	NetworkItemType string            `json:"networkItemType"`
+	NetworkItemId   string            `json:"networkItemId"`
+	Id              string            `json:"id"`
+	Type            string            `json:"type"`
+	Routes          []*IPServiceRoute `json:"routes"`
+	Config          *IPServiceConfig  `json:"config"`
 }
 
 type IPServicePageResponse struct {
