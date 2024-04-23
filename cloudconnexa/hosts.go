@@ -50,7 +50,7 @@ func (c *HostsService) GetHostsByPage(page int, size int) (HostPageResponse, err
 func (c *HostsService) List() ([]Host, error) {
 	var allHosts []Host
 	pageSize := 10
-	page := 1
+	page := 0
 
 	for {
 		response, err := c.GetHostsByPage(page, pageSize)

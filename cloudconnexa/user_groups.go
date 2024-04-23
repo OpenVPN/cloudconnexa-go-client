@@ -52,7 +52,7 @@ func (c *UserGroupsService) GetByPage(page int, pageSize int) (UserGroupPageResp
 func (c *UserGroupsService) List() ([]UserGroup, error) {
 	var allUserGroups []UserGroup
 	pageSize := 10
-	page := 1
+	page := 0
 
 	for {
 		response, err := c.GetByPage(page, pageSize)
