@@ -75,7 +75,7 @@ func (c *IPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageRe
 
 func (c *IPServicesService) List() ([]IPService, error) {
 	var allIPServices []IPService
-	page := 1
+	page := 0
 	pageSize := 10
 
 	for {

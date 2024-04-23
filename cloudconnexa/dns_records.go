@@ -49,7 +49,7 @@ func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DnsRecordPageResp
 
 func (c *DNSRecordsService) GetDnsRecord(recordId string) (*DnsRecord, error) {
 	pageSize := 10
-	page := 1
+	page := 0
 
 	for {
 		response, err := c.GetByPage(page, pageSize)

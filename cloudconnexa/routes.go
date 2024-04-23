@@ -51,7 +51,7 @@ func (c *RoutesService) GetByPage(networkId string, page int, size int) (RoutePa
 func (c *RoutesService) List(networkId string) ([]Route, error) {
 	var allRoutes []Route
 	pageSize := 10
-	page := 1
+	page := 0
 
 	for {
 		response, err := c.GetByPage(networkId, page, pageSize)

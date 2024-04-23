@@ -64,7 +64,7 @@ func (c *NetworksService) GetByPage(page int, size int) (NetworkPageResponse, er
 func (c *NetworksService) List() ([]Network, error) {
 	var allNetworks []Network
 	pageSize := 10
-	page := 1
+	page := 0
 
 	for {
 		response, err := c.GetByPage(page, pageSize)

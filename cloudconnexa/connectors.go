@@ -55,7 +55,7 @@ func (c *ConnectorsService) GetByPage(page int, pageSize int) (ConnectorPageResp
 
 func (c *ConnectorsService) List() ([]Connector, error) {
 	var allConnectors []Connector
-	page := 1
+	page := 0
 	pageSize := 10
 
 	for {
