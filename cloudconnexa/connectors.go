@@ -130,6 +130,19 @@ func (c *ConnectorsService) GetProfile(id string) (string, error) {
 	return string(body), nil
 }
 
+func (c *ConnectorsService) GetToken(id string) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile/encrypt", c.client.BaseURL, id), nil)
+	if err != nil {
+		return "", err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
 func (c *ConnectorsService) Create(connector Connector, networkItemId string) (*Connector, error) {
 	connectorJson, err := json.Marshal(connector)
 	if err != nil {
