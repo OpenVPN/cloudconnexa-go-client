@@ -41,7 +41,6 @@ func (c *RoutesService) GetByPage(networkId string, page int, size int) (RoutePa
 
 	var response RoutePageResponse
 	err = json.Unmarshal(body, &response)
-	fmt.Printf("response: %+v\n", response)
 	if err != nil {
 		return RoutePageResponse{}, err
 	}

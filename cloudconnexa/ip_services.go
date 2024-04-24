@@ -41,14 +41,19 @@ type IPService struct {
 	Config          *IPServiceConfig  `json:"config"`
 }
 
+type IPServiceResponse struct {
+	IPService
+	Routes []*Route `json:"routes"`
+}
+
 type IPServicePageResponse struct {
-	Content          []IPService `json:"content"`
-	NumberOfElements int         `json:"numberOfElements"`
-	Page             int         `json:"page"`
-	Size             int         `json:"size"`
-	Success          bool        `json:"success"`
-	TotalElements    int         `json:"totalElements"`
-	TotalPages       int         `json:"totalPages"`
+	Content          []IPServiceResponse `json:"content"`
+	NumberOfElements int                 `json:"numberOfElements"`
+	Page             int                 `json:"page"`
+	Size             int                 `json:"size"`
+	Success          bool                `json:"success"`
+	TotalElements    int                 `json:"totalElements"`
+	TotalPages       int                 `json:"totalPages"`
 }
 
 type IPServicesService service
@@ -73,8 +78,8 @@ func (c *IPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageRe
 	return response, nil
 }
 
-func (c *IPServicesService) List() ([]IPService, error) {
-	var allIPServices []IPService
+func (c *IPServicesService) List() ([]IPServiceResponse, error) {
+	var allIPServices []IPServiceResponse
 	page := 0
 	pageSize := 10
 
@@ -93,7 +98,7 @@ func (c *IPServicesService) List() ([]IPService, error) {
 	return allIPServices, nil
 }
 
-func (c *IPServicesService) Get(serviceID string) (*IPService, error) {
+func (c *IPServicesService) Get(serviceID string) (*IPServiceResponse, error) {
 	endpoint := fmt.Sprintf("%s/api/beta/ip-services/single?serviceId=%s", c.client.BaseURL, serviceID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -105,7 +110,7 @@ func (c *IPServicesService) Get(serviceID string) (*IPService, error) {
 		return nil, err
 	}
 
-	var service IPService
+	var service IPServiceResponse
 	err = json.Unmarshal(body, &service)
 	if err != nil {
 		return nil, err
@@ -113,7 +118,7 @@ func (c *IPServicesService) Get(serviceID string) (*IPService, error) {
 	return &service, nil
 }
 
-func (c *IPServicesService) Create(ipService *IPService) (*IPService, error) {
+func (c *IPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
 	ipServiceJson, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
@@ -132,7 +137,7 @@ func (c *IPServicesService) Create(ipService *IPService) (*IPService, error) {
 		return nil, err
 	}
 
-	var s IPService
+	var s IPServiceResponse
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
@@ -140,7 +145,7 @@ func (c *IPServicesService) Create(ipService *IPService) (*IPService, error) {
 	return &s, nil
 }
 
-func (c *IPServicesService) Update(id string, service *IPService) (*IPService, error) {
+func (c *IPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
 	serviceJson, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
@@ -158,7 +163,7 @@ func (c *IPServicesService) Update(id string, service *IPService) (*IPService, e
 		return nil, err
 	}
 
-	var s IPService
+	var s IPServiceResponse
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
