@@ -86,7 +86,7 @@ func (c *UsersService) List(username string, role string) (*User, error) {
 
 func (c *UsersService) Get(userId string) (*User, error) {
 	pageSize := 10
-	page := 1
+	page := 0
 
 	for {
 		response, err := c.GetByPage(page, pageSize)
