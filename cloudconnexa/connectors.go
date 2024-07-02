@@ -10,6 +10,7 @@ import (
 type ConnectionStatus string
 
 type Connector struct {
+	Description      string           `json:"description,omitempty"`
 	Id               string           `json:"id,omitempty"`
 	Name             string           `json:"name"`
 	NetworkItemId    string           `json:"networkItemId"`
