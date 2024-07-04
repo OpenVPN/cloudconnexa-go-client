@@ -54,6 +54,30 @@ func (c *ConnectorsService) GetByPage(page int, pageSize int) (ConnectorPageResp
 	return response, nil
 }
 
+func (c *ConnectorsService) Update(connector Connector) (*Connector, error) {
+	connectorJson, err := json.Marshal(connector)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/connectors/%s", c.client.BaseURL, connector.Id), bytes.NewBuffer(connectorJson))
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var conn Connector
+	err = json.Unmarshal(body, &conn)
+	if err != nil {
+		return nil, err
+	}
+	return &conn, nil
+}
+
 func (c *ConnectorsService) List() ([]Connector, error) {
 	var allConnectors []Connector
 	page := 0
