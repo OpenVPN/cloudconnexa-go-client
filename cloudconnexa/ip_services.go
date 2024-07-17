@@ -11,7 +11,7 @@ import (
 type Range struct {
 	LowerValue int `json:"lowerValue"`
 	UpperValue int `json:"upperValue"`
-	Value      int `json:"value"`
+	Value      int `json:"value,omitempty"`
 }
 
 type CustomIPServiceType struct {
