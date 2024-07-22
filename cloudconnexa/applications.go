@@ -110,6 +110,20 @@ func (c *ApplicationsService) Get(id string) (*ApplicationResponse, error) {
 	return &application, nil
 }
 
+func (c *ApplicationsService) GetByName(name string) (*ApplicationResponse, error) {
+	applications, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, n := range applications {
+		if n.Name == name {
+			return &n, nil
+		}
+	}
+	return nil, nil
+}
+
 func (c *ApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
 	applicationJson, err := json.Marshal(application)
 	if err != nil {
