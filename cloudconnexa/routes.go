@@ -8,13 +8,14 @@ import (
 )
 
 type Route struct {
-	Id            string `json:"id,omitempty"`
-	Type          string `json:"type,omitempty"`
-	Subnet        string `json:"subnet,omitempty"`
-	Domain        string `json:"domain,omitempty"`
-	Description   string `json:"description,omitempty"`
-	ParentRouteId string `json:"parentRouteId,omitempty"`
-	NetworkItemId string `json:"networkItemId,omitempty"`
+	Id              string `json:"id,omitempty"`
+	Type            string `json:"type,omitempty"`
+	Subnet          string `json:"subnet,omitempty"`
+	Domain          string `json:"domain,omitempty"`
+	Description     string `json:"description,omitempty"`
+	ParentRouteId   string `json:"parentRouteId,omitempty"`
+	NetworkItemId   string `json:"networkItemId,omitempty"`
+	AllowEmbeddedIp bool   `json:"allowEmbeddedIp,omitempty"`
 }
 
 type RoutePageResponse struct {
