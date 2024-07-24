@@ -8,7 +8,6 @@ import (
 )
 
 type ApplicationRoute struct {
-	Description     string `json:"description"`
 	Value           string `json:"value"`
 	AllowEmbeddedIp bool   `json:"allowEmbeddedIp"`
 }
