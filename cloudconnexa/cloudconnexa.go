@@ -28,15 +28,16 @@ type Client struct {
 
 	common service
 
-	Connectors *ConnectorsService
-	DnsRecords *DNSRecordsService
-	Hosts      *HostsService
-	IPServices *IPServicesService
-	Networks   *NetworksService
-	Routes     *RoutesService
-	Users      *UsersService
-	UserGroups *UserGroupsService
-	VPNRegions *VPNRegionsService
+	Connectors   *ConnectorsService
+	DnsRecords   *DNSRecordsService
+	Hosts        *HostsService
+	IPServices   *IPServicesService
+	Applications *ApplicationsService
+	Networks     *NetworksService
+	Routes       *RoutesService
+	Users        *UsersService
+	UserGroups   *UserGroupsService
+	VPNRegions   *VPNRegionsService
 }
 
 type service struct {
@@ -97,6 +98,7 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 	c.DnsRecords = (*DNSRecordsService)(&c.common)
 	c.Hosts = (*HostsService)(&c.common)
 	c.IPServices = (*IPServicesService)(&c.common)
+	c.Applications = (*ApplicationsService)(&c.common)
 	c.Networks = (*NetworksService)(&c.common)
 	c.Routes = (*RoutesService)(&c.common)
 	c.Users = (*UsersService)(&c.common)
