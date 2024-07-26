@@ -85,6 +85,30 @@ func (c *UsersService) List(username string, role string) (*User, error) {
 }
 
 func (c *UsersService) Get(userId string) (*User, error) {
+	return c.GetById(userId)
+}
+
+func (c *UsersService) GetById(userId string) (*User, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/users/%s", c.client.BaseURL, userId)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (c *UsersService) GetByUsername(username string) (*User, error) {
 	pageSize := 10
 	page := 0
 
@@ -95,7 +119,7 @@ func (c *UsersService) Get(userId string) (*User, error) {
 		}
 
 		for _, user := range response.Content {
-			if user.Id == userId {
+			if user.Username == username {
 				return &user, nil
 			}
 		}
@@ -105,7 +129,7 @@ func (c *UsersService) Get(userId string) (*User, error) {
 		}
 		page++
 	}
-	return nil, fmt.Errorf("user with ID %s not found", userId)
+	return nil, fmt.Errorf("user with username %s not found", username)
 }
 
 func (c *UsersService) Create(user User) (*User, error) {
