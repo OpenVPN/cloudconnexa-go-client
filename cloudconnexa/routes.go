@@ -142,7 +142,16 @@ func (c *RoutesService) Create(networkId string, route Route) (*Route, error) {
 }
 
 func (c *RoutesService) Update(networkId string, route Route) error {
-	routeJson, err := json.Marshal(route)
+	type updatedRoute struct {
+		Description string `json:"description"`
+		Value       string `json:"value"`
+	}
+	routeToUpdate := updatedRoute{
+		Description: route.Description,
+		Value:       route.Subnet,
+	}
+
+	routeJson, err := json.Marshal(routeToUpdate)
 	if err != nil {
 		return err
 	}
