@@ -11,6 +11,7 @@ type Host struct {
 	Id             string      `json:"id,omitempty"`
 	Name           string      `json:"name"`
 	Description    string      `json:"description"`
+	Domain         string      `json:"domain"`
 	InternetAccess string      `json:"internetAccess"`
 	SystemSubnets  []string    `json:"systemSubnets"`
 	Connectors     []Connector `json:"connectors"`
