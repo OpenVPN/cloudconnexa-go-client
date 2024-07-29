@@ -78,6 +78,31 @@ func (c *IPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageRe
 	return response, nil
 }
 
+func (c *IPServicesService) GetByName(name string) (*IPServiceResponse, error) {
+	pageSize := 10
+	page := 0
+
+	for {
+		response, err := c.GetIPByPage(page, pageSize)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ipService := range response.Content {
+			if ipService.Name == name {
+				return &ipService, nil
+			}
+		}
+
+		if page >= response.TotalPages {
+			break
+		}
+		page++
+	}
+
+	return nil, fmt.Errorf("ip service with name %s not found", name)
+}
+
 func (c *IPServicesService) List() ([]IPServiceResponse, error) {
 	var allIPServices []IPServiceResponse
 	page := 0
