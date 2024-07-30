@@ -110,7 +110,7 @@ func (c *ConnectorsService) GetByName(name string) (*Connector, error) {
 			return &connector, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("connector %s does not exist", name)
 }
 
 func (c *ConnectorsService) GetByID(connectorID string) (*Connector, error) {
