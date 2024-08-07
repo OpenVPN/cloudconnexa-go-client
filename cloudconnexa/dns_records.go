@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+var (
+	ErrDnsRecordNotFound = fmt.Errorf("dns record not found")
+)
+
 type DnsRecord struct {
 	Id            string   `json:"id"`
 	Domain        string   `json:"domain"`
@@ -68,7 +72,7 @@ func (c *DNSRecordsService) GetDnsRecord(recordId string) (*DnsRecord, error) {
 		}
 		page++
 	}
-	return nil, fmt.Errorf("DNS record with ID %s not found", recordId)
+	return nil, ErrDnsRecordNotFound
 }
 
 func (c *DNSRecordsService) Create(record DnsRecord) (*DnsRecord, error) {
