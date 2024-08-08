@@ -9,5 +9,6 @@ deps:
 test:
 	@go test -cover -race -v ./cloudconnexa/...
 
+.PHONY: e2e
 e2e:
 	@go test -v ./e2e/...
