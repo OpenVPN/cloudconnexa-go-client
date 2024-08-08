@@ -1,5 +1,8 @@
 name: Go build
 
+env:
+  OVPN_HOST: ${{ vars.OVPN_HOST }}
+
 on:
   pull_request:
     branches:
