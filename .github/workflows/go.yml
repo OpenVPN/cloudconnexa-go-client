@@ -23,6 +23,7 @@ on:
 
 jobs:
   build:
+    environment: TestingEnv
     runs-on: ubuntu-latest
     strategy:
       matrix:
