@@ -3,8 +3,13 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+)
+
+var (
+	ErrUserGroupNotFound = errors.New("user group not found")
 )
 
 type UserGroupPageResponse struct {
@@ -81,7 +86,7 @@ func (c *UserGroupsService) GetByName(name string) (*UserGroup, error) {
 			return &ug, nil
 		}
 	}
-	return nil, fmt.Errorf("group %s does not exist", name)
+	return nil, ErrUserGroupNotFound
 }
 
 func (c *UserGroupsService) Get(id string) (*UserGroup, error) {
@@ -95,7 +100,7 @@ func (c *UserGroupsService) Get(id string) (*UserGroup, error) {
 			return &ug, nil
 		}
 	}
-	return nil, fmt.Errorf("group %s does not exist", id)
+	return nil, ErrUserGroupNotFound
 }
 
 func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {

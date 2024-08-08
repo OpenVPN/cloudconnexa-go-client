@@ -48,6 +48,15 @@ type Credentials struct {
 	AccessToken string `json:"access_token"`
 }
 
+type ErrClientResponse struct {
+	status int
+	body   string
+}
+
+func (e ErrClientResponse) Error() string {
+	return fmt.Sprintf("status code: %d, response body: %s", e.status, e.body)
+}
+
 func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 	if clientId == "" || clientSecret == "" {
 		return nil, ErrCredentialsRequired
@@ -127,7 +136,7 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	}
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, fmt.Errorf("status code: %d, response body: %s", res.StatusCode, string(body))
+		return nil, &ErrClientResponse{status: res.StatusCode, body: string(body)}
 	}
 
 	return body, nil

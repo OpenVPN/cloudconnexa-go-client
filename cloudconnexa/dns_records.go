@@ -3,12 +3,13 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
 
 var (
-	ErrDnsRecordNotFound = fmt.Errorf("dns record not found")
+	ErrDnsRecordNotFound = errors.New("dns record not found")
 )
 
 type DnsRecord struct {

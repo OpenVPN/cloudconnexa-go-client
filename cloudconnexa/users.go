@@ -3,8 +3,13 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+)
+
+var (
+	ErrUserNotFound = errors.New("user not found")
 )
 
 type User struct {
@@ -82,7 +87,7 @@ func (c *UsersService) List(username string, role string) (*User, error) {
 		}
 		page++
 	}
-	return nil, fmt.Errorf("user with username %s and role %s not found", username, role)
+	return nil, ErrUserNotFound
 }
 
 func (c *UsersService) Get(userId string) (*User, error) {
@@ -130,7 +135,7 @@ func (c *UsersService) GetByUsername(username string) (*User, error) {
 		}
 		page++
 	}
-	return nil, fmt.Errorf("user with username %s not found", username)
+	return nil, ErrUserNotFound
 }
 
 func (c *UsersService) Create(user User) (*User, error) {
