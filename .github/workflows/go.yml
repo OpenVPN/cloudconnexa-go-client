@@ -2,6 +2,8 @@ name: Go build
 
 env:
   OVPN_HOST: ${{ vars.OVPN_HOST }}
+  CLOUDCONNEXA_CLIENT_ID: ${{ vars.CLOUDCONNEXA_CLIENT_ID }}
+  CLOUDCONNEXA_CLIENT_SECRET: ${{ vars.CLOUDCONNEXA_CLIENT_SECRET }}
 
 on:
   pull_request:
@@ -21,7 +23,6 @@ on:
 
 jobs:
   build:
-    environment: TestingEnv
     runs-on: ubuntu-latest
     strategy:
       matrix:
