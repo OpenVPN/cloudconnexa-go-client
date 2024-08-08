@@ -1,6 +1,20 @@
 name: Go build
 
-on: push
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+  # We test at a regular interval to ensure we are alerted to something breaking due
+  # to an API change, even if the code did not change.
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   build:
@@ -25,3 +39,6 @@ jobs:
 
       - name: Test
         run: make test
+
+      - name: E2E Test
+        run: make e2e

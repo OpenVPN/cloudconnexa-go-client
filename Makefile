@@ -8,3 +8,6 @@ deps:
 .PHONY: test
 test:
 	@go test -cover -race -v ./...
+
+e2e:
+	@go test -v ./e2e/...
