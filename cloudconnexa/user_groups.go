@@ -23,13 +23,14 @@ type UserGroupPageResponse struct {
 }
 
 type UserGroup struct {
-	ConnectAuth    string   `json:"connectAuth"`
-	ID             string   `json:"id"`
-	InternetAccess string   `json:"internetAccess"`
-	MaxDevice      int      `json:"maxDevice"`
-	Name           string   `json:"name"`
-	SystemSubnets  []string `json:"systemSubnets"`
-	VpnRegionIds   []string `json:"vpnRegionIds"`
+	ConnectAuth        string   `json:"connectAuth"`
+	ID                 string   `json:"id"`
+	InternetAccess     string   `json:"internetAccess"`
+	MaxDevice          int      `json:"maxDevice"`
+	Name               string   `json:"name"`
+	SystemSubnets      []string `json:"systemSubnets"`
+	VpnRegionIds       []string `json:"vpnRegionIds"`
+	AllRegionsIncluded bool     `json:"allRegionsIncluded"`
 }
 
 type UserGroupsService service
