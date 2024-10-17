@@ -91,11 +91,10 @@ func (c *RoutesService) Get(routeId string) (*Route, error) {
 	}
 
 	for _, n := range networks {
-		routes, err := c.List(n.Id)
 		if err != nil {
 			continue
 		}
-		for _, r := range routes {
+		for _, r := range n.Routes {
 			if r.Id == routeId {
 				r.NetworkItemId = n.Id
 				return &r, nil
