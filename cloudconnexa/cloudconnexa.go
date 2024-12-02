@@ -39,6 +39,7 @@ type Client struct {
 	UserGroups       *UserGroupsService
 	VPNRegions       *VPNRegionsService
 	LocationContexts *LocationContextsService
+	AccessGroups     *AccessGroupsService
 }
 
 type service struct {
@@ -115,6 +116,7 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 	c.UserGroups = (*UserGroupsService)(&c.common)
 	c.VPNRegions = (*VPNRegionsService)(&c.common)
 	c.LocationContexts = (*LocationContextsService)(&c.common)
+	c.AccessGroups = (*AccessGroupsService)(&c.common)
 	return c, nil
 }
 
