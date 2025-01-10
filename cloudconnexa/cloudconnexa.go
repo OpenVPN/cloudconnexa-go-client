@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -127,15 +128,23 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	req.Header.Set("User-Agent", fmt.Sprintf("Useragent %s", c.UserAgent))
 
+	log.Printf("[DEBUG] Sending request %s %s (User-Agent: %s)",
+		req.Method,
+		req.URL.String(),
+		c.UserAgent,
+	)
 	res, err := c.client.Do(req)
 	if err != nil {
+		log.Printf("[DEBUG] Request error: %s", err)
 		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
+		log.Printf("[DEBUG] Request error: %s", err)
 		return nil, err
 	}
 
