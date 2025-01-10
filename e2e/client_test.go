@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zl0ty/cloudconnexa-go-client/v2/cloudconnexa"
 )
 
 func validateEnvVars(t *testing.T) {
