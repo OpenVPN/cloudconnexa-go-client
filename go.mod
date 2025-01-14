@@ -1,4 +1,4 @@
-module github.com/zl0ty/cloudconnexa-go-client/v2
+module github.com/openvpn/cloudconnexa-go-client/v2
 
 go 1.21
 
