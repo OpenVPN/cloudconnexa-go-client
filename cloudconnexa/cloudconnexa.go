@@ -135,7 +135,8 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 		req.URL.String(),
 		c.UserAgent,
 	)
-	slog.Debug(message)
+	slog.Info(message + " " + "INFOOOOO")
+	slog.Debug(message + " " + "DEEEEBUG")
 	// log.Printf("[DEBUG] Sending request %s %s (User-Agent: %s)",
 	// 	req.Method,
 	// 	req.URL.String(),
