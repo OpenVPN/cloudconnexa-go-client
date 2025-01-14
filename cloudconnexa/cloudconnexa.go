@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -137,11 +138,11 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	)
 	slog.Info(message + " " + "INFOOOOO")
 	slog.Debug(message + " " + "DEEEEBUG")
-	// log.Printf("[DEBUG] Sending request %s %s (User-Agent: %s)",
-	// 	req.Method,
-	// 	req.URL.String(),
-	// 	c.UserAgent,
-	// )
+	log.Printf("[DEBUG] Sending request %s %s (User-Agent: %s)",
+		req.Method,
+		req.URL.String(),
+		c.UserAgent,
+	)
 	res, err := c.client.Do(req)
 	if err != nil {
 		msg := fmt.Sprintf("Request error: %s", err)
