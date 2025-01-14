@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -130,30 +129,14 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	req.Header.Set("User-Agent", fmt.Sprintf("Useragent %s", c.UserAgent))
 
-	message := fmt.Sprintf("Sendig request %s %s (User-Agent: %s)\n",
-		req.Method,
-		req.URL.String(),
-		c.UserAgent,
-	)
-	currentLogLevel := slog.SetLogLoggerLevel(slog.LevelDebug)
-	defer slog.SetLogLoggerLevel(currentLogLevel) // revert changes after the example
-	slog.Info(message + " " + "INFOOOOO")
-	slog.Debug(message + " " + "DEEEEBUG")
-
 	res, err := c.client.Do(req)
 	if err != nil {
-		msg := fmt.Sprintf("Request error: %s", err)
-		slog.Debug(msg)
-		// log.Printf("[DEBUG] Request error: %s", err)
 		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		msg := fmt.Sprintf("Request error: %s", err)
-		slog.Debug(msg)
-		// log.Printf("[DEBUG] Request error: %s", err)
 		return nil, err
 	}
 
