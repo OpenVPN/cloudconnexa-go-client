@@ -49,7 +49,7 @@ func TestListNetworks(t *testing.T) {
 
 func TestListConnectors(t *testing.T) {
 	c := setUpClient(t)
-	response, err := c.Connectors.GetByPage(0, 10)
+	response, err := c.Connectors.GetByPage(0, 10, "NETWORK")
 	require.NoError(t, err)
 	fmt.Printf("found %d connectors\n", len(response.Content))
 }

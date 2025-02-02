@@ -42,7 +42,7 @@ type NetworkPageResponse struct {
 type NetworksService service
 
 func (c *NetworksService) GetByPage(page int, size int) (NetworkPageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/networks/page?page=%d&size=%d", c.client.BaseURL, page, size), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/networks?page=%d&size=%d", c.client.GetV1Url(), page, size), nil)
 	if err != nil {
 		return NetworkPageResponse{}, err
 	}
@@ -116,7 +116,7 @@ func (c *NetworksService) Create(network Network) (*Network, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/networks", c.client.BaseURL), bytes.NewBuffer(networkJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks", c.client.GetV1Url()), bytes.NewBuffer(networkJson))
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (c *NetworksService) Update(network Network) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/networks/%s", c.client.BaseURL, network.Id), bytes.NewBuffer(networkJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), network.Id), bytes.NewBuffer(networkJson))
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (c *NetworksService) Update(network Network) error {
 }
 
 func (c *NetworksService) Delete(networkId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/networks/%s", c.client.BaseURL, networkId), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), networkId), nil)
 	if err != nil {
 		return err
 	}

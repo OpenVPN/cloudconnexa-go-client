@@ -36,7 +36,7 @@ type UserGroup struct {
 type UserGroupsService service
 
 func (c *UserGroupsService) GetByPage(page int, pageSize int) (UserGroupPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/user-groups/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
+	endpoint := fmt.Sprintf("%s/user-groups?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return UserGroupPageResponse{}, err
@@ -110,7 +110,7 @@ func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/user-groups", c.client.BaseURL), bytes.NewBuffer(userGroupJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user-groups", c.client.GetV1Url()), bytes.NewBuffer(userGroupJson))
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup,
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/user-groups/%s", c.client.BaseURL, id), bytes.NewBuffer(userGroupJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), bytes.NewBuffer(userGroupJson))
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup,
 }
 
 func (c *UserGroupsService) Delete(id string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/user-groups/%s", c.client.BaseURL, id), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), nil)
 	if err != nil {
 		return err
 	}
