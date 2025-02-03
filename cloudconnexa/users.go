@@ -47,7 +47,7 @@ type Device struct {
 type UsersService service
 
 func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/users/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
+	endpoint := fmt.Sprintf("%s/users?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return UserPageResponse{}, err
@@ -95,7 +95,7 @@ func (c *UsersService) Get(userId string) (*User, error) {
 }
 
 func (c *UsersService) GetById(userId string) (*User, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/users/%s", c.client.BaseURL, userId)
+	endpoint := fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userId)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (c *UsersService) Create(user User) (*User, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/users", c.client.BaseURL), bytes.NewBuffer(userJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/users", c.client.GetV1Url()), bytes.NewBuffer(userJson))
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (c *UsersService) Update(user User) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/users/%s", c.client.BaseURL, user.Id), bytes.NewBuffer(userJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), user.Id), bytes.NewBuffer(userJson))
 	if err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func (c *UsersService) Update(user User) error {
 }
 
 func (c *UsersService) Delete(userId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/users/%s", c.client.BaseURL, userId), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userId), nil)
 	if err != nil {
 		return err
 	}

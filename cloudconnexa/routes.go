@@ -31,7 +31,7 @@ type RoutePageResponse struct {
 type RoutesService service
 
 func (c *RoutesService) GetByPage(networkId string, page int, size int) (RoutePageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/networks/%s/routes/page?page=%d&size=%d", c.client.BaseURL, networkId, page, size), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/networks/routes?networkId=%s&page=%d&size=%d", c.client.GetV1Url(), networkId, page, size), nil)
 	if err != nil {
 		return RoutePageResponse{}, err
 	}
@@ -120,7 +120,7 @@ func (c *RoutesService) Create(networkId string, route Route) (*Route, error) {
 
 	req, err := http.NewRequest(
 		http.MethodPost,
-		fmt.Sprintf("%s/api/beta/networks/%s/routes", c.client.BaseURL, networkId),
+		fmt.Sprintf("%s/networks/routes?networkId=%s", c.client.GetV1Url(), networkId),
 		bytes.NewBuffer(routeJson),
 	)
 	if err != nil {
@@ -140,7 +140,7 @@ func (c *RoutesService) Create(networkId string, route Route) (*Route, error) {
 	return &r, nil
 }
 
-func (c *RoutesService) Update(networkId string, route Route) error {
+func (c *RoutesService) Update(route Route) error {
 	type updatedRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
@@ -157,7 +157,7 @@ func (c *RoutesService) Update(networkId string, route Route) error {
 
 	req, err := http.NewRequest(
 		http.MethodPut,
-		fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.client.BaseURL, networkId, route.Id),
+		fmt.Sprintf("%s/networks/routes/%s", c.client.GetV1Url(), route.Id),
 		bytes.NewBuffer(routeJson),
 	)
 	if err != nil {
@@ -168,8 +168,8 @@ func (c *RoutesService) Update(networkId string, route Route) error {
 	return err
 }
 
-func (c *RoutesService) Delete(networkId string, routeId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.client.BaseURL, networkId, routeId), nil)
+func (c *RoutesService) Delete(id string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/routes/%s", c.client.GetV1Url(), id), nil)
 	if err != nil {
 		return err
 	}

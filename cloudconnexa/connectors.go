@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -34,8 +35,12 @@ type ConnectorPageResponse struct {
 
 type ConnectorsService service
 
-func (c *ConnectorsService) GetByPage(page int, pageSize int) (ConnectorPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/connectors/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
+func (c *ConnectorsService) GetByPage(page int, pageSize int, networkItemType string) (ConnectorPageResponse, error) {
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return ConnectorPageResponse{}, err
+	}
+	endpoint := fmt.Sprintf("%s/%s/connectors?page=%d&size=%d", c.client.GetV1Url(), path, page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return ConnectorPageResponse{}, err
@@ -55,12 +60,16 @@ func (c *ConnectorsService) GetByPage(page int, pageSize int) (ConnectorPageResp
 }
 
 func (c *ConnectorsService) Update(connector Connector) (*Connector, error) {
+	path, err := GetPath(connector.NetworkItemType)
+	if err != nil {
+		return nil, err
+	}
 	connectorJson, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/connectors/%s", c.client.BaseURL, connector.Id), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s/connectors/%s", c.client.GetV1Url(), path, connector.Id), bytes.NewBuffer(connectorJson))
 	if err != nil {
 		return nil, err
 	}
@@ -78,13 +87,13 @@ func (c *ConnectorsService) Update(connector Connector) (*Connector, error) {
 	return &conn, nil
 }
 
-func (c *ConnectorsService) List() ([]Connector, error) {
+func (c *ConnectorsService) List(networkItemType string) ([]Connector, error) {
 	var allConnectors []Connector
 	page := 0
 	pageSize := 10
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, pageSize, networkItemType)
 		if err != nil {
 			return nil, err
 		}
@@ -99,8 +108,8 @@ func (c *ConnectorsService) List() ([]Connector, error) {
 	return allConnectors, nil
 }
 
-func (c *ConnectorsService) GetByName(name string) (*Connector, error) {
-	connectors, err := c.List()
+func (c *ConnectorsService) GetByName(name string, networkItemType string) (*Connector, error) {
+	connectors, err := c.List(networkItemType)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +122,8 @@ func (c *ConnectorsService) GetByName(name string) (*Connector, error) {
 	return nil, nil
 }
 
-func (c *ConnectorsService) GetByID(connectorID string) (*Connector, error) {
-	connectors, err := c.List()
+func (c *ConnectorsService) GetByID(connectorID string, networkItemType string) (*Connector, error) {
+	connectors, err := c.List(networkItemType)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +137,7 @@ func (c *ConnectorsService) GetByID(connectorID string) (*Connector, error) {
 }
 
 func (c *ConnectorsService) GetByNetworkID(networkId string) ([]Connector, error) {
-	connectors, err := c.List()
+	connectors, err := c.List("NETWORK")
 	if err != nil {
 		return nil, err
 	}
@@ -142,8 +151,12 @@ func (c *ConnectorsService) GetByNetworkID(networkId string) ([]Connector, error
 	return networkConnectors, nil
 }
 
-func (c *ConnectorsService) GetProfile(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.client.BaseURL, id), nil)
+func (c *ConnectorsService) GetProfile(id string, networkItemType string) (string, error) {
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s/connectors/%s/profile", c.client.GetV1Url(), path, id), nil)
 	if err != nil {
 		return "", err
 	}
@@ -155,8 +168,12 @@ func (c *ConnectorsService) GetProfile(id string) (string, error) {
 	return string(body), nil
 }
 
-func (c *ConnectorsService) GetToken(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile/encrypt", c.client.BaseURL, id), nil)
+func (c *ConnectorsService) GetToken(id string, networkItemType string) (string, error) {
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s/connectors/%s/profile/encrypt", c.client.GetV1Url(), path, id), nil)
 	if err != nil {
 		return "", err
 	}
@@ -169,12 +186,16 @@ func (c *ConnectorsService) GetToken(id string) (string, error) {
 }
 
 func (c *ConnectorsService) Create(connector Connector, networkItemId string) (*Connector, error) {
+	path, err := GetPath(connector.NetworkItemType)
+	if err != nil {
+		return nil, err
+	}
 	connectorJson, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors?networkItemId=%s&networkItemType=%s", c.client.BaseURL, networkItemId, connector.NetworkItemType), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s/connectors?networkItemId=%s&networkItemType=%s", c.client.GetV1Url(), path, networkItemId, connector.NetworkItemType), bytes.NewBuffer(connectorJson))
 	if err != nil {
 		return nil, err
 	}
@@ -193,11 +214,27 @@ func (c *ConnectorsService) Create(connector Connector, networkItemId string) (*
 }
 
 func (c *ConnectorsService) Delete(connectorId string, networkItemId string, networkItemType string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/connectors/%s?networkItemId=%s&networkItemType=%s", c.client.BaseURL, connectorId, networkItemId, networkItemType), nil)
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s/connectors/%s?networkItemId=%s&networkItemType=%s", c.client.GetV1Url(), path, connectorId, networkItemId, networkItemType), nil)
 	if err != nil {
 		return err
 	}
 
 	_, err = c.client.DoRequest(req)
 	return err
+}
+
+func GetPath(networkItemType string) (string, error) {
+	if networkItemType == "NETWORK" {
+		return "networks", nil
+	}
+
+	if networkItemType == "HOST" {
+		return "hosts", nil
+	}
+
+	return "undefined", errors.New("unknown network item type")
 }

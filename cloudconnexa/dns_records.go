@@ -33,7 +33,7 @@ type DnsRecordPageResponse struct {
 type DNSRecordsService service
 
 func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DnsRecordPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/dns-records/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
+	endpoint := fmt.Sprintf("%s/dns-records?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return DnsRecordPageResponse{}, err
@@ -82,7 +82,7 @@ func (c *DNSRecordsService) Create(record DnsRecord) (*DnsRecord, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/dns-records", c.client.BaseURL), bytes.NewBuffer(recordJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/dns-records", c.client.GetV1Url()), bytes.NewBuffer(recordJson))
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (c *DNSRecordsService) Update(record DnsRecord) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/dns-records/%s", c.client.BaseURL, record.Id), bytes.NewBuffer(recordJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), record.Id), bytes.NewBuffer(recordJson))
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (c *DNSRecordsService) Update(record DnsRecord) error {
 }
 
 func (c *DNSRecordsService) Delete(recordId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/dns-records/%s", c.client.BaseURL, recordId), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), recordId), nil)
 	if err != nil {
 		return err
 	}

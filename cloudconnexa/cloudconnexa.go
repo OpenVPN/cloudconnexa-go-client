@@ -70,7 +70,7 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 		return nil, err
 	}
 
-	tokenURL := fmt.Sprintf("%s/api/beta/oauth/token", strings.TrimRight(baseURL, "/"))
+	tokenURL := fmt.Sprintf("%s/api/v1/oauth/token", strings.TrimRight(baseURL, "/"))
 	req, err := http.NewRequest(http.MethodPost, tokenURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -145,4 +145,8 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func (c *Client) GetV1Url() string {
+	return c.BaseURL + "/api/v1"
 }

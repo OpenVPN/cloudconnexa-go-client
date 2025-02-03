@@ -30,7 +30,7 @@ type HostPageResponse struct {
 type HostsService service
 
 func (c *HostsService) GetHostsByPage(page int, size int) (HostPageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/hosts/page?page=%d&size=%d", c.client.BaseURL, page, size), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/hosts?page=%d&size=%d", c.client.GetV1Url(), page, size), nil)
 	if err != nil {
 		return HostPageResponse{}, err
 	}
@@ -103,7 +103,7 @@ func (c *HostsService) Create(host Host) (*Host, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/hosts", c.client.BaseURL), bytes.NewBuffer(hostJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts", c.client.GetV1Url()), bytes.NewBuffer(hostJson))
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (c *HostsService) Update(host Host) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/hosts/%s", c.client.BaseURL, host.Id), bytes.NewBuffer(hostJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), host.Id), bytes.NewBuffer(hostJson))
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (c *HostsService) Update(host Host) error {
 }
 
 func (c *HostsService) Delete(hostId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/hosts/%s", c.client.BaseURL, hostId), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), hostId), nil)
 	if err != nil {
 		return err
 	}

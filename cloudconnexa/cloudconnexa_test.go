@@ -13,7 +13,7 @@ import (
 func setupMockServer() *httptest.Server {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/api/beta/oauth/token":
+		case "/api/v1/oauth/token":
 			if r.Method == "POST" {
 				w.Header().Set("Content-Type", "application/json")
 				response := Credentials{AccessToken: "mocked-token"}
