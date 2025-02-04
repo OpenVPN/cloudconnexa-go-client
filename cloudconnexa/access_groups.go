@@ -7,33 +7,19 @@ import (
 	"net/http"
 )
 
-type AccessGroupRequest struct {
-	Name        string              `json:"name"`
-	Description string              `json:"description,omitempty"`
-	Source      []AccessItemRequest `json:"source"`
-	Destination []AccessItemRequest `json:"destination"`
+type AccessGroup struct {
+	Id          string       `json:"id"`
+	Name        string       `json:"name"`
+	Description string       `json:"description,omitempty"`
+	Source      []AccessItem `json:"source"`
+	Destination []AccessItem `json:"destination"`
 }
 
-type AccessGroupResponse struct {
-	Id          string               `json:"id"`
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	Source      []AccessItemResponse `json:"source"`
-	Destination []AccessItemResponse `json:"destination"`
-}
-
-type AccessItemRequest struct {
+type AccessItem struct {
 	Type       string   `json:"type"`
 	AllCovered bool     `json:"allCovered"`
 	Parent     string   `json:"parent,omitempty"`
 	Children   []string `json:"children,omitempty"`
-}
-
-type AccessItemResponse struct {
-	Type       string `json:"type"`
-	AllCovered bool   `json:"allCovered"`
-	Parent     *Item  `json:"parent"`
-	Children   []Item `json:"children"`
 }
 
 type Item struct {
@@ -41,19 +27,19 @@ type Item struct {
 }
 
 type AccessGroupPageResponse struct {
-	Content          []AccessGroupResponse `json:"content"`
-	NumberOfElements int                   `json:"numberOfElements"`
-	Page             int                   `json:"page"`
-	Size             int                   `json:"size"`
-	Success          bool                  `json:"success"`
-	TotalElements    int                   `json:"totalElements"`
-	TotalPages       int                   `json:"totalPages"`
+	Content          []AccessGroup `json:"content"`
+	NumberOfElements int           `json:"numberOfElements"`
+	Page             int           `json:"page"`
+	Size             int           `json:"size"`
+	Success          bool          `json:"success"`
+	TotalElements    int           `json:"totalElements"`
+	TotalPages       int           `json:"totalPages"`
 }
 
 type AccessGroupsService service
 
 func (c *AccessGroupsService) GetAccessGroupsByPage(page int, size int) (AccessGroupPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/access-groups/page?page=%d&size=%d", c.client.BaseURL, page, size)
+	endpoint := fmt.Sprintf("%s/access-groups?page=%d&size=%d", c.client.GetV1Url(), page, size)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return AccessGroupPageResponse{}, err
@@ -72,8 +58,8 @@ func (c *AccessGroupsService) GetAccessGroupsByPage(page int, size int) (AccessG
 	return response, nil
 }
 
-func (c *AccessGroupsService) List() ([]AccessGroupResponse, error) {
-	var allGroups []AccessGroupResponse
+func (c *AccessGroupsService) List() ([]AccessGroup, error) {
+	var allGroups []AccessGroup
 	page := 0
 	pageSize := 10
 
@@ -92,7 +78,7 @@ func (c *AccessGroupsService) List() ([]AccessGroupResponse, error) {
 	return allGroups, nil
 }
 
-func (c *AccessGroupsService) Get(id string) (*AccessGroupResponse, error) {
+func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
 	groups, err := c.List()
 	if err != nil {
 		return nil, err
@@ -106,13 +92,13 @@ func (c *AccessGroupsService) Get(id string) (*AccessGroupResponse, error) {
 	return nil, nil
 }
 
-func (c *AccessGroupsService) Create(accessGroup *AccessGroupRequest) (*AccessGroupResponse, error) {
+func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, error) {
 	accessGroupJson, err := json.Marshal(accessGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/access-groups", c.client.BaseURL)
+	endpoint := fmt.Sprintf("%s/access-groups", c.client.GetV1Url())
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(accessGroupJson))
 	if err != nil {
@@ -124,7 +110,7 @@ func (c *AccessGroupsService) Create(accessGroup *AccessGroupRequest) (*AccessGr
 		return nil, err
 	}
 
-	var s AccessGroupResponse
+	var s AccessGroup
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
@@ -132,13 +118,13 @@ func (c *AccessGroupsService) Create(accessGroup *AccessGroupRequest) (*AccessGr
 	return &s, nil
 }
 
-func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroupRequest) (*AccessGroupResponse, error) {
+func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroup) (*AccessGroup, error) {
 	accessGroupJson, err := json.Marshal(accessGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/access-groups/%s", c.client.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(accessGroupJson))
 	if err != nil {
@@ -150,7 +136,7 @@ func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroupRequest)
 		return nil, err
 	}
 
-	var s AccessGroupResponse
+	var s AccessGroup
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
@@ -159,7 +145,7 @@ func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroupRequest)
 }
 
 func (c *AccessGroupsService) Delete(id string) error {
-	endpoint := fmt.Sprintf("%s/api/beta/access-groups/%s", c.client.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

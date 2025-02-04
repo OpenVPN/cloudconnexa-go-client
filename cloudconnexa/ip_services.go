@@ -58,8 +58,12 @@ type IPServicePageResponse struct {
 
 type IPServicesService service
 
-func (c *IPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
+func (c *IPServicesService) GetIPByPage(page int, pageSize int, networkItemType string) (IPServicePageResponse, error) {
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return IPServicePageResponse{}, err
+	}
+	endpoint := fmt.Sprintf("%s/%s/ip-services?page=%d&size=%d", c.client.GetV1Url(), path, page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return IPServicePageResponse{}, err
@@ -78,13 +82,13 @@ func (c *IPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageRe
 	return response, nil
 }
 
-func (c *IPServicesService) List() ([]IPServiceResponse, error) {
+func (c *IPServicesService) List(networkItemType string) ([]IPServiceResponse, error) {
 	var allIPServices []IPServiceResponse
 	page := 0
 	pageSize := 10
 
 	for {
-		response, err := c.GetIPByPage(page, pageSize)
+		response, err := c.GetIPByPage(page, pageSize, networkItemType)
 		if err != nil {
 			return nil, err
 		}
@@ -98,8 +102,12 @@ func (c *IPServicesService) List() ([]IPServiceResponse, error) {
 	return allIPServices, nil
 }
 
-func (c *IPServicesService) Get(serviceID string) (*IPServiceResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/single?serviceId=%s", c.client.BaseURL, serviceID)
+func (c *IPServicesService) Get(id string, networkItemType string) (*IPServiceResponse, error) {
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return nil, err
+	}
+	endpoint := fmt.Sprintf("%s/%s/ip-services/%s", c.client.GetV1Url(), path, id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -119,13 +127,17 @@ func (c *IPServicesService) Get(serviceID string) (*IPServiceResponse, error) {
 }
 
 func (c *IPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
+	path, err := GetPath(ipService.NetworkItemType)
+	if err != nil {
+		return nil, err
+	}
 	ipServiceJson, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
 	}
 
 	params := networkUrlParams(ipService.NetworkItemType, ipService.NetworkItemId)
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services?%s", c.client.BaseURL, params.Encode())
+	endpoint := fmt.Sprintf("%s/%s/ip-services?%s", c.client.GetV1Url(), path, params.Encode())
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(ipServiceJson))
 	if err != nil {
@@ -146,12 +158,16 @@ func (c *IPServicesService) Create(ipService *IPService) (*IPServiceResponse, er
 }
 
 func (c *IPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
+	path, err := GetPath(service.NetworkItemType)
+	if err != nil {
+		return nil, err
+	}
 	serviceJson, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.client.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/%s/ip-services/%s", c.client.GetV1Url(), path, id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJson))
 	if err != nil {
@@ -171,8 +187,12 @@ func (c *IPServicesService) Update(id string, service *IPService) (*IPServiceRes
 	return &s, nil
 }
 
-func (c *IPServicesService) Delete(ipServiceId string) error {
-	endpoint := fmt.Sprintf("%s/api/beta/ip-services/%s", c.client.BaseURL, ipServiceId)
+func (c *IPServicesService) Delete(ipServiceId string, networkItemType string) error {
+	path, err := GetPath(networkItemType)
+	if err != nil {
+		return err
+	}
+	endpoint := fmt.Sprintf("%s/%s/ip-services/%s", c.client.GetV1Url(), path, ipServiceId)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

@@ -8,26 +8,26 @@ import (
 )
 
 type LocationContext struct {
-	Id            string         `json:"id"`
-	Name          string         `json:"name"`
-	Description   string         `json:"description,omitempty"`
-	UserGroupsIds []string       `json:"userGroupsIds"`
-	IpPolicy      *IpPolicy      `json:"ipPolicy,omitempty"`
-	CountryPolicy *CountryPolicy `json:"countryPolicy,omitempty"`
-	DefaultPolicy *DefaultPolicy `json:"defaultPolicy"`
+	Id            string        `json:"id"`
+	Name          string        `json:"name"`
+	Description   string        `json:"description,omitempty"`
+	UserGroupsIds []string      `json:"userGroupsIds"`
+	IpCheck       *IpCheck      `json:"ipCheck,omitempty"`
+	CountryCheck  *CountryCheck `json:"countryCheck,omitempty"`
+	DefaultCheck  *DefaultCheck `json:"defaultCheck"`
 }
 
-type IpPolicy struct {
+type IpCheck struct {
 	Allowed bool `json:"allowed"`
 	Ips     []Ip `json:"ips"`
 }
 
-type CountryPolicy struct {
+type CountryCheck struct {
 	Allowed   bool     `json:"allowed"`
 	Countries []string `json:"countries"`
 }
 
-type DefaultPolicy struct {
+type DefaultCheck struct {
 	Allowed bool `json:"allowed"`
 }
 
@@ -49,7 +49,7 @@ type LocationContextPageResponse struct {
 type LocationContextsService service
 
 func (c *LocationContextsService) GetLocationContextByPage(page int, pageSize int) (LocationContextPageResponse, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/location-contexts/page?page=%d&size=%d", c.client.BaseURL, page, pageSize)
+	endpoint := fmt.Sprintf("%s/location-contexts?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return LocationContextPageResponse{}, err
@@ -89,7 +89,7 @@ func (c *LocationContextsService) List() ([]LocationContext, error) {
 }
 
 func (c *LocationContextsService) Get(id string) (*LocationContext, error) {
-	endpoint := fmt.Sprintf("%s/api/beta/location-contexts/%s", c.client.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (c *LocationContextsService) Create(locationContext *LocationContext) (*Loc
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/location-contexts/", c.client.BaseURL)
+	endpoint := fmt.Sprintf("%s/location-contexts/", c.client.GetV1Url())
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(locationContextJson))
 	if err != nil {
 		return nil, err
@@ -139,7 +139,7 @@ func (c *LocationContextsService) Update(id string, locationContext *LocationCon
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/beta/location-contexts/%s", c.client.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(locationContextJson))
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (c *LocationContextsService) Update(id string, locationContext *LocationCon
 }
 
 func (c *LocationContextsService) Delete(id string) error {
-	endpoint := fmt.Sprintf("%s/api/beta/location-contexts/%s", c.client.BaseURL, id)
+	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

@@ -17,7 +17,7 @@ type VpnRegion struct {
 type VPNRegionsService service
 
 func (c *VPNRegionsService) GetVpnRegion(regionId string) (*VpnRegion, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/regions", c.client.BaseURL), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/regions", c.client.GetV1Url()), nil)
 	if err != nil {
 		return nil, err
 	}
