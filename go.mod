@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/time v0.9.0
+	golang.org/x/time v0.10.0
 )
 
 require (
