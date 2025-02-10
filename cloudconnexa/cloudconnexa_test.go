@@ -15,7 +15,6 @@ func setupMockServer() *httptest.Server {
 		switch r.URL.Path {
 		case "/api/v1/oauth/token":
 			if r.Method == "POST" {
-				w.Header().Set("Content-Type", "application/json")
 				response := Credentials{AccessToken: "mocked-token"}
 				err := json.NewEncoder(w).Encode(response)
 				if err != nil {
@@ -25,9 +24,7 @@ func setupMockServer() *httptest.Server {
 				http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 			}
 		case "/valid-endpoint":
-			if r.Method == "GET" {
-				w.Header().Set("Content-Type", "application/json")
-			} else {
+			if r.Method != "GET" {
 				http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 			}
 		default:
