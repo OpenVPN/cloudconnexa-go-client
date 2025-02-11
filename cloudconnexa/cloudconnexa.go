@@ -28,18 +28,21 @@ type Client struct {
 
 	common service
 
-	Connectors       *ConnectorsService
-	DnsRecords       *DNSRecordsService
-	Hosts            *HostsService
-	IPServices       *IPServicesService
-	Applications     *ApplicationsService
-	Networks         *NetworksService
-	Routes           *RoutesService
-	Users            *UsersService
-	UserGroups       *UserGroupsService
-	VPNRegions       *VPNRegionsService
-	LocationContexts *LocationContextsService
-	AccessGroups     *AccessGroupsService
+	HostConnectors      *HostConnectorsService
+	NetworkConnectors   *NetworkConnectorsService
+	DnsRecords          *DNSRecordsService
+	Hosts               *HostsService
+	HostIPServices      *HostIPServicesService
+	NetworkIPServices   *NetworkIPServicesService
+	HostApplications    *HostApplicationsService
+	NetworkApplications *NetworkApplicationsService
+	Networks            *NetworksService
+	Routes              *RoutesService
+	Users               *UsersService
+	UserGroups          *UserGroupsService
+	VPNRegions          *VPNRegionsService
+	LocationContexts    *LocationContextsService
+	AccessGroups        *AccessGroupsService
 }
 
 type service struct {
@@ -105,11 +108,14 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
 	}
 	c.common.client = c
-	c.Connectors = (*ConnectorsService)(&c.common)
+	c.HostConnectors = (*HostConnectorsService)(&c.common)
+	c.NetworkConnectors = (*NetworkConnectorsService)(&c.common)
 	c.DnsRecords = (*DNSRecordsService)(&c.common)
 	c.Hosts = (*HostsService)(&c.common)
-	c.IPServices = (*IPServicesService)(&c.common)
-	c.Applications = (*ApplicationsService)(&c.common)
+	c.HostIPServices = (*HostIPServicesService)(&c.common)
+	c.NetworkIPServices = (*NetworkIPServicesService)(&c.common)
+	c.HostApplications = (*HostApplicationsService)(&c.common)
+	c.NetworkApplications = (*NetworkApplicationsService)(&c.common)
 	c.Networks = (*NetworksService)(&c.common)
 	c.Routes = (*RoutesService)(&c.common)
 	c.Users = (*UsersService)(&c.common)

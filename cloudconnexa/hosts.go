@@ -8,13 +8,13 @@ import (
 )
 
 type Host struct {
-	Id             string      `json:"id,omitempty"`
-	Name           string      `json:"name"`
-	Description    string      `json:"description"`
-	Domain         string      `json:"domain,omitempty"`
-	InternetAccess string      `json:"internetAccess"`
-	SystemSubnets  []string    `json:"systemSubnets"`
-	Connectors     []Connector `json:"connectors"`
+	Id             string          `json:"id,omitempty"`
+	Name           string          `json:"name"`
+	Description    string          `json:"description"`
+	Domain         string          `json:"domain,omitempty"`
+	InternetAccess string          `json:"internetAccess"`
+	SystemSubnets  []string        `json:"systemSubnets"`
+	Connectors     []HostConnector `json:"connectors"`
 }
 
 type HostPageResponse struct {
@@ -69,32 +69,24 @@ func (c *HostsService) List() ([]Host, error) {
 	return allHosts, nil
 }
 
-func (c *HostsService) GetByName(name string) (*Host, error) {
-	hosts, err := c.List()
+func (c *HostsService) Get(id string) (*Host, error) {
+	endpoint := fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), id)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, h := range hosts {
-		if h.Name == name {
-			return &h, nil
-		}
-	}
-	return nil, nil
-}
-
-func (c *HostsService) Get(hostId string) (*Host, error) {
-	hosts, err := c.List()
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, h := range hosts {
-		if h.Id == hostId {
-			return &h, nil
-		}
+	var host Host
+	err = json.Unmarshal(body, &host)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return &host, nil
 }
 
 func (c *HostsService) Create(host Host) (*Host, error) {

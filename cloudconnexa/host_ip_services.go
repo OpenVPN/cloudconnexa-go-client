@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 type Range struct {
@@ -56,14 +55,10 @@ type IPServicePageResponse struct {
 	TotalPages       int                 `json:"totalPages"`
 }
 
-type IPServicesService service
+type HostIPServicesService service
 
-func (c *IPServicesService) GetIPByPage(page int, pageSize int, networkItemType string) (IPServicePageResponse, error) {
-	path, err := GetPath(networkItemType)
-	if err != nil {
-		return IPServicePageResponse{}, err
-	}
-	endpoint := fmt.Sprintf("%s/%s/ip-services?page=%d&size=%d", c.client.GetV1Url(), path, page, pageSize)
+func (c *HostIPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
+	endpoint := fmt.Sprintf("%s/hosts/ip-services?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return IPServicePageResponse{}, err
@@ -82,13 +77,13 @@ func (c *IPServicesService) GetIPByPage(page int, pageSize int, networkItemType 
 	return response, nil
 }
 
-func (c *IPServicesService) List(networkItemType string) ([]IPServiceResponse, error) {
+func (c *HostIPServicesService) List() ([]IPServiceResponse, error) {
 	var allIPServices []IPServiceResponse
 	page := 0
 	pageSize := 10
 
 	for {
-		response, err := c.GetIPByPage(page, pageSize, networkItemType)
+		response, err := c.GetIPByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -102,12 +97,8 @@ func (c *IPServicesService) List(networkItemType string) ([]IPServiceResponse, e
 	return allIPServices, nil
 }
 
-func (c *IPServicesService) Get(id string, networkItemType string) (*IPServiceResponse, error) {
-	path, err := GetPath(networkItemType)
-	if err != nil {
-		return nil, err
-	}
-	endpoint := fmt.Sprintf("%s/%s/ip-services/%s", c.client.GetV1Url(), path, id)
+func (c *HostIPServicesService) Get(id string) (*IPServiceResponse, error) {
+	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -126,18 +117,13 @@ func (c *IPServicesService) Get(id string, networkItemType string) (*IPServiceRe
 	return &service, nil
 }
 
-func (c *IPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
-	path, err := GetPath(ipService.NetworkItemType)
-	if err != nil {
-		return nil, err
-	}
+func (c *HostIPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
 	ipServiceJson, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
 	}
 
-	params := networkUrlParams(ipService.NetworkItemType, ipService.NetworkItemId)
-	endpoint := fmt.Sprintf("%s/%s/ip-services?%s", c.client.GetV1Url(), path, params.Encode())
+	endpoint := fmt.Sprintf("%s/hosts/ip-services?hostId=%s", c.client.GetV1Url(), ipService.NetworkItemId)
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(ipServiceJson))
 	if err != nil {
@@ -157,17 +143,13 @@ func (c *IPServicesService) Create(ipService *IPService) (*IPServiceResponse, er
 	return &s, nil
 }
 
-func (c *IPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
-	path, err := GetPath(service.NetworkItemType)
-	if err != nil {
-		return nil, err
-	}
+func (c *HostIPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
 	serviceJson, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/%s/ip-services/%s", c.client.GetV1Url(), path, id)
+	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJson))
 	if err != nil {
@@ -187,12 +169,8 @@ func (c *IPServicesService) Update(id string, service *IPService) (*IPServiceRes
 	return &s, nil
 }
 
-func (c *IPServicesService) Delete(ipServiceId string, networkItemType string) error {
-	path, err := GetPath(networkItemType)
-	if err != nil {
-		return err
-	}
-	endpoint := fmt.Sprintf("%s/%s/ip-services/%s", c.client.GetV1Url(), path, ipServiceId)
+func (c *HostIPServicesService) Delete(ipServiceId string) error {
+	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), ipServiceId)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
@@ -203,11 +181,4 @@ func (c *IPServicesService) Delete(ipServiceId string, networkItemType string) e
 		return err
 	}
 	return nil
-}
-
-func networkUrlParams(networkItemType string, networkItemId string) url.Values {
-	params := url.Values{}
-	params.Add("networkItemId", networkItemId)
-	params.Add("networkItemType", networkItemType)
-	return params
 }

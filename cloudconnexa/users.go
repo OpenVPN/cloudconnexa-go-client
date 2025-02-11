@@ -13,17 +13,17 @@ var (
 )
 
 type User struct {
-	Id               string           `json:"id"`
-	Username         string           `json:"username"`
-	Role             string           `json:"role"`
-	Email            string           `json:"email,omitempty"`
-	AuthType         string           `json:"authType"`
-	FirstName        string           `json:"firstName,omitempty"`
-	LastName         string           `json:"lastName,omitempty"`
-	GroupId          string           `json:"groupId"`
-	Status           string           `json:"status"`
-	Devices          []Device         `json:"devices"`
-	ConnectionStatus ConnectionStatus `json:"connectionStatus"`
+	Id               string   `json:"id"`
+	Username         string   `json:"username"`
+	Role             string   `json:"role"`
+	Email            string   `json:"email,omitempty"`
+	AuthType         string   `json:"authType"`
+	FirstName        string   `json:"firstName,omitempty"`
+	LastName         string   `json:"lastName,omitempty"`
+	GroupId          string   `json:"groupId"`
+	Status           string   `json:"status"`
+	Devices          []Device `json:"devices"`
+	ConnectionStatus string   `json:"connectionStatus"`
 }
 
 type UserPageResponse struct {

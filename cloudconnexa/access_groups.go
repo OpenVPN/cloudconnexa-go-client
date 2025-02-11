@@ -79,17 +79,23 @@ func (c *AccessGroupsService) List() ([]AccessGroup, error) {
 }
 
 func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
-	groups, err := c.List()
+	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, n := range groups {
-		if n.Id == id {
-			return &n, nil
-		}
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+
+	var accessGroup AccessGroup
+	err = json.Unmarshal(body, &accessGroup)
+	if err != nil {
+		return nil, err
+	}
+	return &accessGroup, nil
 }
 
 func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, error) {
