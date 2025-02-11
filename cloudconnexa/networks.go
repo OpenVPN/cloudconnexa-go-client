@@ -7,17 +7,6 @@ import (
 	"net/http"
 )
 
-type NetworkConnector struct {
-	Description     string `json:"description"`
-	Id              string `json:"id"`
-	IPv4Address     string `json:"ipV4Address"`
-	IPv6Address     string `json:"ipV6Address"`
-	Name            string `json:"name"`
-	NetworkItemId   string `json:"networkItemId"`
-	NetworkItemType string `json:"networkItemType"`
-	VpnRegionId     string `json:"vpnRegionId"`
-}
-
 type Network struct {
 	Connectors     []NetworkConnector `json:"connectors"`
 	Description    string             `json:"description"`
@@ -82,32 +71,24 @@ func (c *NetworksService) List() ([]Network, error) {
 	return allNetworks, nil
 }
 
-func (c *NetworksService) GetByName(name string) (*Network, error) {
-	networks, err := c.List()
+func (c *NetworksService) Get(id string) (*Network, error) {
+	endpoint := fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), id)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, n := range networks {
-		if n.Name == name {
-			return &n, nil
-		}
-	}
-	return nil, nil
-}
-
-func (c *NetworksService) Get(networkId string) (*Network, error) {
-	networks, err := c.List()
+	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, n := range networks {
-		if n.Id == networkId {
-			return &n, nil
-		}
+	var network Network
+	err = json.Unmarshal(body, &network)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return &network, nil
 }
 
 func (c *NetworksService) Create(network Network) (*Network, error) {

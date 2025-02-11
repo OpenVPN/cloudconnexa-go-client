@@ -48,14 +48,10 @@ type ApplicationPageResponse struct {
 	TotalPages       int                   `json:"totalPages"`
 }
 
-type ApplicationsService service
+type HostApplicationsService service
 
-func (c *ApplicationsService) GetApplicationsByPage(page int, pageSize int, networkItemType string) (ApplicationPageResponse, error) {
-	path, err := GetPath(networkItemType)
-	if err != nil {
-		return ApplicationPageResponse{}, err
-	}
-	endpoint := fmt.Sprintf("%s/%s/applications?page=%d&size=%d", c.client.GetV1Url(), path, page, pageSize)
+func (c *HostApplicationsService) GetApplicationsByPage(page int, pageSize int) (ApplicationPageResponse, error) {
+	endpoint := fmt.Sprintf("%s/hosts/applications?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return ApplicationPageResponse{}, err
@@ -74,13 +70,13 @@ func (c *ApplicationsService) GetApplicationsByPage(page int, pageSize int, netw
 	return response, nil
 }
 
-func (c *ApplicationsService) List(networkItemType string) ([]ApplicationResponse, error) {
+func (c *HostApplicationsService) List() ([]ApplicationResponse, error) {
 	var allApplications []ApplicationResponse
 	page := 0
 	pageSize := 10
 
 	for {
-		response, err := c.GetApplicationsByPage(page, pageSize, networkItemType)
+		response, err := c.GetApplicationsByPage(page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -94,12 +90,8 @@ func (c *ApplicationsService) List(networkItemType string) ([]ApplicationRespons
 	return allApplications, nil
 }
 
-func (c *ApplicationsService) Get(id string, networkItemType string) (*ApplicationResponse, error) {
-	path, err := GetPath(networkItemType)
-	if err != nil {
-		return nil, err
-	}
-	endpoint := fmt.Sprintf("%s/%s/applications/%s", c.client.GetV1Url(), path, id)
+func (c *HostApplicationsService) Get(id string) (*ApplicationResponse, error) {
+	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -118,32 +110,13 @@ func (c *ApplicationsService) Get(id string, networkItemType string) (*Applicati
 	return &application, nil
 }
 
-func (c *ApplicationsService) GetByName(name string, networkItemType string) (*ApplicationResponse, error) {
-	applications, err := c.List(networkItemType)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, n := range applications {
-		if n.Name == name {
-			return &n, nil
-		}
-	}
-	return nil, nil
-}
-
-func (c *ApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
-	path, err := GetPath(application.NetworkItemType)
-	if err != nil {
-		return nil, err
-	}
+func (c *HostApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
 	applicationJson, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
-	params := networkUrlParams(application.NetworkItemType, application.NetworkItemId)
-	endpoint := fmt.Sprintf("%s/%s/applications?%s", c.client.GetV1Url(), path, params.Encode())
+	endpoint := fmt.Sprintf("%s/hosts/applications?hostId=%s", c.client.GetV1Url(), application.NetworkItemId)
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(applicationJson))
 	if err != nil {
@@ -163,18 +136,13 @@ func (c *ApplicationsService) Create(application *Application) (*ApplicationResp
 	return &s, nil
 }
 
-func (c *ApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
-	path, err := GetPath(application.NetworkItemType)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *HostApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
 	applicationJson, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/%s/applications/%s", c.client.GetV1Url(), path, id)
+	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJson))
 	if err != nil {
@@ -194,12 +162,8 @@ func (c *ApplicationsService) Update(id string, application *Application) (*Appl
 	return &s, nil
 }
 
-func (c *ApplicationsService) Delete(id string, networkItemType string) error {
-	path, err := GetPath(networkItemType)
-	if err != nil {
-		return err
-	}
-	endpoint := fmt.Sprintf("%s/%s/applications/%s", c.client.GetV1Url(), path, id)
+func (c *HostApplicationsService) Delete(id string) error {
+	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
