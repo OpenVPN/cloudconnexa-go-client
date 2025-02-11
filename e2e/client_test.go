@@ -49,7 +49,7 @@ func TestListNetworks(t *testing.T) {
 
 func TestListConnectors(t *testing.T) {
 	c := setUpClient(t)
-	response, err := c.Connectors.GetByPage(0, 10, "NETWORK")
+	response, err := c.NetworkConnectors.GetByPage(0, 10)
 	require.NoError(t, err)
 	fmt.Printf("found %d connectors\n", len(response.Content))
 }
@@ -95,7 +95,7 @@ func TestCreateNetwork(t *testing.T) {
 		Config:          &serviceConfig,
 		Routes:          []*cloudconnexa.IPServiceRoute{&ipServiceRoute},
 	}
-	s, err := c.IPServices.Create(&service)
+	s, err := c.NetworkIPServices.Create(&service)
 	require.NoError(t, err)
 	fmt.Printf("created %s service\n", s.Id)
 	err = c.Networks.Delete(response.Id)
