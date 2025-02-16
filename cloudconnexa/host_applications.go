@@ -9,7 +9,7 @@ import (
 
 type ApplicationRoute struct {
 	Value           string `json:"value"`
-	AllowEmbeddedIp bool   `json:"allowEmbeddedIp"`
+	AllowEmbeddedIP bool   `json:"allowEmbeddedIp"`
 }
 
 type CustomApplicationType struct {
@@ -27,8 +27,8 @@ type Application struct {
 	Name            string              `json:"name"`
 	Description     string              `json:"description"`
 	NetworkItemType string              `json:"networkItemType"`
-	NetworkItemId   string              `json:"networkItemId"`
-	Id              string              `json:"id"`
+	NetworkItemID   string              `json:"networkItemId"`
+	ID              string              `json:"id"`
 	Routes          []*ApplicationRoute `json:"routes"`
 	Config          *ApplicationConfig  `json:"config"`
 }
@@ -111,14 +111,14 @@ func (c *HostApplicationsService) Get(id string) (*ApplicationResponse, error) {
 }
 
 func (c *HostApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
-	applicationJson, err := json.Marshal(application)
+	applicationJSON, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/hosts/applications?hostId=%s", c.client.GetV1Url(), application.NetworkItemId)
+	endpoint := fmt.Sprintf("%s/hosts/applications?hostId=%s", c.client.GetV1Url(), application.NetworkItemID)
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(applicationJson))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(applicationJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -137,14 +137,14 @@ func (c *HostApplicationsService) Create(application *Application) (*Application
 }
 
 func (c *HostApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
-	applicationJson, err := json.Marshal(application)
+	applicationJSON, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
 
-	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJson))
+	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJSON))
 	if err != nil {
 		return nil, err
 	}

@@ -70,14 +70,14 @@ func (c *NetworkApplicationsService) Get(id string) (*ApplicationResponse, error
 }
 
 func (c *NetworkApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
-	applicationJson, err := json.Marshal(application)
+	applicationJSON, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/networks/applications?networkId=%s", c.client.GetV1Url(), application.NetworkItemId)
+	endpoint := fmt.Sprintf("%s/networks/applications?networkId=%s", c.client.GetV1Url(), application.NetworkItemID)
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(applicationJson))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(applicationJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -96,14 +96,14 @@ func (c *NetworkApplicationsService) Create(application *Application) (*Applicat
 }
 
 func (c *NetworkApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
-	applicationJson, err := json.Marshal(application)
+	applicationJSON, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/networks/applications/%s", c.client.GetV1Url(), id)
 
-	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJson))
+	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJSON))
 	if err != nil {
 		return nil, err
 	}

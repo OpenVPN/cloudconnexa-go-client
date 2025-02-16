@@ -58,12 +58,18 @@ func TestListConnectors(t *testing.T) {
 func TestCreateNetwork(t *testing.T) {
 	c := setUpClient(t)
 	timestamp := time.Now().Unix()
-	testName := fmt.Sprintf("test-%d", timestamp)
+	testName := fmt.Sprintf("test-%d-%d", timestamp, time.Now().Nanosecond())
+
+	networks, err := c.Networks.List()
+	require.NoError(t, err)
+	for _, n := range networks {
+		require.NotEqual(t, testName, n.Name, "Network with name %s already exists", testName)
+	}
 
 	connector := cloudconnexa.NetworkConnector{
 		Description: "test",
 		Name:        testName,
-		VpnRegionId: "it-mxp",
+		VpnRegionID: "it-mxp",
 	}
 	route := cloudconnexa.Route{
 		Description: "test",
@@ -79,10 +85,10 @@ func TestCreateNetwork(t *testing.T) {
 	}
 	response, err := c.Networks.Create(network)
 	require.NoError(t, err)
-	fmt.Printf("created %s network\n", response.Id)
-	test, err := c.Routes.Create(response.Id, route)
+	fmt.Printf("created %s network\n", response.ID)
+	test, err := c.Routes.Create(response.ID, route)
 	require.NoError(t, err)
-	fmt.Printf("created %s route\n", test.Id)
+	fmt.Printf("created %s route\n", test.ID)
 	serviceConfig := cloudconnexa.IPServiceConfig{
 		ServiceTypes: []string{"ANY"},
 	}
@@ -93,7 +99,7 @@ func TestCreateNetwork(t *testing.T) {
 	service := cloudconnexa.IPService{
 		Name:            testName,
 		Description:     "test",
-		NetworkItemId:   response.Id,
+		NetworkItemID:   response.ID,
 		Type:            "IP_SOURCE",
 		NetworkItemType: "NETWORK",
 		Config:          &serviceConfig,
@@ -101,8 +107,8 @@ func TestCreateNetwork(t *testing.T) {
 	}
 	s, err := c.NetworkIPServices.Create(&service)
 	require.NoError(t, err)
-	fmt.Printf("created %s service\n", s.Id)
-	err = c.Networks.Delete(response.Id)
+	fmt.Printf("created %s service\n", s.ID)
+	err = c.Networks.Delete(response.ID)
 	require.NoError(t, err)
-	fmt.Printf("deleted %s network\n", response.Id)
+	fmt.Printf("deleted %s network\n", response.ID)
 }

@@ -29,7 +29,7 @@ type UserGroup struct {
 	MaxDevice          int      `json:"maxDevice"`
 	Name               string   `json:"name"`
 	SystemSubnets      []string `json:"systemSubnets"`
-	VpnRegionIds       []string `json:"vpnRegionIds"`
+	VpnRegionIDs       []string `json:"vpnRegionIds"`
 	AllRegionsIncluded bool     `json:"allRegionsIncluded"`
 }
 
@@ -105,12 +105,12 @@ func (c *UserGroupsService) Get(id string) (*UserGroup, error) {
 }
 
 func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
-	userGroupJson, err := json.Marshal(userGroup)
+	userGroupJSON, err := json.Marshal(userGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user-groups", c.client.GetV1Url()), bytes.NewBuffer(userGroupJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user-groups", c.client.GetV1Url()), bytes.NewBuffer(userGroupJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -129,12 +129,12 @@ func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
 }
 
 func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup, error) {
-	userGroupJson, err := json.Marshal(userGroup)
+	userGroupJSON, err := json.Marshal(userGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), bytes.NewBuffer(userGroupJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), bytes.NewBuffer(userGroupJSON))
 	if err != nil {
 		return nil, err
 	}

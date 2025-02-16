@@ -8,14 +8,14 @@ import (
 )
 
 type Route struct {
-	Id              string `json:"id,omitempty"`
+	ID              string `json:"id,omitempty"`
 	Type            string `json:"type,omitempty"`
 	Subnet          string `json:"subnet,omitempty"`
 	Domain          string `json:"domain,omitempty"`
 	Description     string `json:"description,omitempty"`
-	ParentRouteId   string `json:"parentRouteId,omitempty"`
-	NetworkItemId   string `json:"networkItemId,omitempty"`
-	AllowEmbeddedIp bool   `json:"allowEmbeddedIp,omitempty"`
+	ParentRouteID   string `json:"parentRouteId,omitempty"`
+	NetworkItemID   string `json:"networkItemId,omitempty"`
+	AllowEmbeddedIP bool   `json:"allowEmbeddedIp,omitempty"`
 }
 
 type RoutePageResponse struct {
@@ -30,8 +30,8 @@ type RoutePageResponse struct {
 
 type RoutesService service
 
-func (c *RoutesService) GetByPage(networkId string, page int, size int) (RoutePageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/networks/routes?networkId=%s&page=%d&size=%d", c.client.GetV1Url(), networkId, page, size), nil)
+func (c *RoutesService) GetByPage(networkID string, page int, size int) (RoutePageResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/networks/routes?networkId=%s&page=%d&size=%d", c.client.GetV1Url(), networkID, page, size), nil)
 	if err != nil {
 		return RoutePageResponse{}, err
 	}
@@ -49,13 +49,13 @@ func (c *RoutesService) GetByPage(networkId string, page int, size int) (RoutePa
 	return response, nil
 }
 
-func (c *RoutesService) List(networkId string) ([]Route, error) {
+func (c *RoutesService) List(networkID string) ([]Route, error) {
 	var allRoutes []Route
 	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(networkId, page, pageSize)
+		response, err := c.GetByPage(networkID, page, pageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -70,21 +70,21 @@ func (c *RoutesService) List(networkId string) ([]Route, error) {
 	return allRoutes, nil
 }
 
-func (c *RoutesService) GetNetworkRoute(networkId string, routeId string) (*Route, error) {
-	routes, err := c.List(networkId)
+func (c *RoutesService) GetNetworkRoute(networkID string, routeID string) (*Route, error) {
+	routes, err := c.List(networkID)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, r := range routes {
-		if r.Id == routeId {
+		if r.ID == routeID {
 			return &r, nil
 		}
 	}
 	return nil, nil
 }
 
-func (c *RoutesService) Get(routeId string) (*Route, error) {
+func (c *RoutesService) Get(routeID string) (*Route, error) {
 	networks, err := c.client.Networks.List()
 	if err != nil {
 		return nil, err
@@ -95,8 +95,8 @@ func (c *RoutesService) Get(routeId string) (*Route, error) {
 			continue
 		}
 		for _, r := range n.Routes {
-			if r.Id == routeId {
-				r.NetworkItemId = n.Id
+			if r.ID == routeID {
+				r.NetworkItemID = n.ID
 				return &r, nil
 			}
 		}
@@ -104,7 +104,7 @@ func (c *RoutesService) Get(routeId string) (*Route, error) {
 	return nil, nil
 }
 
-func (c *RoutesService) Create(networkId string, route Route) (*Route, error) {
+func (c *RoutesService) Create(networkID string, route Route) (*Route, error) {
 	type newRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
@@ -113,15 +113,15 @@ func (c *RoutesService) Create(networkId string, route Route) (*Route, error) {
 		Description: route.Description,
 		Value:       route.Subnet,
 	}
-	routeJson, err := json.Marshal(routeToCreate)
+	routeJSON, err := json.Marshal(routeToCreate)
 	if err != nil {
 		return nil, err
 	}
 
 	req, err := http.NewRequest(
 		http.MethodPost,
-		fmt.Sprintf("%s/networks/routes?networkId=%s", c.client.GetV1Url(), networkId),
-		bytes.NewBuffer(routeJson),
+		fmt.Sprintf("%s/networks/routes?networkId=%s", c.client.GetV1Url(), networkID),
+		bytes.NewBuffer(routeJSON),
 	)
 	if err != nil {
 		return nil, err
@@ -150,15 +150,15 @@ func (c *RoutesService) Update(route Route) error {
 		Value:       route.Subnet,
 	}
 
-	routeJson, err := json.Marshal(routeToUpdate)
+	routeJSON, err := json.Marshal(routeToUpdate)
 	if err != nil {
 		return err
 	}
 
 	req, err := http.NewRequest(
 		http.MethodPut,
-		fmt.Sprintf("%s/networks/routes/%s", c.client.GetV1Url(), route.Id),
-		bytes.NewBuffer(routeJson),
+		fmt.Sprintf("%s/networks/routes/%s", c.client.GetV1Url(), route.ID),
+		bytes.NewBuffer(routeJSON),
 	)
 	if err != nil {
 		return err

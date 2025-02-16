@@ -1,0 +1,22 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - revive
+    - gosimple
+    - staticcheck
+    - errcheck
+    - ineffassign
+    - gosec
+    - misspell
+    - unconvert
+
+run:
+  timeout: 5m
+  tests: true
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
