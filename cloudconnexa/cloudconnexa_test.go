@@ -2,12 +2,13 @@ package cloudconnexa
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/time/rate"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/time/rate"
 )
 
 func setupMockServer() *httptest.Server {
@@ -42,18 +43,18 @@ func TestNewClient(t *testing.T) {
 	tests := []struct {
 		name         string
 		baseURL      string
-		clientId     string
+		clientID     string
 		clientSecret string
 		wantErr      bool
 	}{
 		{"Valid Credentials", server.URL, "test-id", "test-secret", false},
-		{"Empty ClientId", server.URL, "", "test-secret", true},
+		{"Empty ClientID", server.URL, "", "test-secret", true},
 		{"Empty ClientSecret", server.URL, "test-id", "", true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := NewClient(tt.baseURL, tt.clientId, tt.clientSecret)
+			client, err := NewClient(tt.baseURL, tt.clientID, tt.clientSecret)
 
 			if tt.wantErr {
 				assert.Error(t, err, "NewClient should return an error for invalid credentials")

@@ -30,7 +30,7 @@ type Client struct {
 
 	HostConnectors      *HostConnectorsService
 	NetworkConnectors   *NetworkConnectorsService
-	DnsRecords          *DNSRecordsService
+	DNSRecords          *DNSRecordsService
 	Hosts               *HostsService
 	HostIPServices      *HostIPServicesService
 	NetworkIPServices   *NetworkIPServicesService
@@ -62,8 +62,8 @@ func (e ErrClientResponse) Error() string {
 	return fmt.Sprintf("status code: %d, response body: %s", e.status, e.body)
 }
 
-func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
-	if clientId == "" || clientSecret == "" {
+func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
+	if clientID == "" || clientSecret == "" {
 		return nil, ErrCredentialsRequired
 	}
 
@@ -80,7 +80,7 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 		return nil, err
 	}
 
-	req.SetBasicAuth(clientId, clientSecret)
+	req.SetBasicAuth(clientID, clientSecret)
 	req.Header.Add("Accept", "application/json")
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 	resp, err := httpClient.Do(req)
@@ -110,7 +110,7 @@ func NewClient(baseURL, clientId, clientSecret string) (*Client, error) {
 	c.common.client = c
 	c.HostConnectors = (*HostConnectorsService)(&c.common)
 	c.NetworkConnectors = (*NetworkConnectorsService)(&c.common)
-	c.DnsRecords = (*DNSRecordsService)(&c.common)
+	c.DNSRecords = (*DNSRecordsService)(&c.common)
 	c.Hosts = (*HostsService)(&c.common)
 	c.HostIPServices = (*HostIPServicesService)(&c.common)
 	c.NetworkIPServices = (*NetworkIPServicesService)(&c.common)

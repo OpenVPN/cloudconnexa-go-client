@@ -8,7 +8,7 @@ import (
 )
 
 type AccessGroup struct {
-	Id          string       `json:"id"`
+	ID          string       `json:"id"`
 	Name        string       `json:"name"`
 	Description string       `json:"description,omitempty"`
 	Source      []AccessItem `json:"source"`
@@ -23,7 +23,7 @@ type AccessItem struct {
 }
 
 type Item struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
 type AccessGroupPageResponse struct {
@@ -99,14 +99,14 @@ func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
 }
 
 func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, error) {
-	accessGroupJson, err := json.Marshal(accessGroup)
+	accessGroupJSON, err := json.Marshal(accessGroup)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/access-groups", c.client.GetV1Url())
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(accessGroupJson))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(accessGroupJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -125,14 +125,14 @@ func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, er
 }
 
 func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroup) (*AccessGroup, error) {
-	accessGroupJson, err := json.Marshal(accessGroup)
+	accessGroupJSON, err := json.Marshal(accessGroup)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
 
-	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(accessGroupJson))
+	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(accessGroupJSON))
 	if err != nil {
 		return nil, err
 	}

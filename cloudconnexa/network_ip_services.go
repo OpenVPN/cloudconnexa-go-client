@@ -70,14 +70,14 @@ func (c *NetworkIPServicesService) Get(id string) (*IPServiceResponse, error) {
 }
 
 func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
-	ipServiceJson, err := json.Marshal(ipService)
+	ipServiceJSON, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/networks/ip-services?networkId=%s", c.client.GetV1Url(), ipService.NetworkItemId)
+	endpoint := fmt.Sprintf("%s/networks/ip-services?networkId=%s", c.client.GetV1Url(), ipService.NetworkItemID)
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(ipServiceJson))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(ipServiceJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -96,14 +96,14 @@ func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceRespo
 }
 
 func (c *NetworkIPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
-	serviceJson, err := json.Marshal(service)
+	serviceJSON, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), id)
 
-	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJson))
+	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +121,8 @@ func (c *NetworkIPServicesService) Update(id string, service *IPService) (*IPSer
 	return &s, nil
 }
 
-func (c *NetworkIPServicesService) Delete(ipServiceId string) error {
-	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), ipServiceId)
+func (c *NetworkIPServicesService) Delete(IPServiceID string) error {
+	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), IPServiceID)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

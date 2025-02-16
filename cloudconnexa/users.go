@@ -13,14 +13,15 @@ var (
 )
 
 type User struct {
-	Id               string   `json:"id"`
+	ID               string   `json:"id"`
+	Name             string   `json:"name"`
 	Username         string   `json:"username"`
 	Role             string   `json:"role"`
 	Email            string   `json:"email,omitempty"`
 	AuthType         string   `json:"authType"`
 	FirstName        string   `json:"firstName,omitempty"`
 	LastName         string   `json:"lastName,omitempty"`
-	GroupId          string   `json:"groupId"`
+	GroupID          string   `json:"groupId"`
 	Status           string   `json:"status"`
 	Devices          []Device `json:"devices"`
 	ConnectionStatus string   `json:"connectionStatus"`
@@ -37,7 +38,7 @@ type UserPageResponse struct {
 }
 
 type Device struct {
-	Id          string `json:"id"`
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	IPv4Address string `json:"ipV4Address"`
@@ -90,12 +91,12 @@ func (c *UsersService) List(username string, role string) (*User, error) {
 	return nil, ErrUserNotFound
 }
 
-func (c *UsersService) Get(userId string) (*User, error) {
-	return c.GetById(userId)
+func (c *UsersService) Get(userID string) (*User, error) {
+	return c.GetByID(userID)
 }
 
-func (c *UsersService) GetById(userId string) (*User, error) {
-	endpoint := fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userId)
+func (c *UsersService) GetByID(userID string) (*User, error) {
+	endpoint := fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -139,12 +140,12 @@ func (c *UsersService) GetByUsername(username string) (*User, error) {
 }
 
 func (c *UsersService) Create(user User) (*User, error) {
-	userJson, err := json.Marshal(user)
+	userJSON, err := json.Marshal(user)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/users", c.client.GetV1Url()), bytes.NewBuffer(userJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/users", c.client.GetV1Url()), bytes.NewBuffer(userJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -163,12 +164,12 @@ func (c *UsersService) Create(user User) (*User, error) {
 }
 
 func (c *UsersService) Update(user User) error {
-	userJson, err := json.Marshal(user)
+	userJSON, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), user.Id), bytes.NewBuffer(userJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), user.ID), bytes.NewBuffer(userJSON))
 	if err != nil {
 		return err
 	}
@@ -180,8 +181,8 @@ func (c *UsersService) Update(user User) error {
 	return nil
 }
 
-func (c *UsersService) Delete(userId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userId), nil)
+func (c *UsersService) Delete(userID string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID), nil)
 	if err != nil {
 		return err
 	}

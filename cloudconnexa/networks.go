@@ -17,11 +17,12 @@ type Network struct {
 	Connectors     []NetworkConnector `json:"connectors"`
 	Description    string             `json:"description"`
 	Egress         bool               `json:"egress"`
-	Id             string             `json:"id"`
+	ID             string             `json:"id"`
 	InternetAccess string             `json:"internetAccess"`
 	Name           string             `json:"name"`
 	Routes         []Route            `json:"routes"`
 	SystemSubnets  []string           `json:"systemSubnets"`
+	NetworkItemID  string             `json:"NetworkItemID"`
 }
 
 type NetworkPageResponse struct {
@@ -98,12 +99,12 @@ func (c *NetworksService) Get(id string) (*Network, error) {
 }
 
 func (c *NetworksService) Create(network Network) (*Network, error) {
-	networkJson, err := json.Marshal(network)
+	networkJSON, err := json.Marshal(network)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks", c.client.GetV1Url()), bytes.NewBuffer(networkJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks", c.client.GetV1Url()), bytes.NewBuffer(networkJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -122,12 +123,12 @@ func (c *NetworksService) Create(network Network) (*Network, error) {
 }
 
 func (c *NetworksService) Update(network Network) error {
-	networkJson, err := json.Marshal(network)
+	networkJSON, err := json.Marshal(network)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), network.Id), bytes.NewBuffer(networkJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), network.ID), bytes.NewBuffer(networkJSON))
 	if err != nil {
 		return err
 	}
@@ -136,8 +137,8 @@ func (c *NetworksService) Update(network Network) error {
 	return err
 }
 
-func (c *NetworksService) Delete(networkId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), networkId), nil)
+func (c *NetworksService) Delete(networkID string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), networkID), nil)
 	if err != nil {
 		return err
 	}

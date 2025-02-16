@@ -10,12 +10,12 @@ import (
 )
 
 type NetworkConnector struct {
-	Id               string `json:"id,omitempty"`
+	ID               string `json:"id,omitempty"`
 	Name             string `json:"name"`
 	Description      string `json:"description,omitempty"`
-	NetworkItemId    string `json:"networkItemId"`
+	NetworkItemID    string `json:"networkItemId"`
 	NetworkItemType  string `json:"networkItemType"`
-	VpnRegionId      string `json:"vpnRegionId"`
+	VpnRegionID      string `json:"vpnRegionId"`
 	IPv4Address      string `json:"ipV4Address"`
 	IPv6Address      string `json:"ipV6Address"`
 	Profile          string `json:"profile"`
@@ -35,15 +35,15 @@ type NetworkConnectorPageResponse struct {
 type NetworkConnectorsService service
 
 func (c *NetworkConnectorsService) GetByPage(page int, pageSize int) (NetworkConnectorPageResponse, error) {
-	return c.GetByPageAndNetworkId(page, pageSize, "")
+	return c.GetByPageAndNetworkID(page, pageSize, "")
 }
 
-func (c *NetworkConnectorsService) GetByPageAndNetworkId(page int, pageSize int, networkId string) (NetworkConnectorPageResponse, error) {
+func (c *NetworkConnectorsService) GetByPageAndNetworkID(page int, pageSize int, networkID string) (NetworkConnectorPageResponse, error) {
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
 	params.Add("size", strconv.Itoa(pageSize))
-	if networkId != "" {
-		params.Add("networkId", networkId)
+	if networkID != "" {
+		params.Add("networkId", networkID)
 	}
 
 	endpoint := fmt.Sprintf("%s/networks/connectors?%s", c.client.GetV1Url(), params.Encode())
@@ -66,12 +66,12 @@ func (c *NetworkConnectorsService) GetByPageAndNetworkId(page int, pageSize int,
 }
 
 func (c *NetworkConnectorsService) Update(connector NetworkConnector) (*NetworkConnector, error) {
-	connectorJson, err := json.Marshal(connector)
+	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/connectors/%s", c.client.GetV1Url(), connector.Id), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/connectors/%s", c.client.GetV1Url(), connector.ID), bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -110,13 +110,13 @@ func (c *NetworkConnectorsService) List() ([]NetworkConnector, error) {
 	return allConnectors, nil
 }
 
-func (c *NetworkConnectorsService) ListByNetworkId(networkId string) ([]NetworkConnector, error) {
+func (c *NetworkConnectorsService) ListByNetworkID(networkID string) ([]NetworkConnector, error) {
 	var allConnectors []NetworkConnector
 	page := 0
 	pageSize := 10
 
 	for {
-		response, err := c.GetByPageAndNetworkId(page, pageSize, networkId)
+		response, err := c.GetByPageAndNetworkID(page, pageSize, networkID)
 		if err != nil {
 			return nil, err
 		}
@@ -177,13 +177,13 @@ func (c *NetworkConnectorsService) GetToken(id string) (string, error) {
 	return string(body), nil
 }
 
-func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkId string) (*NetworkConnector, error) {
-	connectorJson, err := json.Marshal(connector)
+func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkID string) (*NetworkConnector, error) {
+	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors?networkId=%s", c.client.GetV1Url(), networkId), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors?networkId=%s", c.client.GetV1Url(), networkID), bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -201,8 +201,8 @@ func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkId 
 	return &conn, nil
 }
 
-func (c *NetworkConnectorsService) Delete(connectorId string, networkId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/connectors/%s?networkId=%s", c.client.GetV1Url(), connectorId, networkId), nil)
+func (c *NetworkConnectorsService) Delete(connectorID string, networkID string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/connectors/%s?networkId=%s", c.client.GetV1Url(), connectorID, networkID), nil)
 	if err != nil {
 		return err
 	}

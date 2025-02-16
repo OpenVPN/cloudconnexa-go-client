@@ -10,12 +10,12 @@ import (
 )
 
 type HostConnector struct {
-	Id               string `json:"id,omitempty"`
+	ID               string `json:"id,omitempty"`
 	Name             string `json:"name"`
 	Description      string `json:"description,omitempty"`
-	NetworkItemId    string `json:"networkItemId"`
+	NetworkItemID    string `json:"networkItemId"`
 	NetworkItemType  string `json:"networkItemType"`
-	VpnRegionId      string `json:"vpnRegionId"`
+	VpnRegionID      string `json:"vpnRegionId"`
 	IPv4Address      string `json:"ipV4Address"`
 	IPv6Address      string `json:"ipV6Address"`
 	Profile          string `json:"profile"`
@@ -35,15 +35,15 @@ type HostConnectorPageResponse struct {
 type HostConnectorsService service
 
 func (c *HostConnectorsService) GetByPage(page int, pageSize int) (HostConnectorPageResponse, error) {
-	return c.GetByPageAndHostId(page, pageSize, "")
+	return c.GetByPageAndHostID(page, pageSize, "")
 }
 
-func (c *HostConnectorsService) GetByPageAndHostId(page int, pageSize int, hostId string) (HostConnectorPageResponse, error) {
+func (c *HostConnectorsService) GetByPageAndHostID(page int, pageSize int, hostID string) (HostConnectorPageResponse, error) {
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
 	params.Add("size", strconv.Itoa(pageSize))
-	if hostId != "" {
-		params.Add("hostId", hostId)
+	if hostID != "" {
+		params.Add("hostId", hostID)
 	}
 
 	endpoint := fmt.Sprintf("%s/hosts/connectors?%s", c.client.GetV1Url(), params.Encode())
@@ -66,12 +66,12 @@ func (c *HostConnectorsService) GetByPageAndHostId(page int, pageSize int, hostI
 }
 
 func (c *HostConnectorsService) Update(connector HostConnector) (*HostConnector, error) {
-	connectorJson, err := json.Marshal(connector)
+	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s", c.client.GetV1Url(), connector.Id), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s", c.client.GetV1Url(), connector.ID), bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -90,16 +90,16 @@ func (c *HostConnectorsService) Update(connector HostConnector) (*HostConnector,
 }
 
 func (c *HostConnectorsService) List() ([]HostConnector, error) {
-	return c.ListByHostId("")
+	return c.ListByHostID("")
 }
 
-func (c *HostConnectorsService) ListByHostId(hostId string) ([]HostConnector, error) {
+func (c *HostConnectorsService) ListByHostID(hostID string) ([]HostConnector, error) {
 	var allConnectors []HostConnector
 	page := 0
 	pageSize := 10
 
 	for {
-		response, err := c.GetByPageAndHostId(page, pageSize, hostId)
+		response, err := c.GetByPageAndHostID(page, pageSize, hostID)
 		if err != nil {
 			return nil, err
 		}
@@ -160,13 +160,13 @@ func (c *HostConnectorsService) GetToken(id string) (string, error) {
 	return string(body), nil
 }
 
-func (c *HostConnectorsService) Create(connector HostConnector, hostId string) (*HostConnector, error) {
-	connectorJson, err := json.Marshal(connector)
+func (c *HostConnectorsService) Create(connector HostConnector, hostID string) (*HostConnector, error) {
+	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors?hostId=%s", c.client.GetV1Url(), hostId), bytes.NewBuffer(connectorJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors?hostId=%s", c.client.GetV1Url(), hostID), bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -184,8 +184,8 @@ func (c *HostConnectorsService) Create(connector HostConnector, hostId string) (
 	return &conn, nil
 }
 
-func (c *HostConnectorsService) Delete(connectorId string, hostId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/connectors/%s?hostId=%s", c.client.GetV1Url(), connectorId, hostId), nil)
+func (c *HostConnectorsService) Delete(connectorID string, hostID string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/connectors/%s?hostId=%s", c.client.GetV1Url(), connectorID, hostID), nil)
 	if err != nil {
 		return err
 	}

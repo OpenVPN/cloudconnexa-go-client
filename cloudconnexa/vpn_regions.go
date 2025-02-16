@@ -7,7 +7,7 @@ import (
 )
 
 type VpnRegion struct {
-	Id         string `json:"id"`
+	ID         string `json:"id"`
 	Continent  string `json:"continent"`
 	Country    string `json:"country"`
 	CountryISO string `json:"countryIso"`
@@ -16,7 +16,7 @@ type VpnRegion struct {
 
 type VPNRegionsService service
 
-func (c *VPNRegionsService) GetVpnRegion(regionId string) (*VpnRegion, error) {
+func (c *VPNRegionsService) GetVpnRegion(regionID string) (*VpnRegion, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/regions", c.client.GetV1Url()), nil)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (c *VPNRegionsService) GetVpnRegion(regionId string) (*VpnRegion, error) {
 	}
 
 	for _, r := range vpnRegions {
-		if r.Id == regionId {
+		if r.ID == regionID {
 			return &r, nil
 		}
 	}

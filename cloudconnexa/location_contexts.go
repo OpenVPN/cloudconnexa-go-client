@@ -8,18 +8,18 @@ import (
 )
 
 type LocationContext struct {
-	Id            string        `json:"id"`
+	ID            string        `json:"id"`
 	Name          string        `json:"name"`
 	Description   string        `json:"description,omitempty"`
-	UserGroupsIds []string      `json:"userGroupsIds"`
-	IpCheck       *IpCheck      `json:"ipCheck,omitempty"`
+	UserGroupsIDs []string      `json:"userGroupsIds"`
+	IPCheck       *IPCheck      `json:"ipCheck,omitempty"`
 	CountryCheck  *CountryCheck `json:"countryCheck,omitempty"`
 	DefaultCheck  *DefaultCheck `json:"defaultCheck"`
 }
 
-type IpCheck struct {
+type IPCheck struct {
 	Allowed bool `json:"allowed"`
-	Ips     []Ip `json:"ips"`
+	Ips     []IP `json:"ips"`
 }
 
 type CountryCheck struct {
@@ -31,8 +31,8 @@ type DefaultCheck struct {
 	Allowed bool `json:"allowed"`
 }
 
-type Ip struct {
-	Ip          string `json:"ip"`
+type IP struct {
+	IP          string `json:"ip"`
 	Description string `json:"description"`
 }
 
@@ -109,13 +109,13 @@ func (c *LocationContextsService) Get(id string) (*LocationContext, error) {
 }
 
 func (c *LocationContextsService) Create(locationContext *LocationContext) (*LocationContext, error) {
-	locationContextJson, err := json.Marshal(locationContext)
+	locationContextJSON, err := json.Marshal(locationContext)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/location-contexts/", c.client.GetV1Url())
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(locationContextJson))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(locationContextJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -134,13 +134,13 @@ func (c *LocationContextsService) Create(locationContext *LocationContext) (*Loc
 }
 
 func (c *LocationContextsService) Update(id string, locationContext *LocationContext) (*LocationContext, error) {
-	locationContextJson, err := json.Marshal(locationContext)
+	locationContextJSON, err := json.Marshal(locationContext)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
-	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(locationContextJson))
+	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(locationContextJSON))
 	if err != nil {
 		return nil, err
 	}

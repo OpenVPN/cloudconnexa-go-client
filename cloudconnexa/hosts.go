@@ -8,7 +8,7 @@ import (
 )
 
 type Host struct {
-	Id             string          `json:"id,omitempty"`
+	ID             string          `json:"id,omitempty"`
 	Name           string          `json:"name"`
 	Description    string          `json:"description"`
 	Domain         string          `json:"domain,omitempty"`
@@ -90,12 +90,12 @@ func (c *HostsService) Get(id string) (*Host, error) {
 }
 
 func (c *HostsService) Create(host Host) (*Host, error) {
-	hostJson, err := json.Marshal(host)
+	hostJSON, err := json.Marshal(host)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts", c.client.GetV1Url()), bytes.NewBuffer(hostJson))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts", c.client.GetV1Url()), bytes.NewBuffer(hostJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -114,12 +114,12 @@ func (c *HostsService) Create(host Host) (*Host, error) {
 }
 
 func (c *HostsService) Update(host Host) error {
-	hostJson, err := json.Marshal(host)
+	hostJSON, err := json.Marshal(host)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), host.Id), bytes.NewBuffer(hostJson))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), host.ID), bytes.NewBuffer(hostJSON))
 	if err != nil {
 		return err
 	}
@@ -128,8 +128,8 @@ func (c *HostsService) Update(host Host) error {
 	return err
 }
 
-func (c *HostsService) Delete(hostId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), hostId), nil)
+func (c *HostsService) Delete(hostID string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), hostID), nil)
 	if err != nil {
 		return err
 	}
