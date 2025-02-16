@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/openvpn/cloudconnexa-go-client/branch/main/graph/badge.svg)](https://codecov.io/gh/openvpn/cloudconnexa-go-client)
 [![Build Status](https://github.com/openvpn/cloudconnexa-go-client/workflows/Go%20build/badge.svg)](https://github.com/openvpn/cloudconnexa-go-client/actions)
 
-This Go library enables access to the Cloud Connexa API, as detailed in the [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api.html).
+This Go library enables access to the Cloud Connexa API, as detailed in the [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api-v1-0.html).
 
 ## Installation Instructions
 
