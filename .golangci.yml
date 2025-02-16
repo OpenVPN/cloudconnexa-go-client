@@ -2,7 +2,7 @@ linters:
   enable:
     - gofmt
     - govet
-    - golint
+    - revive
     - gosimple
     - staticcheck
     - errcheck
