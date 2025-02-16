@@ -58,7 +58,13 @@ func TestListConnectors(t *testing.T) {
 func TestCreateNetwork(t *testing.T) {
 	c := setUpClient(t)
 	timestamp := time.Now().Unix()
-	testName := fmt.Sprintf("test-%d", timestamp)
+	testName := fmt.Sprintf("test-%d-%d", timestamp, time.Now().Nanosecond())
+
+	networks, err := c.Networks.List()
+	require.NoError(t, err)
+	for _, n := range networks {
+		require.NotEqual(t, testName, n.Name, "Network with name %s already exists", testName)
+	}
 
 	connector := cloudconnexa.NetworkConnector{
 		Description: "test",
