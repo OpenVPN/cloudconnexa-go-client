@@ -64,8 +64,8 @@ func main() {
         log.Fatalf("error creating client: %v", err)
     }
 
-    networkId := "your_network_id"
-    routes, err := client.Routes.List(networkId)
+    networkID := "your_network_id"
+    routes, err := client.Routes.List(networkID)
     if err != nil {
         log.Fatalf("error getting routes: %v", err)
     }
