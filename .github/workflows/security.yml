@@ -23,6 +23,10 @@ jobs:
         uses: securego/gosec@master
         with:
           args: ./...
+        env:
+          OVPN_HOST: ${{ vars.OVPN_HOST }}
+          CLOUDCONNEXA_CLIENT_ID: ${{ secrets.CLOUDCONNEXA_CLIENT_ID }}
+          CLOUDCONNEXA_CLIENT_SECRET: ${{ secrets.CLOUDCONNEXA_CLIENT_SECRET }}
 
       - name: Generate dependencies list
         run: go list -json -m all > go.list
