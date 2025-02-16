@@ -105,6 +105,19 @@ user := cloudconnexa.User{
 createdUser, err := client.Users.Create(user)
 ```
 
+### Listing VPN Regions
+
+```go
+// List all VPN regions
+regions, err := client.VPNRegions.List()
+if err != nil {
+    log.Fatalf("error getting VPN regions: %v", err)
+}
+
+// Get specific region by ID
+region, err := client.VPNRegions.GetByID("region-id")
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
