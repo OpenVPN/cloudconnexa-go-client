@@ -55,6 +55,34 @@ func TestListConnectors(t *testing.T) {
 	fmt.Printf("found %d connectors\n", len(response.Content))
 }
 
+func TestVPNRegions(t *testing.T) {
+	c := setUpClient(t)
+
+	// Test List
+	regions, err := c.VPNRegions.List()
+	require.NoError(t, err)
+	require.NotNil(t, regions)
+	fmt.Printf("found %d VPN regions\n", len(regions))
+
+	// If regions exist, test GetByID
+	if len(regions) > 0 {
+		region := regions[0]
+		foundRegion, err := c.VPNRegions.GetByID(region.ID)
+		require.NoError(t, err)
+		require.NotNil(t, foundRegion)
+		require.Equal(t, region.ID, foundRegion.ID)
+		require.Equal(t, region.Country, foundRegion.Country)
+		require.Equal(t, region.Continent, foundRegion.Continent)
+		fmt.Printf("successfully found region %s in %s, %s\n",
+			foundRegion.ID, foundRegion.Country, foundRegion.Continent)
+	}
+
+	// Test GetByID with non-existent ID
+	nonExistentRegion, err := c.VPNRegions.GetByID("non-existent-id")
+	require.NoError(t, err)
+	require.Nil(t, nonExistentRegion)
+}
+
 func TestCreateNetwork(t *testing.T) {
 	c := setUpClient(t)
 	timestamp := time.Now().Unix()

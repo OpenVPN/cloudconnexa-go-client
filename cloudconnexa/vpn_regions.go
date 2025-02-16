@@ -16,7 +16,28 @@ type VpnRegion struct {
 
 type VPNRegionsService service
 
-func (c *VPNRegionsService) GetVpnRegion(regionID string) (*VpnRegion, error) {
+// List retrieves all VPN regions
+func (c *VPNRegionsService) List() ([]VpnRegion, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/regions", c.client.GetV1Url()), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var regions []VpnRegion
+	err = json.Unmarshal(body, &regions)
+	if err != nil {
+		return nil, err
+	}
+	return regions, nil
+}
+
+// GetByID retrieves a specific VPN region by ID
+func (c *VPNRegionsService) GetByID(regionID string) (*VpnRegion, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/regions", c.client.GetV1Url()), nil)
 	if err != nil {
 		return nil, err
