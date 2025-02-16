@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"github.com/stretchr/testify/assert"
@@ -56,9 +57,12 @@ func TestListConnectors(t *testing.T) {
 
 func TestCreateNetwork(t *testing.T) {
 	c := setUpClient(t)
+	timestamp := time.Now().Unix()
+	testName := fmt.Sprintf("test-%d", timestamp)
+
 	connector := cloudconnexa.NetworkConnector{
 		Description: "test",
-		Name:        "test",
+		Name:        testName,
 		VpnRegionId: "it-mxp",
 	}
 	route := cloudconnexa.Route{
@@ -69,8 +73,8 @@ func TestCreateNetwork(t *testing.T) {
 	network := cloudconnexa.Network{
 		Description:    "test",
 		Egress:         false,
-		Name:           "test",
-		InternetAccess: "LOCAL",
+		Name:           testName,
+		InternetAccess: cloudconnexa.InternetAccessSplitTunnelOn,
 		Connectors:     []cloudconnexa.NetworkConnector{connector},
 	}
 	response, err := c.Networks.Create(network)
@@ -87,7 +91,7 @@ func TestCreateNetwork(t *testing.T) {
 		Value:       "10.189.253.64/30",
 	}
 	service := cloudconnexa.IPService{
-		Name:            "test",
+		Name:            testName,
 		Description:     "test",
 		NetworkItemId:   response.Id,
 		Type:            "IP_SOURCE",

@@ -1,6 +1,6 @@
 module github.com/openvpn/cloudconnexa-go-client/v2
 
-go 1.21
+go 1.23
 
 require (
 	github.com/stretchr/testify v1.10.0
