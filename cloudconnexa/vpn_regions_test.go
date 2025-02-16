@@ -57,6 +57,7 @@ func TestVPNRegionsService_GetByPage(t *testing.T) {
 }
 
 func TestVPNRegionsService_List(t *testing.T) {
+	pageCount := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Handle auth token request
 		if r.URL.Path == "/api/v1/oauth/token" {
@@ -70,13 +71,15 @@ func TestVPNRegionsService_List(t *testing.T) {
 
 		// Handle VPN regions request
 		assert.Equal(t, "/api/v1/vpn-regions", r.URL.Path)
+		pageCount++
 
 		response := VPNRegionPageResponse{
 			Content:          []VpnRegion{testVpnRegion},
 			Success:          true,
 			NumberOfElements: 1,
 			TotalElements:    1,
-			TotalPages:       1,
+			TotalPages:       0,
+			Page:             0,
 		}
 
 		err := json.NewEncoder(w).Encode(response)
@@ -89,6 +92,7 @@ func TestVPNRegionsService_List(t *testing.T) {
 	regions, err := client.VPNRegions.List()
 
 	assert.NoError(t, err)
+	assert.Equal(t, 1, pageCount, "Expected only one page request")
 	assert.Equal(t, 1, len(regions))
 	assert.Equal(t, testVpnRegion.ID, regions[0].ID)
 }
