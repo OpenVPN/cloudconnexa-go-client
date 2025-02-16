@@ -31,7 +31,7 @@ jobs:
           CLOUDCONNEXA_CLIENT_SECRET: ${{ secrets.CLOUDCONNEXA_CLIENT_SECRET }}
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           file: ./coverage.txt
           fail_ci_if_error: false
