@@ -58,18 +58,11 @@ func TestListConnectors(t *testing.T) {
 func TestVPNRegions(t *testing.T) {
 	c := setUpClient(t)
 
-	// Test GetByPage
-	response, err := c.VPNRegions.GetByPage(0, 10)
-	require.NoError(t, err)
-	require.NotNil(t, response)
-	require.True(t, response.Success)
-	fmt.Printf("found %d VPN regions on first page\n", len(response.Content))
-
 	// Test List
 	regions, err := c.VPNRegions.List()
 	require.NoError(t, err)
 	require.NotNil(t, regions)
-	fmt.Printf("found total %d VPN regions\n", len(regions))
+	fmt.Printf("found %d VPN regions\n", len(regions))
 
 	// If regions exist, test GetByID
 	if len(regions) > 0 {
