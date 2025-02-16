@@ -1,7 +1,7 @@
 # Cloud Connexa Go Client
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa)
-[![Go Report Card](https://goreportcard.com/badge/github.com/openvpn/cloudconnexa-go-client)](https://goreportcard.com/report/github.com/openvpn/cloudconnexa-go-client)
+[![Go Report Card](https://goreportcard.com/badge/github.com/openvpn/cloudconnexa-go-client/v2)](https://goreportcard.com/report/github.com/openvpn/cloudconnexa-go-client/v2)
 [![codecov](https://codecov.io/gh/openvpn/cloudconnexa-go-client/branch/main/graph/badge.svg)](https://codecov.io/gh/openvpn/cloudconnexa-go-client)
 [![Build Status](https://github.com/openvpn/cloudconnexa-go-client/workflows/Go%20build/badge.svg)](https://github.com/openvpn/cloudconnexa-go-client/actions)
 
