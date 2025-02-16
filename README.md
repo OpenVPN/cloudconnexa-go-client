@@ -82,7 +82,7 @@ func main() {
 network := cloudconnexa.Network{
     Name:           "test-network",
     Description:    "Test network created via API",
-    InternetAccess: "LOCAL",
+    InternetAccess: cloudconnexa.InternetAccessSplitTunnelOn,
     Egress:        false,
 }
 

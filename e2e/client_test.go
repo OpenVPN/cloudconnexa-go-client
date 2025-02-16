@@ -70,7 +70,7 @@ func TestCreateNetwork(t *testing.T) {
 		Description:    "test",
 		Egress:         false,
 		Name:           "test",
-		InternetAccess: "LOCAL",
+		InternetAccess: "SPLIT_TUNNEL_ON",
 		Connectors:     []cloudconnexa.NetworkConnector{connector},
 	}
 	response, err := c.Networks.Create(network)

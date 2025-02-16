@@ -7,6 +7,12 @@ import (
 	"net/http"
 )
 
+const (
+	InternetAccessSplitTunnelOn      = "SPLIT_TUNNEL_ON"
+	InternetAccessSplitTunnelOff     = "SPLIT_TUNNEL_OFF"
+	InternetAccessRestrictedInternet = "RESTRICTED_INTERNET"
+)
+
 type Network struct {
 	Connectors     []NetworkConnector `json:"connectors"`
 	Description    string             `json:"description"`
