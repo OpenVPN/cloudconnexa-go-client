@@ -14,10 +14,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
           args: ./...
 
+      - name: Generate dependencies list
+        run: go list -json -m all > go.list
+
       - name: Run nancy for dependency scanning
         uses: sonatype-nexus-community/nancy-github-action@main
+        with:
+          goListFile: go.list
