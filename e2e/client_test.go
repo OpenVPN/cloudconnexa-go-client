@@ -74,7 +74,7 @@ func TestCreateNetwork(t *testing.T) {
 	route := cloudconnexa.Route{
 		Description: "test",
 		Type:        "IP_V4",
-		Subnet:      "10.189.253.64/30",
+		Subnet:      fmt.Sprintf("10.%d.%d.0/24", timestamp%256, (timestamp/256)%256),
 	}
 	network := cloudconnexa.Network{
 		Description:    "test",
@@ -94,7 +94,7 @@ func TestCreateNetwork(t *testing.T) {
 	}
 	ipServiceRoute := cloudconnexa.IPServiceRoute{
 		Description: "test",
-		Value:       "10.189.253.64/30",
+		Value:       fmt.Sprintf("10.%d.%d.0/24", timestamp%256, (timestamp/256)%256),
 	}
 	service := cloudconnexa.IPService{
 		Name:            testName,
