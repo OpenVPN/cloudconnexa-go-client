@@ -83,7 +83,7 @@ network := cloudconnexa.Network{
     Name:           "test-network",
     Description:    "Test network created via API",
     InternetAccess: cloudconnexa.InternetAccessSplitTunnelOn,
-    Egress:        false,
+    Egress:         false,
 }
 
 createdNetwork, err := client.Networks.Create(network)
@@ -99,7 +99,7 @@ users, err := client.Users.List("", "")
 user := cloudconnexa.User{
     Username: "testuser",
     Email:    "test@example.com",
-    GroupId:  "group-id",
+    GroupID:  "group-id",
 }
 
 createdUser, err := client.Users.Create(user)
