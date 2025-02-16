@@ -5,10 +5,20 @@ all: test
 deps:
 	@go mod download
 
-.PHONY: test
-test:
-	@go test -cover -race -v ./cloudconnexa/...
+.PHONY: test e2e lint build clean
 
-.PHONY: e2e
+test:
+	go test -v -race ./cloudconnexa/...
+
 e2e:
-	@go test -v ./e2e/...
+	go test -v -race ./e2e/...
+
+lint:
+	golangci-lint run
+
+build:
+	go build -v ./...
+
+clean:
+	go clean
+	rm -f coverage.txt

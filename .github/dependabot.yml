@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
   - package-ecosystem: "gomod"
     directory: "/"
     ignore:
@@ -12,3 +17,11 @@ updates:
       - dependency-name: "google.golang.org/grpc"
     schedule:
       interval: "daily"
+    groups:
+      golang-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "github.com/hashicorp/go-hclog"
+          - "golang.org/x/tools"
+          - "google.golang.org/grpc"
