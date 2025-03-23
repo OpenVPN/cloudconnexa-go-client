@@ -43,6 +43,7 @@ type Client struct {
 	VPNRegions          *VPNRegionsService
 	LocationContexts    *LocationContextsService
 	AccessGroups        *AccessGroupsService
+	Settings            *SettingsService
 }
 
 type service struct {
@@ -123,6 +124,7 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	c.VPNRegions = (*VPNRegionsService)(&c.common)
 	c.LocationContexts = (*LocationContextsService)(&c.common)
 	c.AccessGroups = (*AccessGroupsService)(&c.common)
+	c.Settings = (*SettingsService)(&c.common)
 	return c, nil
 }
 
@@ -134,7 +136,9 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	req.Header.Set("User-Agent", c.UserAgent)
-	req.Header.Set("Content-Type", "application/json")
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	res, err := c.client.Do(req)
 	if err != nil {
