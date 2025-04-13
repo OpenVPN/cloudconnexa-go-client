@@ -8,28 +8,28 @@ import (
 	"strconv"
 )
 
-type DnsServers struct {
-	PrimaryIpV4   string `json:"primaryIpV4,omitempty"`
-	SecondaryIpV4 string `json:"secondaryIpV4,omitempty"`
+type DNSServers struct {
+	PrimaryIPV4   string `json:"primaryIpV4,omitempty"`
+	SecondaryIPV4 string `json:"secondaryIpV4,omitempty"`
 }
 
-type DnsZones struct {
-	Zones []DnsZone `json:"zones"`
+type DNSZones struct {
+	Zones []DNSZone `json:"zones"`
 }
 
-type DnsZone struct {
+type DNSZone struct {
 	Name      string   `json:"name"`
 	Addresses []string `json:"addresses"`
 }
 
 type DomainRoutingSubnet struct {
-	IpV4Address string `json:"ipV4Address"`
-	IpV6Address string `json:"ipV6Address"`
+	IPV4Address string `json:"ipV4Address"`
+	IPV6Address string `json:"ipV6Address"`
 }
 
 type Subnet struct {
-	IpV4Address []string `json:"ipV4Address"`
-	IpV6Address []string `json:"ipV6Address"`
+	IPV4Address []string `json:"ipV4Address"`
+	IPV6Address []string `json:"ipV6Address"`
 }
 
 type SettingsService service
@@ -50,13 +50,13 @@ func (c *SettingsService) SetTwoFactorAuthEnabled(value bool) (bool, error) {
 	return c.setBool("/auth/two-factor-auth", value)
 }
 
-func (c *SettingsService) GetDnsServers() (*DnsServers, error) {
+func (c *SettingsService) GetDNSServers() (*DNSServers, error) {
 	body, err := c.get("/dns/custom-servers")
 	if err != nil {
 		return nil, err
 	}
 
-	var response DnsServers
+	var response DNSServers
 	s := string(body)
 	if s == "" {
 		return nil, nil
@@ -69,7 +69,7 @@ func (c *SettingsService) GetDnsServers() (*DnsServers, error) {
 	return &response, nil
 }
 
-func (c *SettingsService) SetDnsServers(value *DnsServers) (*DnsServers, error) {
+func (c *SettingsService) SetDNSServers(value *DNSServers) (*DNSServers, error) {
 	jsonValue, err := json.Marshal(value)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (c *SettingsService) SetDnsServers(value *DnsServers) (*DnsServers, error) 
 	if err != nil {
 		return nil, err
 	}
-	var response DnsServers
+	var response DNSServers
 	s := string(body)
 	if s == "" {
 		return nil, nil
@@ -90,29 +90,29 @@ func (c *SettingsService) SetDnsServers(value *DnsServers) (*DnsServers, error) 
 	return &response, nil
 }
 
-func (c *SettingsService) GetDefaultDnsSuffix() (string, error) {
+func (c *SettingsService) GetDefaultDNSSuffix() (string, error) {
 	return c.getString("/dns/default-suffix")
 }
 
-func (c *SettingsService) SetDefaultDnsSuffix(value string) (string, error) {
+func (c *SettingsService) SetDefaultDNSSuffix(value string) (string, error) {
 	return c.setString("/dns/default-suffix", value)
 }
 
-func (c *SettingsService) GetDnsProxyEnabled() (bool, error) {
+func (c *SettingsService) GetDNSProxyEnabled() (bool, error) {
 	return c.getBool("/dns/proxy-enabled")
 }
 
-func (c *SettingsService) SetDnsProxyAuthEnabled(value bool) (bool, error) {
+func (c *SettingsService) SetDNSProxyEnabled(value bool) (bool, error) {
 	return c.setBool("/dns/proxy-enabled", value)
 }
 
-func (c *SettingsService) GetDnsZones() ([]DnsZone, error) {
+func (c *SettingsService) GetDNSZones() ([]DNSZone, error) {
 	body, err := c.get("/dns/zones")
 	if err != nil {
 		return nil, err
 	}
 
-	var response DnsZones
+	var response DNSZones
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (c *SettingsService) GetDnsZones() ([]DnsZone, error) {
 	return response.Zones, nil
 }
 
-func (c *SettingsService) SetDnsZones(value []DnsZone) ([]DnsZone, error) {
+func (c *SettingsService) SetDNSZones(value []DNSZone) ([]DNSZone, error) {
 	jsonValue, err := json.Marshal(value)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (c *SettingsService) SetDnsZones(value []DnsZone) ([]DnsZone, error) {
 	if err != nil {
 		return nil, err
 	}
-	var response DnsZones
+	var response DNSZones
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
@@ -318,6 +318,9 @@ func (c *SettingsService) getBool(path string) (bool, error) {
 
 func (c *SettingsService) setBool(path string, value bool) (bool, error) {
 	body, err := c.set(path, []byte(strconv.FormatBool(value)))
+	if err != nil {
+		return false, err
+	}
 	var response bool
 	err = json.Unmarshal(body, &response)
 	if err != nil {
