@@ -46,7 +46,7 @@ func TestUserGroupsService_GetByID(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(userGroup)
+		_ = json.NewEncoder(w).Encode(userGroup)
 	}))
 	defer server.Close()
 
@@ -86,9 +86,9 @@ func TestUserGroupsService_GetByID(t *testing.T) {
 
 func TestUserGroupsService_GetByID_NotFound(t *testing.T) {
 	// Create a mock server that returns 404
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error": "User group not found"}`))
+		_, _ = w.Write([]byte(`{"error": "User group not found"}`))
 	}))
 	defer server.Close()
 
@@ -110,15 +110,16 @@ func TestUserGroupsService_GetByID_vs_Get(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		callCount++
 
-		if r.URL.Path == "/api/v1/user-groups/group-123" {
+		switch r.URL.Path {
+		case "/api/v1/user-groups/group-123":
 			// Direct endpoint - should be called only once
 			userGroup := UserGroup{
 				ID:   "group-123",
 				Name: "Test Group",
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(userGroup)
-		} else if r.URL.Path == "/api/v1/user-groups" {
+			_ = json.NewEncoder(w).Encode(userGroup)
+		case "/api/v1/user-groups":
 			// Pagination endpoint - may be called multiple times
 			response := UserGroupPageResponse{
 				Content: []UserGroup{
@@ -129,7 +130,7 @@ func TestUserGroupsService_GetByID_vs_Get(t *testing.T) {
 				TotalPages: 1,
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
+			_ = json.NewEncoder(w).Encode(response)
 		}
 	}))
 	defer server.Close()
@@ -162,7 +163,7 @@ func TestUserGroupsService_GetByID_vs_Get(t *testing.T) {
 
 func TestUserGroupsService_GetByID_CompleteFields(t *testing.T) {
 	// Test that GetByID returns all expected fields
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		userGroup := UserGroup{
 			ID:                 "group-456",
 			Name:               "Complete Test Group",
@@ -175,7 +176,7 @@ func TestUserGroupsService_GetByID_CompleteFields(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(userGroup)
+		_ = json.NewEncoder(w).Encode(userGroup)
 	}))
 	defer server.Close()
 

@@ -43,7 +43,7 @@ func TestDNSRecordsService_GetByID(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(record)
+		_ = json.NewEncoder(w).Encode(record)
 	}))
 	defer server.Close()
 
@@ -75,9 +75,9 @@ func TestDNSRecordsService_GetByID(t *testing.T) {
 
 func TestDNSRecordsService_GetByID_NotFound(t *testing.T) {
 	// Create a mock server that returns 404
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error": "DNS record not found"}`))
+		_, _ = w.Write([]byte(`{"error": "DNS record not found"}`))
 	}))
 	defer server.Close()
 
@@ -99,15 +99,16 @@ func TestDNSRecordsService_GetByID_vs_GetDNSRecord(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		callCount++
 
-		if r.URL.Path == "/api/v1/dns-records/record-123" {
+		switch r.URL.Path {
+		case "/api/v1/dns-records/record-123":
 			// Direct endpoint - should be called only once
 			record := DNSRecord{
 				ID:     "record-123",
 				Domain: "example.com",
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(record)
-		} else if r.URL.Path == "/api/v1/dns-records" {
+			_ = json.NewEncoder(w).Encode(record)
+		case "/api/v1/dns-records":
 			// Pagination endpoint - may be called multiple times
 			response := DNSRecordPageResponse{
 				Content: []DNSRecord{
@@ -118,7 +119,7 @@ func TestDNSRecordsService_GetByID_vs_GetDNSRecord(t *testing.T) {
 				TotalPages: 1,
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
+			_ = json.NewEncoder(w).Encode(response)
 		}
 	}))
 	defer server.Close()

@@ -41,7 +41,7 @@ func TestNetworkConnectorsService_StartIPsec(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -86,7 +86,7 @@ func TestNetworkConnectorsService_StopIPsec(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -114,9 +114,9 @@ func TestNetworkConnectorsService_StopIPsec(t *testing.T) {
 
 func TestNetworkConnectorsService_StartIPsec_Error(t *testing.T) {
 	// Create a mock server that returns an error
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "Connector not found"}`))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error": "Connector not found"}`))
 	}))
 	defer server.Close()
 
@@ -132,9 +132,9 @@ func TestNetworkConnectorsService_StartIPsec_Error(t *testing.T) {
 
 func TestNetworkConnectorsService_StopIPsec_Error(t *testing.T) {
 	// Create a mock server that returns an error
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "Connector not found"}`))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error": "Connector not found"}`))
 	}))
 	defer server.Close()
 

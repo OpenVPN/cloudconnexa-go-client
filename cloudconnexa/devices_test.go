@@ -60,7 +60,7 @@ func TestDevicesService_List(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -113,7 +113,7 @@ func TestDevicesService_GetByID(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(device)
+		_ = json.NewEncoder(w).Encode(device)
 	}))
 	defer server.Close()
 
@@ -163,7 +163,7 @@ func TestDevicesService_Update(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(device)
+		_ = json.NewEncoder(w).Encode(device)
 	}))
 	defer server.Close()
 
@@ -191,7 +191,7 @@ func TestDevicesService_Update(t *testing.T) {
 
 func TestDevicesService_Block(t *testing.T) {
 	// Create a mock server
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Mock response
 		device := DeviceDetail{
 			ID:     "device-123",
@@ -202,7 +202,7 @@ func TestDevicesService_Block(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(device)
+		_ = json.NewEncoder(w).Encode(device)
 	}))
 	defer server.Close()
 
@@ -254,7 +254,7 @@ func TestDevicesService_ListByUserID(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 

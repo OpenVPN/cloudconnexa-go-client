@@ -56,7 +56,7 @@ func TestHostIPServicesService_UpdatedDTO(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(service)
+		_ = json.NewEncoder(w).Encode(service)
 	}))
 	defer server.Close()
 
@@ -115,7 +115,7 @@ func TestHostIPServicesService_UpdatedDTO(t *testing.T) {
 
 func TestHostIPServicesService_List_UpdatedDTO(t *testing.T) {
 	// Test that the list endpoint works with the updated DTO structure
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Mock paginated response with updated DTO
 		// Note: The List() method calls GetIPByPage() which may make multiple requests
 		response := IPServicePageResponse{
@@ -159,7 +159,7 @@ func TestHostIPServicesService_List_UpdatedDTO(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -225,7 +225,7 @@ func TestHostIPServicesService_Create_UpdatedDTO(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(service)
+		_ = json.NewEncoder(w).Encode(service)
 	}))
 	defer server.Close()
 
