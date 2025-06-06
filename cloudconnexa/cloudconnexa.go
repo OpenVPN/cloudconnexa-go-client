@@ -139,6 +139,18 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	return c, nil
 }
 
+// setCommonHeaders sets the standard headers for API requests.
+// It sets Authorization and User-Agent headers, and sets Content-Type to application/json
+// if no Content-Type header is already present.
+func (c *Client) setCommonHeaders(req *http.Request) {
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	req.Header.Set("User-Agent", c.UserAgent)
+
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+}
+
 // DoRequest executes an HTTP request with authentication and rate limiting.
 // It automatically adds the Bearer token, sets headers, and handles errors.
 func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
@@ -147,11 +159,7 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	req.Header.Set("User-Agent", c.UserAgent)
-	if req.Header.Get("Content-Type") == "" {
-		req.Header.Set("Content-Type", "application/json")
-	}
+	c.setCommonHeaders(req)
 
 	res, err := c.client.Do(req)
 	if err != nil {

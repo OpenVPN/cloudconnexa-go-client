@@ -391,10 +391,10 @@ func (c *SettingsService) getString(path string) (string, error) {
 func (c *SettingsService) setString(path string, value string) (string, error) {
 	endpoint := fmt.Sprintf("%s/settings"+path, c.client.GetV1Url())
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer([]byte(value)))
-	req.Header.Set("Content-Type", "text/plain")
 	if err != nil {
 		return "", err
 	}
+	req.Header.Set("Content-Type", "text/plain")
 	body, err := c.client.DoRequest(req)
 	if err != nil {
 		return "", err
