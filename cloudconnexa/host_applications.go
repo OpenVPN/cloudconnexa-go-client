@@ -7,22 +7,26 @@ import (
 	"net/http"
 )
 
+// ApplicationRoute represents a route configuration for an application.
 type ApplicationRoute struct {
 	Value           string `json:"value"`
 	AllowEmbeddedIP bool   `json:"allowEmbeddedIp"`
 }
 
+// CustomApplicationType represents a custom application type configuration.
 type CustomApplicationType struct {
 	IcmpType []Range `json:"icmpType"`
 	Port     []Range `json:"port"`
 	Protocol string  `json:"protocol"`
 }
 
+// ApplicationConfig represents the configuration for an application including custom service types and predefined service types.
 type ApplicationConfig struct {
 	CustomServiceTypes []*CustomApplicationType `json:"customServiceTypes"`
 	ServiceTypes       []string                 `json:"serviceTypes"`
 }
 
+// Application represents a host application with its configuration and routing information.
 type Application struct {
 	Name            string              `json:"name"`
 	Description     string              `json:"description"`
@@ -33,11 +37,15 @@ type Application struct {
 	Config          *ApplicationConfig  `json:"config"`
 }
 
+// ApplicationResponse represents the response structure for application operations,
+// extending the base Application with additional route information.
 type ApplicationResponse struct {
 	Application
 	Routes []*Route `json:"routes"`
 }
 
+// ApplicationPageResponse represents a paginated response from the CloudConnexa API
+// containing a list of applications and pagination metadata.
 type ApplicationPageResponse struct {
 	Content          []ApplicationResponse `json:"content"`
 	NumberOfElements int                   `json:"numberOfElements"`
@@ -48,8 +56,11 @@ type ApplicationPageResponse struct {
 	TotalPages       int                   `json:"totalPages"`
 }
 
+// HostApplicationsService handles communication with the CloudConnexa API for host application operations.
 type HostApplicationsService service
 
+// GetApplicationsByPage retrieves a paginated list of host applications from the CloudConnexa API.
+// It returns the applications for the specified page and page size.
 func (c *HostApplicationsService) GetApplicationsByPage(page int, pageSize int) (ApplicationPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/hosts/applications?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -70,6 +81,8 @@ func (c *HostApplicationsService) GetApplicationsByPage(page int, pageSize int) 
 	return response, nil
 }
 
+// List retrieves all host applications from the CloudConnexa API.
+// It handles pagination internally and returns a complete list of applications.
 func (c *HostApplicationsService) List() ([]ApplicationResponse, error) {
 	var allApplications []ApplicationResponse
 	page := 0
@@ -90,6 +103,7 @@ func (c *HostApplicationsService) List() ([]ApplicationResponse, error) {
 	return allApplications, nil
 }
 
+// Get retrieves a specific host application by its ID.
 func (c *HostApplicationsService) Get(id string) (*ApplicationResponse, error) {
 	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -110,6 +124,7 @@ func (c *HostApplicationsService) Get(id string) (*ApplicationResponse, error) {
 	return &application, nil
 }
 
+// Create creates a new host application.
 func (c *HostApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
@@ -136,6 +151,7 @@ func (c *HostApplicationsService) Create(application *Application) (*Application
 	return &s, nil
 }
 
+// Update updates an existing host application by its ID.
 func (c *HostApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
@@ -162,6 +178,7 @@ func (c *HostApplicationsService) Update(id string, application *Application) (*
 	return &s, nil
 }
 
+// Delete removes a host application by its ID.
 func (c *HostApplicationsService) Delete(id string) error {
 	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)

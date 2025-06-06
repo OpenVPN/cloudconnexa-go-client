@@ -7,8 +7,10 @@ import (
 	"net/http"
 )
 
+// NetworkApplicationsService provides methods for managing network applications.
 type NetworkApplicationsService service
 
+// GetApplicationsByPage retrieves network applications using pagination.
 func (c *NetworkApplicationsService) GetApplicationsByPage(page int, pageSize int) (ApplicationPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/networks/applications?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -29,6 +31,7 @@ func (c *NetworkApplicationsService) GetApplicationsByPage(page int, pageSize in
 	return response, nil
 }
 
+// List retrieves all network applications by paginating through all available pages.
 func (c *NetworkApplicationsService) List() ([]ApplicationResponse, error) {
 	var allApplications []ApplicationResponse
 	page := 0
@@ -49,6 +52,7 @@ func (c *NetworkApplicationsService) List() ([]ApplicationResponse, error) {
 	return allApplications, nil
 }
 
+// Get retrieves a specific network application by its ID.
 func (c *NetworkApplicationsService) Get(id string) (*ApplicationResponse, error) {
 	endpoint := fmt.Sprintf("%s/networks/applications/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -69,6 +73,7 @@ func (c *NetworkApplicationsService) Get(id string) (*ApplicationResponse, error
 	return &application, nil
 }
 
+// Create creates a new network application.
 func (c *NetworkApplicationsService) Create(application *Application) (*ApplicationResponse, error) {
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
@@ -95,6 +100,7 @@ func (c *NetworkApplicationsService) Create(application *Application) (*Applicat
 	return &s, nil
 }
 
+// Update updates an existing network application by its ID.
 func (c *NetworkApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
@@ -121,6 +127,7 @@ func (c *NetworkApplicationsService) Update(id string, application *Application)
 	return &s, nil
 }
 
+// Delete removes a network application by its ID.
 func (c *NetworkApplicationsService) Delete(id string) error {
 	endpoint := fmt.Sprintf("%s/networks/applications/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)

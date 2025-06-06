@@ -11,28 +11,36 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// validateEnvVars checks if all required environment variables are set
 func validateEnvVars(t *testing.T) {
 	validateEnvVar(t, HostEnvVar)
 	validateEnvVar(t, ClientIDEnvVar)
 	validateEnvVar(t, ClientSecretEnvVar)
 }
 
+// validateEnvVar checks if a specific environment variable is set
+// envVar: The name of the environment variable to check
 func validateEnvVar(t *testing.T, envVar string) {
 	fmt.Println(os.Getenv(envVar))
 	require.NotEmptyf(t, os.Getenv(envVar), "%s must be set", envVar)
 }
 
+// Environment variable names for client configuration
 const (
 	HostEnvVar         = "OVPN_HOST"
 	ClientIDEnvVar     = "CLOUDCONNEXA_CLIENT_ID"
-	ClientSecretEnvVar = "CLOUDCONNEXA_CLIENT_SECRET"
+	ClientSecretEnvVar = "CLOUDCONNEXA_CLIENT_SECRET" //nolint:gosec // This is an environment variable name, not a credential
 )
 
+// TestNewClient tests the creation of a new client
+// It verifies that the client is created successfully and has a valid token
 func TestNewClient(t *testing.T) {
 	c := setUpClient(t)
 	assert.NotEmpty(t, c.Token)
 }
 
+// setUpClient creates and returns a new client for testing
+// It validates environment variables and initializes the client with credentials
 func setUpClient(t *testing.T) *cloudconnexa.Client {
 	validateEnvVars(t)
 	var err error
@@ -41,6 +49,8 @@ func setUpClient(t *testing.T) *cloudconnexa.Client {
 	return client
 }
 
+// TestListNetworks tests the retrieval of networks using pagination
+// It verifies that networks can be retrieved successfully
 func TestListNetworks(t *testing.T) {
 	c := setUpClient(t)
 	response, err := c.Networks.GetByPage(0, 10)
@@ -48,6 +58,8 @@ func TestListNetworks(t *testing.T) {
 	fmt.Printf("found %d networks\n", len(response.Content))
 }
 
+// TestListConnectors tests the retrieval of network connectors using pagination
+// It verifies that connectors can be retrieved successfully
 func TestListConnectors(t *testing.T) {
 	c := setUpClient(t)
 	response, err := c.NetworkConnectors.GetByPage(0, 10)
@@ -55,6 +67,8 @@ func TestListConnectors(t *testing.T) {
 	fmt.Printf("found %d connectors\n", len(response.Content))
 }
 
+// TestVPNRegions tests the VPN regions functionality
+// It verifies that regions can be listed and retrieved by ID
 func TestVPNRegions(t *testing.T) {
 	c := setUpClient(t)
 
@@ -83,6 +97,8 @@ func TestVPNRegions(t *testing.T) {
 	require.Nil(t, nonExistentRegion)
 }
 
+// TestCreateNetwork tests the creation of a network with associated resources
+// It verifies that a network can be created with routes and services, and then deleted
 func TestCreateNetwork(t *testing.T) {
 	c := setUpClient(t)
 	timestamp := time.Now().Unix()

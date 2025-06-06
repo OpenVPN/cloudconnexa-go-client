@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// LocationContext represents a location context in CloudConnexa with its associated checks and user groups.
 type LocationContext struct {
 	ID            string        `json:"id"`
 	Name          string        `json:"name"`
@@ -17,25 +18,31 @@ type LocationContext struct {
 	DefaultCheck  *DefaultCheck `json:"defaultCheck"`
 }
 
+// IPCheck represents the IP-based access control configuration.
 type IPCheck struct {
 	Allowed bool `json:"allowed"`
 	Ips     []IP `json:"ips"`
 }
 
+// CountryCheck represents the country-based access control configuration.
 type CountryCheck struct {
 	Allowed   bool     `json:"allowed"`
 	Countries []string `json:"countries"`
 }
 
+// DefaultCheck represents the default access control configuration.
 type DefaultCheck struct {
 	Allowed bool `json:"allowed"`
 }
 
+// IP represents an IP address with its description.
 type IP struct {
 	IP          string `json:"ip"`
 	Description string `json:"description"`
 }
 
+// LocationContextPageResponse represents a paginated response from the CloudConnexa API
+// containing a list of location contexts and pagination metadata.
 type LocationContextPageResponse struct {
 	Content          []LocationContext `json:"content"`
 	NumberOfElements int               `json:"numberOfElements"`
@@ -46,8 +53,10 @@ type LocationContextPageResponse struct {
 	TotalPages       int               `json:"totalPages"`
 }
 
+// LocationContextsService provides methods for managing location contexts.
 type LocationContextsService service
 
+// GetLocationContextByPage retrieves location contexts using pagination.
 func (c *LocationContextsService) GetLocationContextByPage(page int, pageSize int) (LocationContextPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/location-contexts?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -68,6 +77,7 @@ func (c *LocationContextsService) GetLocationContextByPage(page int, pageSize in
 	return response, nil
 }
 
+// List retrieves all location contexts by paginating through all available pages.
 func (c *LocationContextsService) List() ([]LocationContext, error) {
 	var allLocationContexts []LocationContext
 	page := 0
@@ -88,6 +98,7 @@ func (c *LocationContextsService) List() ([]LocationContext, error) {
 	return allLocationContexts, nil
 }
 
+// Get retrieves a specific location context by its ID.
 func (c *LocationContextsService) Get(id string) (*LocationContext, error) {
 	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -108,6 +119,7 @@ func (c *LocationContextsService) Get(id string) (*LocationContext, error) {
 	return &locationContext, nil
 }
 
+// Create creates a new location context.
 func (c *LocationContextsService) Create(locationContext *LocationContext) (*LocationContext, error) {
 	locationContextJSON, err := json.Marshal(locationContext)
 	if err != nil {
@@ -133,6 +145,7 @@ func (c *LocationContextsService) Create(locationContext *LocationContext) (*Loc
 	return &s, nil
 }
 
+// Update updates an existing location context by its ID.
 func (c *LocationContextsService) Update(id string, locationContext *LocationContext) (*LocationContext, error) {
 	locationContextJSON, err := json.Marshal(locationContext)
 	if err != nil {
@@ -158,6 +171,7 @@ func (c *LocationContextsService) Update(id string, locationContext *LocationCon
 	return &s, nil
 }
 
+// Delete removes a location context by its ID.
 func (c *LocationContextsService) Delete(id string) error {
 	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)

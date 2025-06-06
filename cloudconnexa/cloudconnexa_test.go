@@ -11,6 +11,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// setupMockServer creates a test HTTP server that simulates the CloudConnexa API endpoints
+// for testing purposes. It handles token authentication and basic endpoint responses.
 func setupMockServer() *httptest.Server {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -36,6 +38,9 @@ func setupMockServer() *httptest.Server {
 	return server
 }
 
+// TestNewClient tests the creation of a new CloudConnexa client with various credential combinations.
+// It verifies that the client is properly initialized with valid credentials and returns
+// appropriate errors for invalid credentials.
 func TestNewClient(t *testing.T) {
 	server := setupMockServer()
 	defer server.Close()
@@ -66,6 +71,9 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+// TestDoRequest tests the DoRequest method of the CloudConnexa client.
+// It verifies that the client correctly handles various HTTP requests and responses,
+// including valid requests, invalid endpoints, and incorrect HTTP methods.
 func TestDoRequest(t *testing.T) {
 	server := setupMockServer()
 	defer server.Close()
