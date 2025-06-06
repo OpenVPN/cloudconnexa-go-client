@@ -5,48 +5,33 @@
 [![codecov](https://codecov.io/gh/openvpn/cloudconnexa-go-client/branch/main/graph/badge.svg)](https://codecov.io/gh/openvpn/cloudconnexa-go-client)
 [![Build Status](https://github.com/openvpn/cloudconnexa-go-client/workflows/Go%20build/badge.svg)](https://github.com/openvpn/cloudconnexa-go-client/actions)
 
-This Go library enables access to the Cloud Connexa API, as detailed in the [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api-v1-0.html).
+Official Go client library for the Cloud Connexa API, providing programmatic access to OpenVPN Cloud Connexa services.
 
-## Installation Instructions
+**Full CloudConnexa API v1.1.0 Support** - Complete coverage of all public API endpoints with modern Go patterns.
 
-To install the cloudconnexa-go-client, ensure you are using a modern Go release that supports module mode. With Go set up, execute the following command:
+## Table of Contents
 
-```sh
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Authentication](#authentication)
+- [Usage Examples](#usage-examples)
+- [API Coverage](#api-coverage)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Versioning](#versioning)
+- [License](#license)
+- [Support](#support)
+
+## Installation
+
+Requires Go 1.23 or later.
+
+```bash
 go get github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa
 ```
 
-## Features
-
-- Complete Cloud Connexa API coverage
-- Pagination support
-- Rate limiting
-- Automatic token management
-- Concurrent safe
-
-## How to Use
-
-In your Go project, you can use the library by importing it as follows:
-
-```go
-import "github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
-```
-
-Instantiate a new CloudConnexa client. Subsequently, utilize the diverse services provided by the client to interact with distinct segments of the CloudConnexa API. For instance:
-
-```go
-client := cloudconnexa.NewClient("api_url", "client_id", "client_secret")
-
-// List connectors
-connectors, _, err := client.Connectors.List()
-```
-
-## Authentication
-
-For auth need to pass three parameters:
-
-1. client_id
-2. client_secret
-3. api_url (example: `https://myorg.api.openvpn.com`)
+## Quick Start
 
 ```go
 package main
@@ -59,75 +44,340 @@ import (
 )
 
 func main() {
-    client, err := cloudconnexa.NewClient("api_url", "client_id", "client_secret")
+    client, err := cloudconnexa.NewClient("https://myorg.api.openvpn.com", "client_id", "client_secret")
     if err != nil {
-        log.Fatalf("error creating client: %v", err)
+        log.Fatal(err)
     }
 
-    networkID := "your_network_id"
-    routes, err := client.Routes.List(networkID)
+    // List networks
+    networks, err := client.Networks.List()
     if err != nil {
-        log.Fatalf("error getting routes: %v", err)
+        log.Fatal(err)
     }
 
-    fmt.Println("Received routes:", routes)
+    fmt.Printf("Found %d networks\n", len(networks))
 }
 ```
 
-## Examples
+## Authentication
 
-### Creating a Network
+The client requires three parameters for authentication:
+
+- `api_url`: Your organization's API endpoint (e.g., `https://myorg.api.openvpn.com`)
+- `client_id`: OAuth2 client ID
+- `client_secret`: OAuth2 client secret
 
 ```go
+client, err := cloudconnexa.NewClient(apiURL, clientID, clientSecret)
+if err != nil {
+    return err
+}
+```
+
+## Usage Examples
+
+### Network Management
+
+```go
+// Create a network
 network := cloudconnexa.Network{
-    Name:           "test-network",
-    Description:    "Test network created via API",
+    Name:           "production-network",
+    Description:    "Production environment network",
     InternetAccess: cloudconnexa.InternetAccessSplitTunnelOn,
-    Egress:         false,
+    Egress:         true,
 }
 
 createdNetwork, err := client.Networks.Create(network)
+if err != nil {
+    log.Fatal(err)
+}
+
+// List networks with pagination
+networks, pagination, err := client.Networks.GetByPage(1, 10)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Update a network
+updatedNetwork, err := client.Networks.Update(networkID, network)
+if err != nil {
+    log.Fatal(err)
+}
+
+// Delete a network
+err = client.Networks.Delete(networkID)
+if err != nil {
+    log.Fatal(err)
+}
 ```
 
-### Managing Users
+### User Management
 
 ```go
-// List all users
-users, err := client.Users.List("", "")
-
-// Create a new user
+// Create a user
 user := cloudconnexa.User{
-    Username: "testuser",
-    Email:    "test@example.com",
-    GroupID:  "group-id",
+    Username:  "john.doe",
+    Email:     "john.doe@company.com",
+    FirstName: "John",
+    LastName:  "Doe",
+    GroupID:   "group-123",
 }
 
 createdUser, err := client.Users.Create(user)
-```
-
-### Listing VPN Regions
-
-```go
-// List all VPN regions
-regions, err := client.VPNRegions.List()
 if err != nil {
-    log.Fatalf("error getting VPN regions: %v", err)
+    log.Fatal(err)
 }
 
-// Get specific region by ID
-region, err := client.VPNRegions.GetByID("region-id")
+// List users with filtering
+users, err := client.Users.List("", "active")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Get user by ID
+user, err := client.Users.GetByID(userID)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Connector Management
+
+```go
+// List connectors
+connectors, err := client.Connectors.List()
+if err != nil {
+    log.Fatal(err)
+}
+
+// Create a connector
+connector := cloudconnexa.Connector{
+    Name:        "office-connector",
+    Description: "Main office connector",
+    NetworkID:   networkID,
+}
+
+createdConnector, err := client.Connectors.Create(connector)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### Host Management
+
+```go
+// List hosts
+hosts, err := client.Hosts.List()
+if err != nil {
+    log.Fatal(err)
+}
+
+// Get host by ID
+host, err := client.Hosts.GetByID(hostID)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+### DNS Records
+
+```go
+// List DNS records
+dnsRecords, err := client.DNSRecords.List()
+if err != nil {
+    log.Fatal(err)
+}
+
+// Create DNS record
+record := cloudconnexa.DNSRecord{
+    Domain:      "api.internal.company.com",
+    Description: "Internal API endpoint",
+    IPAddress:   "10.0.1.100",
+}
+
+createdRecord, err := client.DNSRecords.Create(record)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## API Coverage
+
+The client provides **100% coverage** of the CloudConnexa API v1.1.0 with all public endpoints:
+
+### **Core Resources**
+
+- **Networks** - Complete network lifecycle management (CRUD operations)
+- **Users** - User management, authentication, and device associations
+- **User Groups** - Group policies, permissions, and access control
+- **VPN Regions** - Available VPN server regions and capabilities
+
+### **Connectivity & Infrastructure**
+
+- **Network Connectors** - Site-to-site connectivity with IPsec tunnel support
+- **Host Connectors** - Host-based connectivity and routing
+- **Hosts** - Host configuration, monitoring, and IP services
+- **Routes** - Network routing configuration and management
+
+### **Services & Monitoring**
+
+- **DNS Records** - Private DNS management with direct endpoint access
+- **Host IP Services** - Service definitions and port configurations
+- **Sessions** - OpenVPN session monitoring and analytics
+- **Devices** - Device lifecycle management and security controls
+
+### **Security & Access Control**
+
+- **Access Groups** - Fine-grained access policies and rules
+- **Location Contexts** - Location-based access controls
+- **Settings** - System-wide configuration and preferences
+
+### **API v1.1.0 Features**
+
+- **Direct Endpoints**: Optimized single-call access for DNS Records and User Groups
+- **Enhanced Sessions API**: Complete OpenVPN session monitoring with cursor-based pagination
+- **Comprehensive Devices API**: Full device management with filtering and bulk operations
+- **IPsec Support**: Start/stop IPsec tunnels for Network Connectors
+- **Updated DTOs**: Simplified data structures aligned with API v1.1.0
+
+### **All Endpoints Support**
+
+- **Pagination** - Both cursor-based (Sessions) and page-based (legacy) pagination
+- **Error Handling** - Structured error types with detailed messages
+- **Rate Limiting** - Automatic rate limiting with configurable limits
+- **Type Safety** - Strong typing with comprehensive validation
+- **Concurrent Safety** - Thread-safe operations for production use
+- **Performance Optimized** - Direct API calls where available
+
+## Configuration
+
+### Rate Limiting
+
+The client includes built-in rate limiting to respect API limits:
+
+```go
+// Rate limiting is automatic, no configuration needed
+client, err := cloudconnexa.NewClient(apiURL, clientID, clientSecret)
+```
+
+### Custom HTTP Client
+
+```go
+import (
+    "net/http"
+    "time"
+)
+
+// Use custom HTTP client with timeout
+httpClient := &http.Client{
+    Timeout: 30 * time.Second,
+}
+
+client, err := cloudconnexa.NewClient(apiURL, clientID, clientSecret)
+// Client uses default HTTP client with sensible timeouts
+```
+
+### Error Handling
+
+The client provides structured error types:
+
+```go
+networks, err := client.Networks.List()
+if err != nil {
+    if clientErr, ok := err.(*cloudconnexa.ErrClientResponse); ok {
+        fmt.Printf("API Error: %d - %s\n", clientErr.StatusCode, clientErr.Message)
+    } else {
+        fmt.Printf("Network Error: %v\n", err)
+    }
+}
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+# Run unit tests
+make test
+
+# Run tests with coverage
+go test -v -race -coverprofile=coverage.txt ./cloudconnexa/...
+```
+
+### End-to-End Tests
+
+```bash
+# Run e2e tests (requires API credentials)
+export CLOUDCONNEXA_BASE_URL="https://your-org.api.openvpn.com"
+export CLOUDCONNEXA_CLIENT_ID="your-client-id"
+export CLOUDCONNEXA_CLIENT_SECRET="your-client-secret"
+
+make e2e
+```
+
+### Linting
+
+```bash
+# Run linters
+make lint
+
+# Install golangci-lint if needed
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-Please make sure to update tests as appropriate.
+### Development Setup
+
+1. Fork the repository
+2. Clone your fork
+3. Install dependencies: `make deps`
+4. Run tests: `make test`
+5. Run linters: `make lint`
+6. Submit a Pull Request
+
+### Code Standards
+
+- Follow Go conventions and best practices
+- Write comprehensive tests for new features
+- Update documentation for API changes
+- Use meaningful commit messages
+
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/):
+
+- **Major version**: Breaking API changes
+- **Minor version**: New features, backward compatible
+- **Patch version**: Bug fixes, backward compatible
+
+Current version: `v2.x.x`
+
+### Changelog
+
+See [Releases](https://github.com/openvpn/cloudconnexa-go-client/releases) for detailed changelog.
 
 ## License
 
-This project is licensed under the Apache License - see the [LICENSE](LICENSE) file for details.
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) file for details.
 
-## Security
+## Support
 
-For security issues, please email [security@openvpn.net](mailto:security@openvpn.net?subject=Security%20Issue%20in%20cloudconnexa-go-client%20github%20repository) instead of posting a public issue on GitHub.
+### Documentation
+
+- [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api-v1-1-0.html)
+- [Go Package Documentation](https://pkg.go.dev/github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa)
+
+### Issues and Questions
+
+- **Bug reports**: [GitHub Issues](https://github.com/openvpn/cloudconnexa-go-client/issues)
+- **Feature requests**: [GitHub Issues](https://github.com/openvpn/cloudconnexa-go-client/issues)
+- **Security issues**: Email [security@openvpn.net](mailto:security@openvpn.net?subject=Security%20Issue%20in%20cloudconnexa-go-client)
+
+### Requirements
+
+- Go 1.23 or later
+- Valid Cloud Connexa API credentials
+- Network access to Cloud Connexa API endpoints

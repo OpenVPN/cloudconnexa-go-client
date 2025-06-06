@@ -1,3 +1,5 @@
+version: 2
+
 builds:
   - skip: true
 
@@ -7,16 +9,15 @@ release:
     name: cloudconnexa-go-client
 
 archives:
-  - format: tar.gz
-    name_template: >-
+  - name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
+      {{- if eq .Os "windows" }}.zip{{ else }}.tar.gz{{ end }}
+    files:
+      - none*
 
 checksum:
   name_template: "checksums.txt"

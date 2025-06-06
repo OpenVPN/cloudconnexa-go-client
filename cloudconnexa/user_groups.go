@@ -103,7 +103,33 @@ func (c *UserGroupsService) GetByName(name string) (*UserGroup, error) {
 	return nil, ErrUserGroupNotFound
 }
 
-// Get retrieves a user group by its ID
+// GetByID retrieves a user group by its ID using the direct API endpoint.
+// This is the preferred method for getting a single user group as it uses the direct
+// GET /api/v1/user-groups/{id} endpoint introduced in API v1.1.0.
+// id: The ID of the user group to retrieve
+// Returns the user group and any error that occurred
+func (c *UserGroupsService) GetByID(id string) (*UserGroup, error) {
+	endpoint := fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var userGroup UserGroup
+	err = json.Unmarshal(body, &userGroup)
+	if err != nil {
+		return nil, err
+	}
+	return &userGroup, nil
+}
+
+// Get retrieves a user group by its ID using pagination search.
+// Deprecated: Use GetByID() instead for better performance with the direct API endpoint.
 // id: The ID of the user group to retrieve
 // Returns the user group and any error that occurred
 func (c *UserGroupsService) Get(id string) (*UserGroup, error) {
