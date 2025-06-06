@@ -1,11 +1,10 @@
 # Cloud Connexa Go Client
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa)
-[![Go Report Card](https://goreportcard.com/badge/github.com/openvpn/cloudconnexa-go-client/v2)](https://goreportcard.com/report/github.com/openvpn/cloudconnexa-go-client/v2)
 [![codecov](https://codecov.io/gh/openvpn/cloudconnexa-go-client/branch/main/graph/badge.svg)](https://codecov.io/gh/openvpn/cloudconnexa-go-client)
 [![Build Status](https://github.com/openvpn/cloudconnexa-go-client/workflows/Go%20build/badge.svg)](https://github.com/openvpn/cloudconnexa-go-client/actions)
 
-Official Go client library for the Cloud Connexa API, providing programmatic access to OpenVPN Cloud Connexa services.
+The official Go client library for the Cloud Connexa API provides programmatic access to OpenVPN Cloud Connexa services.
 
 **Full CloudConnexa API v1.1.0 Support** - Complete coverage of all public API endpoints with modern Go patterns.
 
@@ -63,7 +62,7 @@ func main() {
 
 The client requires three parameters for authentication:
 
-- `api_url`: Your organization's API endpoint (e.g., `https://myorg.api.openvpn.com`)
+- `api_url`: Your organisation's API endpoint (e.g., `https://myorg.api.openvpn.com`)
 - `client_id`: OAuth2 client ID
 - `client_secret`: OAuth2 client secret
 
@@ -234,7 +233,7 @@ The client provides **100% coverage** of the CloudConnexa API v1.1.0 with all pu
 
 ### **API v1.1.0 Features**
 
-- **Direct Endpoints**: Optimized single-call access for DNS Records and User Groups
+- **Direct Endpoints**: Optimised single-call access for DNS Records and User Groups
 - **Enhanced Sessions API**: Complete OpenVPN session monitoring with cursor-based pagination
 - **Comprehensive Devices API**: Full device management with filtering and bulk operations
 - **IPsec Support**: Start/stop IPsec tunnels for Network Connectors
@@ -357,7 +356,7 @@ Current version: `v2.x.x`
 
 ### Changelog
 
-See [Releases](https://github.com/openvpn/cloudconnexa-go-client/releases) for detailed changelog.
+See [Releases](https://github.com/openvpn/cloudconnexa-go-client/releases) for the detailed changelog.
 
 ## License
 
