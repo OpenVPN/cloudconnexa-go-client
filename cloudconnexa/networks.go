@@ -8,11 +8,15 @@ import (
 )
 
 const (
-	InternetAccessSplitTunnelOn      = "SPLIT_TUNNEL_ON"
-	InternetAccessSplitTunnelOff     = "SPLIT_TUNNEL_OFF"
+	// InternetAccessSplitTunnelOn enables split tunneling for internet access.
+	InternetAccessSplitTunnelOn = "SPLIT_TUNNEL_ON"
+	// InternetAccessSplitTunnelOff disables split tunneling for internet access.
+	InternetAccessSplitTunnelOff = "SPLIT_TUNNEL_OFF"
+	// InternetAccessRestrictedInternet restricts internet access.
 	InternetAccessRestrictedInternet = "RESTRICTED_INTERNET"
 )
 
+// Network represents a network in CloudConnexa.
 type Network struct {
 	Connectors     []NetworkConnector `json:"connectors"`
 	Description    string             `json:"description"`
@@ -25,6 +29,7 @@ type Network struct {
 	NetworkItemID  string             `json:"NetworkItemID"`
 }
 
+// NetworkPageResponse represents a paginated response of networks.
 type NetworkPageResponse struct {
 	Content          []Network `json:"content"`
 	NumberOfElements int       `json:"numberOfElements"`
@@ -35,8 +40,13 @@ type NetworkPageResponse struct {
 	TotalPages       int       `json:"totalPages"`
 }
 
+// NetworksService provides methods for managing networks.
 type NetworksService service
 
+// GetByPage retrieves networks using pagination.
+// page: The page number to retrieve
+// size: The number of items per page
+// Returns a NetworkPageResponse containing the networks and pagination information
 func (c *NetworksService) GetByPage(page int, size int) (NetworkPageResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/networks?page=%d&size=%d", c.client.GetV1Url(), page, size), nil)
 	if err != nil {
@@ -57,6 +67,8 @@ func (c *NetworksService) GetByPage(page int, size int) (NetworkPageResponse, er
 	return response, nil
 }
 
+// List retrieves all networks by paginating through all available pages.
+// Returns a slice of all networks and any error that occurred
 func (c *NetworksService) List() ([]Network, error) {
 	var allNetworks []Network
 	pageSize := 10
@@ -78,6 +90,9 @@ func (c *NetworksService) List() ([]Network, error) {
 	return allNetworks, nil
 }
 
+// Get retrieves a specific network by its ID.
+// id: The ID of the network to retrieve
+// Returns the network and any error that occurred
 func (c *NetworksService) Get(id string) (*Network, error) {
 	endpoint := fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -98,6 +113,9 @@ func (c *NetworksService) Get(id string) (*Network, error) {
 	return &network, nil
 }
 
+// Create creates a new network.
+// network: The network configuration to create
+// Returns the created network and any error that occurred
 func (c *NetworksService) Create(network Network) (*Network, error) {
 	networkJSON, err := json.Marshal(network)
 	if err != nil {
@@ -122,6 +140,9 @@ func (c *NetworksService) Create(network Network) (*Network, error) {
 	return &n, nil
 }
 
+// Update updates an existing network.
+// network: The updated network configuration
+// Returns any error that occurred during the update
 func (c *NetworksService) Update(network Network) error {
 	networkJSON, err := json.Marshal(network)
 	if err != nil {
@@ -137,6 +158,9 @@ func (c *NetworksService) Update(network Network) error {
 	return err
 }
 
+// Delete removes a network by its ID.
+// networkID: The ID of the network to delete
+// Returns any error that occurred during deletion
 func (c *NetworksService) Delete(networkID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), networkID), nil)
 	if err != nil {

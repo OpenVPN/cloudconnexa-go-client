@@ -9,9 +9,11 @@ import (
 )
 
 var (
+	// ErrUserGroupNotFound is returned when a user group cannot be found
 	ErrUserGroupNotFound = errors.New("user group not found")
 )
 
+// UserGroupPageResponse represents a paginated response of user groups
 type UserGroupPageResponse struct {
 	Content          []UserGroup `json:"content"`
 	NumberOfElements int         `json:"numberOfElements"`
@@ -22,6 +24,7 @@ type UserGroupPageResponse struct {
 	TotalPages       int         `json:"totalPages"`
 }
 
+// UserGroup represents a user group configuration
 type UserGroup struct {
 	ConnectAuth        string   `json:"connectAuth"`
 	ID                 string   `json:"id"`
@@ -33,8 +36,13 @@ type UserGroup struct {
 	AllRegionsIncluded bool     `json:"allRegionsIncluded"`
 }
 
+// UserGroupsService provides methods for managing user groups
 type UserGroupsService service
 
+// GetByPage retrieves user groups using pagination
+// page: The page number to retrieve
+// pageSize: The number of items per page
+// Returns a page of user groups and any error that occurred
 func (c *UserGroupsService) GetByPage(page int, pageSize int) (UserGroupPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/user-groups?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -55,6 +63,8 @@ func (c *UserGroupsService) GetByPage(page int, pageSize int) (UserGroupPageResp
 	return response, nil
 }
 
+// List retrieves all user groups by paginating through all available pages
+// Returns a slice of user groups and any error that occurred
 func (c *UserGroupsService) List() ([]UserGroup, error) {
 	var allUserGroups []UserGroup
 	pageSize := 10
@@ -76,6 +86,9 @@ func (c *UserGroupsService) List() ([]UserGroup, error) {
 	return allUserGroups, nil
 }
 
+// GetByName retrieves a user group by its name
+// name: The name of the user group to retrieve
+// Returns the user group and any error that occurred
 func (c *UserGroupsService) GetByName(name string) (*UserGroup, error) {
 	userGroups, err := c.List()
 	if err != nil {
@@ -90,6 +103,9 @@ func (c *UserGroupsService) GetByName(name string) (*UserGroup, error) {
 	return nil, ErrUserGroupNotFound
 }
 
+// Get retrieves a user group by its ID
+// id: The ID of the user group to retrieve
+// Returns the user group and any error that occurred
 func (c *UserGroupsService) Get(id string) (*UserGroup, error) {
 	userGroups, err := c.List()
 	if err != nil {
@@ -104,6 +120,9 @@ func (c *UserGroupsService) Get(id string) (*UserGroup, error) {
 	return nil, ErrUserGroupNotFound
 }
 
+// Create creates a new user group
+// userGroup: The user group configuration to create
+// Returns the created user group and any error that occurred
 func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
 	userGroupJSON, err := json.Marshal(userGroup)
 	if err != nil {
@@ -128,6 +147,10 @@ func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
 	return &ug, nil
 }
 
+// Update updates an existing user group
+// id: The ID of the user group to update
+// userGroup: The updated user group configuration
+// Returns the updated user group and any error that occurred
 func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup, error) {
 	userGroupJSON, err := json.Marshal(userGroup)
 	if err != nil {
@@ -151,6 +174,9 @@ func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup,
 	return &ug, nil
 }
 
+// Delete removes a user group by its ID
+// id: The ID of the user group to delete
+// Returns any error that occurred during deletion
 func (c *UserGroupsService) Delete(id string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), nil)
 	if err != nil {

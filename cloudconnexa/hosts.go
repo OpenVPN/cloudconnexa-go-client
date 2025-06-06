@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// Host represents a host in CloudConnexa.
 type Host struct {
 	ID             string          `json:"id,omitempty"`
 	Name           string          `json:"name"`
@@ -17,6 +18,7 @@ type Host struct {
 	Connectors     []HostConnector `json:"connectors"`
 }
 
+// HostPageResponse represents a paginated response of hosts.
 type HostPageResponse struct {
 	Content          []Host `json:"content"`
 	NumberOfElements int    `json:"numberOfElements"`
@@ -27,8 +29,10 @@ type HostPageResponse struct {
 	TotalPages       int    `json:"totalPages"`
 }
 
+// HostsService provides methods for managing hosts.
 type HostsService service
 
+// GetHostsByPage retrieves hosts using pagination.
 func (c *HostsService) GetHostsByPage(page int, size int) (HostPageResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/hosts?page=%d&size=%d", c.client.GetV1Url(), page, size), nil)
 	if err != nil {
@@ -48,6 +52,7 @@ func (c *HostsService) GetHostsByPage(page int, size int) (HostPageResponse, err
 	return response, nil
 }
 
+// List retrieves all hosts.
 func (c *HostsService) List() ([]Host, error) {
 	var allHosts []Host
 	pageSize := 10
@@ -69,6 +74,7 @@ func (c *HostsService) List() ([]Host, error) {
 	return allHosts, nil
 }
 
+// Get retrieves a specific host by ID.
 func (c *HostsService) Get(id string) (*Host, error) {
 	endpoint := fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -89,6 +95,7 @@ func (c *HostsService) Get(id string) (*Host, error) {
 	return &host, nil
 }
 
+// Create creates a new host.
 func (c *HostsService) Create(host Host) (*Host, error) {
 	hostJSON, err := json.Marshal(host)
 	if err != nil {
@@ -113,6 +120,7 @@ func (c *HostsService) Create(host Host) (*Host, error) {
 	return &h, nil
 }
 
+// Update updates an existing host.
 func (c *HostsService) Update(host Host) error {
 	hostJSON, err := json.Marshal(host)
 	if err != nil {
@@ -128,6 +136,7 @@ func (c *HostsService) Update(host Host) error {
 	return err
 }
 
+// Delete deletes a host by ID.
 func (c *HostsService) Delete(hostID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), hostID), nil)
 	if err != nil {

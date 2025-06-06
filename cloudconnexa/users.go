@@ -9,9 +9,11 @@ import (
 )
 
 var (
+	// ErrUserNotFound is returned when a user cannot be found
 	ErrUserNotFound = errors.New("user not found")
 )
 
+// User represents a user configuration
 type User struct {
 	ID               string   `json:"id"`
 	Name             string   `json:"name"`
@@ -27,6 +29,7 @@ type User struct {
 	ConnectionStatus string   `json:"connectionStatus"`
 }
 
+// UserPageResponse represents a paginated response of users
 type UserPageResponse struct {
 	Content          []User `json:"content"`
 	NumberOfElements int    `json:"numberOfElements"`
@@ -37,6 +40,7 @@ type UserPageResponse struct {
 	TotalPages       int    `json:"totalPages"`
 }
 
+// Device represents a user device configuration
 type Device struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -45,8 +49,13 @@ type Device struct {
 	IPv6Address string `json:"ipV6Address"`
 }
 
+// UsersService provides methods for managing users
 type UsersService service
 
+// GetByPage retrieves users using pagination
+// page: The page number to retrieve
+// pageSize: The number of items per page
+// Returns a page of users and any error that occurred
 func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/users?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -67,6 +76,10 @@ func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, erro
 	return response, nil
 }
 
+// List retrieves a user by username and role
+// username: The username to search for
+// role: The role to filter by
+// Returns the user and any error that occurred
 func (c *UsersService) List(username string, role string) (*User, error) {
 	pageSize := 10
 	page := 0
@@ -91,10 +104,16 @@ func (c *UsersService) List(username string, role string) (*User, error) {
 	return nil, ErrUserNotFound
 }
 
+// Get retrieves a user by ID
+// userID: The ID of the user to retrieve
+// Returns the user and any error that occurred
 func (c *UsersService) Get(userID string) (*User, error) {
 	return c.GetByID(userID)
 }
 
+// GetByID retrieves a user by ID
+// userID: The ID of the user to retrieve
+// Returns the user and any error that occurred
 func (c *UsersService) GetByID(userID string) (*User, error) {
 	endpoint := fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -115,6 +134,9 @@ func (c *UsersService) GetByID(userID string) (*User, error) {
 	return &user, nil
 }
 
+// GetByUsername retrieves a user by username
+// username: The username to search for
+// Returns the user and any error that occurred
 func (c *UsersService) GetByUsername(username string) (*User, error) {
 	pageSize := 10
 	page := 0
@@ -139,6 +161,9 @@ func (c *UsersService) GetByUsername(username string) (*User, error) {
 	return nil, ErrUserNotFound
 }
 
+// Create creates a new user
+// user: The user configuration to create
+// Returns the created user and any error that occurred
 func (c *UsersService) Create(user User) (*User, error) {
 	userJSON, err := json.Marshal(user)
 	if err != nil {
@@ -163,6 +188,9 @@ func (c *UsersService) Create(user User) (*User, error) {
 	return &u, nil
 }
 
+// Update updates an existing user
+// user: The user configuration to update
+// Returns any error that occurred
 func (c *UsersService) Update(user User) error {
 	userJSON, err := json.Marshal(user)
 	if err != nil {
@@ -181,6 +209,9 @@ func (c *UsersService) Update(user User) error {
 	return nil
 }
 
+// Delete deletes a user by ID
+// userID: The ID of the user to delete
+// Returns any error that occurred
 func (c *UsersService) Delete(userID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID), nil)
 	if err != nil {

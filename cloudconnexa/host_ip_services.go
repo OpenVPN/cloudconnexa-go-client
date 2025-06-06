@@ -7,28 +7,33 @@ import (
 	"net/http"
 )
 
+// Range represents a range of values with lower and upper bounds, or a single value.
 type Range struct {
 	LowerValue int `json:"lowerValue"`
 	UpperValue int `json:"upperValue"`
 	Value      int `json:"value,omitempty"`
 }
 
+// CustomIPServiceType represents a custom IP service type configuration with ICMP type, port ranges, and protocol.
 type CustomIPServiceType struct {
 	IcmpType []Range `json:"icmpType"`
 	Port     []Range `json:"port"`
 	Protocol string  `json:"protocol"`
 }
 
+// IPServiceRoute represents a route configuration for an IP service.
 type IPServiceRoute struct {
 	Description string `json:"description"`
 	Value       string `json:"value"`
 }
 
+// IPServiceConfig represents the configuration for an IP service including custom service types and predefined service types.
 type IPServiceConfig struct {
 	CustomServiceTypes []*CustomIPServiceType `json:"customServiceTypes"`
 	ServiceTypes       []string               `json:"serviceTypes"`
 }
 
+// IPService represents an IP service with its configuration and routing information.
 type IPService struct {
 	Name            string            `json:"name"`
 	Description     string            `json:"description"`
@@ -40,11 +45,15 @@ type IPService struct {
 	Config          *IPServiceConfig  `json:"config"`
 }
 
+// IPServiceResponse represents the response structure for IP service operations,
+// extending the base IPService with additional route information.
 type IPServiceResponse struct {
 	IPService
 	Routes []*Route `json:"routes"`
 }
 
+// IPServicePageResponse represents a paginated response from the CloudConnexa API
+// containing a list of IP services and pagination metadata.
 type IPServicePageResponse struct {
 	Content          []IPServiceResponse `json:"content"`
 	NumberOfElements int                 `json:"numberOfElements"`
@@ -55,8 +64,10 @@ type IPServicePageResponse struct {
 	TotalPages       int                 `json:"totalPages"`
 }
 
+// HostIPServicesService provides methods for managing IP services.
 type HostIPServicesService service
 
+// GetIPByPage retrieves IP services using pagination.
 func (c *HostIPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
 	endpoint := fmt.Sprintf("%s/hosts/ip-services?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -77,6 +88,7 @@ func (c *HostIPServicesService) GetIPByPage(page int, pageSize int) (IPServicePa
 	return response, nil
 }
 
+// List retrieves all IP services by paginating through all available pages.
 func (c *HostIPServicesService) List() ([]IPServiceResponse, error) {
 	var allIPServices []IPServiceResponse
 	page := 0
@@ -97,6 +109,7 @@ func (c *HostIPServicesService) List() ([]IPServiceResponse, error) {
 	return allIPServices, nil
 }
 
+// Get retrieves a specific IP service by its ID.
 func (c *HostIPServicesService) Get(id string) (*IPServiceResponse, error) {
 	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -117,6 +130,7 @@ func (c *HostIPServicesService) Get(id string) (*IPServiceResponse, error) {
 	return &service, nil
 }
 
+// Create creates a new IP service.
 func (c *HostIPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
 	ipServiceJSON, err := json.Marshal(ipService)
 	if err != nil {
@@ -143,6 +157,7 @@ func (c *HostIPServicesService) Create(ipService *IPService) (*IPServiceResponse
 	return &s, nil
 }
 
+// Update updates an existing IP service by its ID.
 func (c *HostIPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
 	serviceJSON, err := json.Marshal(service)
 	if err != nil {
@@ -169,6 +184,7 @@ func (c *HostIPServicesService) Update(id string, service *IPService) (*IPServic
 	return &s, nil
 }
 
+// Delete removes an IP service by its ID.
 func (c *HostIPServicesService) Delete(ipServiceID string) error {
 	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), ipServiceID)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
