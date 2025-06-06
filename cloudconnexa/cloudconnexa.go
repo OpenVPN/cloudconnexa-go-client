@@ -44,6 +44,7 @@ type Client struct {
 	VPNRegions          *VPNRegionsService
 	LocationContexts    *LocationContextsService
 	AccessGroups        *AccessGroupsService
+	Settings            *SettingsService
 }
 
 type service struct {
@@ -134,7 +135,20 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	c.VPNRegions = (*VPNRegionsService)(&c.common)
 	c.LocationContexts = (*LocationContextsService)(&c.common)
 	c.AccessGroups = (*AccessGroupsService)(&c.common)
+	c.Settings = (*SettingsService)(&c.common)
 	return c, nil
+}
+
+// setCommonHeaders sets the standard headers for API requests.
+// It sets Authorization and User-Agent headers, and sets Content-Type to application/json
+// if no Content-Type header is already present.
+func (c *Client) setCommonHeaders(req *http.Request) {
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	req.Header.Set("User-Agent", c.UserAgent)
+
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
 }
 
 // DoRequest executes an HTTP request with authentication and rate limiting.
@@ -145,9 +159,7 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	req.Header.Set("User-Agent", c.UserAgent)
-	req.Header.Set("Content-Type", "application/json")
+	c.setCommonHeaders(req)
 
 	res, err := c.client.Do(req)
 	if err != nil {
