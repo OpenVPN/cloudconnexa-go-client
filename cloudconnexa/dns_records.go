@@ -9,9 +9,11 @@ import (
 )
 
 var (
+	// ErrDNSRecordNotFound is returned when a DNS record is not found.
 	ErrDNSRecordNotFound = errors.New("dns record not found")
 )
 
+// DNSRecord represents a DNS record in CloudConnexa.
 type DNSRecord struct {
 	ID            string   `json:"id"`
 	Domain        string   `json:"domain"`
@@ -20,6 +22,7 @@ type DNSRecord struct {
 	IPV6Addresses []string `json:"ipv6Addresses"`
 }
 
+// DNSRecordPageResponse represents a paginated response of DNS records.
 type DNSRecordPageResponse struct {
 	Content          []DNSRecord `json:"content"`
 	NumberOfElements int         `json:"numberOfElements"`
@@ -30,8 +33,10 @@ type DNSRecordPageResponse struct {
 	TotalPages       int         `json:"totalPages"`
 }
 
+// DNSRecordsService provides methods for managing DNS records.
 type DNSRecordsService service
 
+// GetByPage retrieves DNS records using pagination.
 func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DNSRecordPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/dns-records?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -52,6 +57,7 @@ func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DNSRecordPageResp
 	return response, nil
 }
 
+// GetDNSRecord retrieves a specific DNS record by ID.
 func (c *DNSRecordsService) GetDNSRecord(recordID string) (*DNSRecord, error) {
 	pageSize := 10
 	page := 0
@@ -76,6 +82,7 @@ func (c *DNSRecordsService) GetDNSRecord(recordID string) (*DNSRecord, error) {
 	return nil, ErrDNSRecordNotFound
 }
 
+// Create creates a new DNS record.
 func (c *DNSRecordsService) Create(record DNSRecord) (*DNSRecord, error) {
 	recordJSON, err := json.Marshal(record)
 	if err != nil {
@@ -100,6 +107,7 @@ func (c *DNSRecordsService) Create(record DNSRecord) (*DNSRecord, error) {
 	return &d, nil
 }
 
+// Update updates an existing DNS record.
 func (c *DNSRecordsService) Update(record DNSRecord) error {
 	recordJSON, err := json.Marshal(record)
 	if err != nil {
@@ -115,6 +123,7 @@ func (c *DNSRecordsService) Update(record DNSRecord) error {
 	return err
 }
 
+// Delete deletes a DNS record by ID.
 func (c *DNSRecordsService) Delete(recordID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), recordID), nil)
 	if err != nil {

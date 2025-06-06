@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+// NetworkConnector represents a network connector configuration.
 type NetworkConnector struct {
 	ID               string `json:"id,omitempty"`
 	Name             string `json:"name"`
@@ -22,6 +23,7 @@ type NetworkConnector struct {
 	ConnectionStatus string `json:"connectionStatus"`
 }
 
+// NetworkConnectorPageResponse represents a paginated response of network connectors.
 type NetworkConnectorPageResponse struct {
 	Content          []NetworkConnector `json:"content"`
 	NumberOfElements int                `json:"numberOfElements"`
@@ -32,12 +34,15 @@ type NetworkConnectorPageResponse struct {
 	TotalPages       int                `json:"totalPages"`
 }
 
+// NetworkConnectorsService provides methods for managing network connectors.
 type NetworkConnectorsService service
 
+// GetByPage retrieves network connectors using pagination.
 func (c *NetworkConnectorsService) GetByPage(page int, pageSize int) (NetworkConnectorPageResponse, error) {
 	return c.GetByPageAndNetworkID(page, pageSize, "")
 }
 
+// GetByPageAndNetworkID retrieves network connectors for a specific network using pagination.
 func (c *NetworkConnectorsService) GetByPageAndNetworkID(page int, pageSize int, networkID string) (NetworkConnectorPageResponse, error) {
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
@@ -65,6 +70,7 @@ func (c *NetworkConnectorsService) GetByPageAndNetworkID(page int, pageSize int,
 	return response, nil
 }
 
+// Update updates an existing network connector.
 func (c *NetworkConnectorsService) Update(connector NetworkConnector) (*NetworkConnector, error) {
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
@@ -89,6 +95,7 @@ func (c *NetworkConnectorsService) Update(connector NetworkConnector) (*NetworkC
 	return &conn, nil
 }
 
+// List retrieves all network connectors by paginating through all available pages.
 func (c *NetworkConnectorsService) List() ([]NetworkConnector, error) {
 	var allConnectors []NetworkConnector
 	page := 0
@@ -110,6 +117,7 @@ func (c *NetworkConnectorsService) List() ([]NetworkConnector, error) {
 	return allConnectors, nil
 }
 
+// ListByNetworkID retrieves all network connectors for a specific network by paginating through all available pages.
 func (c *NetworkConnectorsService) ListByNetworkID(networkID string) ([]NetworkConnector, error) {
 	var allConnectors []NetworkConnector
 	page := 0
@@ -131,6 +139,7 @@ func (c *NetworkConnectorsService) ListByNetworkID(networkID string) ([]NetworkC
 	return allConnectors, nil
 }
 
+// GetByID retrieves a specific network connector by its ID.
 func (c *NetworkConnectorsService) GetByID(id string) (*NetworkConnector, error) {
 	endpoint := fmt.Sprintf("%s/networks/connectors/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -151,6 +160,7 @@ func (c *NetworkConnectorsService) GetByID(id string) (*NetworkConnector, error)
 	return &connector, nil
 }
 
+// GetProfile retrieves the profile configuration for a specific network connector.
 func (c *NetworkConnectorsService) GetProfile(id string) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors/%s/profile", c.client.GetV1Url(), id), nil)
 	if err != nil {
@@ -164,6 +174,7 @@ func (c *NetworkConnectorsService) GetProfile(id string) (string, error) {
 	return string(body), nil
 }
 
+// GetToken retrieves an encrypted token for a specific network connector.
 func (c *NetworkConnectorsService) GetToken(id string) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors/%s/profile/encrypt", c.client.GetV1Url(), id), nil)
 	if err != nil {
@@ -177,6 +188,7 @@ func (c *NetworkConnectorsService) GetToken(id string) (string, error) {
 	return string(body), nil
 }
 
+// Create creates a new network connector.
 func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkID string) (*NetworkConnector, error) {
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
@@ -201,6 +213,7 @@ func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkID 
 	return &conn, nil
 }
 
+// Delete removes a network connector by its ID and network ID.
 func (c *NetworkConnectorsService) Delete(connectorID string, networkID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/connectors/%s?networkId=%s", c.client.GetV1Url(), connectorID, networkID), nil)
 	if err != nil {

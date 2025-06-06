@@ -17,6 +17,7 @@ const (
 	userAgent = "cloudconnexa-go"
 )
 
+// Client represents a CloudConnexa API client with all service endpoints.
 type Client struct {
 	client *http.Client
 
@@ -49,10 +50,12 @@ type service struct {
 	client *Client
 }
 
+// Credentials represents the OAuth2 token response from CloudConnexa API.
 type Credentials struct {
 	AccessToken string `json:"access_token"`
 }
 
+// ErrClientResponse represents an error response from the CloudConnexa API.
 type ErrClientResponse struct {
 	status int
 	body   string
@@ -62,6 +65,8 @@ func (e ErrClientResponse) Error() string {
 	return fmt.Sprintf("status code: %d, response body: %s", e.status, e.body)
 }
 
+// NewClient creates a new CloudConnexa API client with the given credentials.
+// It authenticates using OAuth2 client credentials flow and returns a configured client.
 func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	if clientID == "" || clientSecret == "" {
 		return nil, ErrCredentialsRequired
@@ -88,7 +93,13 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Log the error if you have a logger, otherwise this is acceptable for library code
+			_ = closeErr
+		}
+	}()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -126,6 +137,8 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	return c, nil
 }
 
+// DoRequest executes an HTTP request with authentication and rate limiting.
+// It automatically adds the Bearer token, sets headers, and handles errors.
 func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	err := c.RateLimiter.Wait(context.Background())
 	if err != nil {
@@ -140,7 +153,12 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if closeErr := res.Body.Close(); closeErr != nil {
+			// Log the error if you have a logger, otherwise this is acceptable for library code
+			_ = closeErr
+		}
+	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -154,6 +172,7 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
+// GetV1Url returns the base URL for CloudConnexa API v1 endpoints.
 func (c *Client) GetV1Url() string {
 	return c.BaseURL + "/api/v1"
 }

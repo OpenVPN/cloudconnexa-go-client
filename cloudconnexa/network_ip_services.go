@@ -7,8 +7,13 @@ import (
 	"net/http"
 )
 
+// NetworkIPServicesService handles communication with the CloudConnexa IP Services API
 type NetworkIPServicesService service
 
+// GetIPByPage retrieves a page of IP services with pagination
+// page: The page number to retrieve
+// pageSize: The number of items per page
+// Returns a page of IP services and any error that occurred
 func (c *NetworkIPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
 	endpoint := fmt.Sprintf("%s/networks/ip-services?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -29,6 +34,8 @@ func (c *NetworkIPServicesService) GetIPByPage(page int, pageSize int) (IPServic
 	return response, nil
 }
 
+// List retrieves all IP services by paginating through all available pages
+// Returns a slice of IP services and any error that occurred
 func (c *NetworkIPServicesService) List() ([]IPServiceResponse, error) {
 	var allIPServices []IPServiceResponse
 	page := 0
@@ -49,6 +56,9 @@ func (c *NetworkIPServicesService) List() ([]IPServiceResponse, error) {
 	return allIPServices, nil
 }
 
+// Get retrieves a specific IP service by its ID
+// id: The ID of the IP service to retrieve
+// Returns the IP service and any error that occurred
 func (c *NetworkIPServicesService) Get(id string) (*IPServiceResponse, error) {
 	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -69,6 +79,9 @@ func (c *NetworkIPServicesService) Get(id string) (*IPServiceResponse, error) {
 	return &service, nil
 }
 
+// Create creates a new IP service
+// ipService: The IP service configuration to create
+// Returns the created IP service and any error that occurred
 func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
 	ipServiceJSON, err := json.Marshal(ipService)
 	if err != nil {
@@ -95,6 +108,10 @@ func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceRespo
 	return &s, nil
 }
 
+// Update updates an existing IP service
+// id: The ID of the IP service to update
+// service: The updated IP service configuration
+// Returns the updated IP service and any error that occurred
 func (c *NetworkIPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
 	serviceJSON, err := json.Marshal(service)
 	if err != nil {
@@ -121,6 +138,9 @@ func (c *NetworkIPServicesService) Update(id string, service *IPService) (*IPSer
 	return &s, nil
 }
 
+// Delete removes an IP service by its ID
+// IPServiceID: The ID of the IP service to delete
+// Returns any error that occurred during deletion
 func (c *NetworkIPServicesService) Delete(IPServiceID string) error {
 	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), IPServiceID)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)

@@ -1,19 +1,21 @@
-linters:
-  enable:
-    - gofmt
-    - govet
-    - revive
-    - gosimple
-    - staticcheck
-    - errcheck
-    - ineffassign
-    - gosec
-    - misspell
-    - unconvert
+version: "2"
 
 run:
   timeout: 5m
   tests: true
+  go: "1.23"
+
+linters:
+  enable:
+    - errcheck
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - unconvert
+    - unused
 
 issues:
   exclude-rules:

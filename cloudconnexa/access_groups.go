@@ -1,3 +1,6 @@
+// Package cloudconnexa provides a Go client library for the CloudConnexa API.
+// It offers comprehensive functionality for managing VPN networks, hosts, connectors,
+// routes, users, and other CloudConnexa resources through a simple Go interface.
 package cloudconnexa
 
 import (
@@ -7,6 +10,8 @@ import (
 	"net/http"
 )
 
+// AccessGroup represents a group of access rules that define network access permissions.
+// It contains source and destination rules that determine what resources can access each other.
 type AccessGroup struct {
 	ID          string       `json:"id"`
 	Name        string       `json:"name"`
@@ -15,6 +20,8 @@ type AccessGroup struct {
 	Destination []AccessItem `json:"destination"`
 }
 
+// AccessItem represents a single access rule item that can be either a source or destination.
+// It defines what resources are covered by the access rule and their relationships.
 type AccessItem struct {
 	Type       string   `json:"type"`
 	AllCovered bool     `json:"allCovered"`
@@ -22,10 +29,13 @@ type AccessItem struct {
 	Children   []string `json:"children,omitempty"`
 }
 
+// Item represents a basic resource with an identifier.
 type Item struct {
 	ID string `json:"id"`
 }
 
+// AccessGroupPageResponse represents a paginated response from the CloudConnexa API
+// containing a list of access groups and pagination metadata.
 type AccessGroupPageResponse struct {
 	Content          []AccessGroup `json:"content"`
 	NumberOfElements int           `json:"numberOfElements"`
@@ -36,8 +46,11 @@ type AccessGroupPageResponse struct {
 	TotalPages       int           `json:"totalPages"`
 }
 
+// AccessGroupsService handles communication with the CloudConnexa API for access group operations.
 type AccessGroupsService service
 
+// GetAccessGroupsByPage retrieves a paginated list of access groups from the CloudConnexa API.
+// It returns the access groups for the specified page and page size.
 func (c *AccessGroupsService) GetAccessGroupsByPage(page int, size int) (AccessGroupPageResponse, error) {
 	endpoint := fmt.Sprintf("%s/access-groups?page=%d&size=%d", c.client.GetV1Url(), page, size)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -58,6 +71,8 @@ func (c *AccessGroupsService) GetAccessGroupsByPage(page int, size int) (AccessG
 	return response, nil
 }
 
+// List retrieves all access groups from the CloudConnexa API.
+// It handles pagination internally and returns a complete list of access groups.
 func (c *AccessGroupsService) List() ([]AccessGroup, error) {
 	var allGroups []AccessGroup
 	page := 0
@@ -78,6 +93,7 @@ func (c *AccessGroupsService) List() ([]AccessGroup, error) {
 	return allGroups, nil
 }
 
+// Get retrieves a specific access group by its ID from the CloudConnexa API.
 func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
 	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -98,6 +114,8 @@ func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
 	return &accessGroup, nil
 }
 
+// Create creates a new access group in the CloudConnexa API.
+// It returns the created access group with its assigned ID.
 func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, error) {
 	accessGroupJSON, err := json.Marshal(accessGroup)
 	if err != nil {
@@ -124,6 +142,8 @@ func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, er
 	return &s, nil
 }
 
+// Update updates an existing access group in the CloudConnexa API.
+// It returns the updated access group.
 func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroup) (*AccessGroup, error) {
 	accessGroupJSON, err := json.Marshal(accessGroup)
 	if err != nil {
@@ -150,6 +170,7 @@ func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroup) (*Acce
 	return &s, nil
 }
 
+// Delete removes an access group from the CloudConnexa API by its ID.
 func (c *AccessGroupsService) Delete(id string) error {
 	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)

@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
+// HostConnector represents a host connector in CloudConnexa.
 type HostConnector struct {
 	ID               string `json:"id,omitempty"`
 	Name             string `json:"name"`
@@ -22,6 +21,7 @@ type HostConnector struct {
 	ConnectionStatus string `json:"connectionStatus"`
 }
 
+// HostConnectorPageResponse represents a paginated response of host connectors.
 type HostConnectorPageResponse struct {
 	Content          []HostConnector `json:"content"`
 	NumberOfElements int             `json:"numberOfElements"`
@@ -32,21 +32,23 @@ type HostConnectorPageResponse struct {
 	TotalPages       int             `json:"totalPages"`
 }
 
+// HostConnectorsService provides methods for managing host connectors.
 type HostConnectorsService service
 
+// GetByPage retrieves host connectors using pagination.
 func (c *HostConnectorsService) GetByPage(page int, pageSize int) (HostConnectorPageResponse, error) {
 	return c.GetByPageAndHostID(page, pageSize, "")
 }
 
+// GetByPageAndHostID retrieves host connectors using pagination, optionally filtered by host ID.
 func (c *HostConnectorsService) GetByPageAndHostID(page int, pageSize int, hostID string) (HostConnectorPageResponse, error) {
-	params := url.Values{}
-	params.Add("page", strconv.Itoa(page))
-	params.Add("size", strconv.Itoa(pageSize))
+	var endpoint string
 	if hostID != "" {
-		params.Add("hostId", hostID)
+		endpoint = fmt.Sprintf("%s/hosts/connectors?hostId=%s&page=%d&size=%d", c.client.GetV1Url(), hostID, page, pageSize)
+	} else {
+		endpoint = fmt.Sprintf("%s/hosts/connectors?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	}
 
-	endpoint := fmt.Sprintf("%s/hosts/connectors?%s", c.client.GetV1Url(), params.Encode())
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return HostConnectorPageResponse{}, err
@@ -65,6 +67,7 @@ func (c *HostConnectorsService) GetByPageAndHostID(page int, pageSize int, hostI
 	return response, nil
 }
 
+// Update updates an existing host connector.
 func (c *HostConnectorsService) Update(connector HostConnector) (*HostConnector, error) {
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
@@ -89,10 +92,12 @@ func (c *HostConnectorsService) Update(connector HostConnector) (*HostConnector,
 	return &conn, nil
 }
 
+// List retrieves all host connectors.
 func (c *HostConnectorsService) List() ([]HostConnector, error) {
 	return c.ListByHostID("")
 }
 
+// ListByHostID retrieves all host connectors for a specific host ID.
 func (c *HostConnectorsService) ListByHostID(hostID string) ([]HostConnector, error) {
 	var allConnectors []HostConnector
 	page := 0
@@ -114,6 +119,7 @@ func (c *HostConnectorsService) ListByHostID(hostID string) ([]HostConnector, er
 	return allConnectors, nil
 }
 
+// GetByID retrieves a specific host connector by ID.
 func (c *HostConnectorsService) GetByID(id string) (*HostConnector, error) {
 	endpoint := fmt.Sprintf("%s/hosts/connectors/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
@@ -134,6 +140,7 @@ func (c *HostConnectorsService) GetByID(id string) (*HostConnector, error) {
 	return &connector, nil
 }
 
+// GetProfile retrieves the profile configuration for a host connector.
 func (c *HostConnectorsService) GetProfile(id string) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors/%s/profile", c.client.GetV1Url(), id), nil)
 	if err != nil {
@@ -147,6 +154,7 @@ func (c *HostConnectorsService) GetProfile(id string) (string, error) {
 	return string(body), nil
 }
 
+// GetToken retrieves an encrypted token for a host connector.
 func (c *HostConnectorsService) GetToken(id string) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors/%s/profile/encrypt", c.client.GetV1Url(), id), nil)
 	if err != nil {
@@ -160,6 +168,7 @@ func (c *HostConnectorsService) GetToken(id string) (string, error) {
 	return string(body), nil
 }
 
+// Create creates a new host connector for the specified host.
 func (c *HostConnectorsService) Create(connector HostConnector, hostID string) (*HostConnector, error) {
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
@@ -184,6 +193,7 @@ func (c *HostConnectorsService) Create(connector HostConnector, hostID string) (
 	return &conn, nil
 }
 
+// Delete deletes a host connector by ID.
 func (c *HostConnectorsService) Delete(connectorID string, hostID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/connectors/%s?hostId=%s", c.client.GetV1Url(), connectorID, hostID), nil)
 	if err != nil {

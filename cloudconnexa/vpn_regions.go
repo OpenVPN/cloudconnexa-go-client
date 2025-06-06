@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// VpnRegion represents a VPN region configuration
 type VpnRegion struct {
 	ID         string `json:"id"`
 	Continent  string `json:"continent"`
@@ -14,9 +15,11 @@ type VpnRegion struct {
 	RegionName string `json:"regionName"`
 }
 
+// VPNRegionsService provides methods for managing VPN regions
 type VPNRegionsService service
 
 // List retrieves all VPN regions
+// Returns a slice of VPN regions and any error that occurred
 func (c *VPNRegionsService) List() ([]VpnRegion, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/regions", c.client.GetV1Url()), nil)
 	if err != nil {
@@ -37,6 +40,8 @@ func (c *VPNRegionsService) List() ([]VpnRegion, error) {
 }
 
 // GetByID retrieves a specific VPN region by ID
+// regionID: The ID of the VPN region to retrieve
+// Returns the VPN region and any error that occurred
 func (c *VPNRegionsService) GetByID(regionID string) (*VpnRegion, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/regions", c.client.GetV1Url()), nil)
 	if err != nil {

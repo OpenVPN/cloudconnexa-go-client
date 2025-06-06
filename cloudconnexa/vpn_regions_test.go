@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// testVpnRegion represents a test VPN region configuration used in tests
 var testVpnRegion = VpnRegion{
 	ID:         "test-region",
 	Country:    "Test Country",
@@ -17,6 +18,8 @@ var testVpnRegion = VpnRegion{
 	RegionName: "Test Region",
 }
 
+// TestVPNRegionsService_List tests the List method of VPNRegionsService
+// It verifies that the service correctly retrieves and returns a list of VPN regions
 func TestVPNRegionsService_List(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Handle auth token request
@@ -48,6 +51,8 @@ func TestVPNRegionsService_List(t *testing.T) {
 	assert.Equal(t, testVpnRegion.ID, regions[0].ID)
 }
 
+// TestVPNRegionsService_GetByID tests the GetByID method of VPNRegionsService
+// It verifies that the service correctly retrieves a VPN region by ID and handles non-existent regions
 func TestVPNRegionsService_GetByID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Handle auth token request
