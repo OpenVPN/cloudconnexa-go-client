@@ -45,6 +45,8 @@ type Client struct {
 	LocationContexts    *LocationContextsService
 	AccessGroups        *AccessGroupsService
 	Settings            *SettingsService
+	Sessions            *SessionsService
+	Devices             *DevicesService
 }
 
 type service struct {
@@ -136,6 +138,8 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	c.LocationContexts = (*LocationContextsService)(&c.common)
 	c.AccessGroups = (*AccessGroupsService)(&c.common)
 	c.Settings = (*SettingsService)(&c.common)
+	c.Sessions = (*SessionsService)(&c.common)
+	c.Devices = (*DevicesService)(&c.common)
 	return c, nil
 }
 
