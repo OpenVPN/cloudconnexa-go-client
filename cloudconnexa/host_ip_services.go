@@ -45,11 +45,16 @@ type IPService struct {
 	Config          *IPServiceConfig  `json:"config"`
 }
 
-// IPServiceResponse represents the response structure for IP service operations,
-// extending the base IPService with additional route information.
+// IPServiceResponse represents the response structure for IP service operations.
+// Updated for API v1.1.0: Removed duplicate routing information to match the simplified DTO.
 type IPServiceResponse struct {
-	IPService
-	Routes []*Route `json:"routes"`
+	Name            string           `json:"name"`
+	Description     string           `json:"description"`
+	NetworkItemType string           `json:"networkItemType"`
+	NetworkItemID   string           `json:"networkItemId"`
+	ID              string           `json:"id"`
+	Type            string           `json:"type"`
+	Config          *IPServiceConfig `json:"config"`
 }
 
 // IPServicePageResponse represents a paginated response from the CloudConnexa API
