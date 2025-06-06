@@ -57,7 +57,31 @@ func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DNSRecordPageResp
 	return response, nil
 }
 
-// GetDNSRecord retrieves a specific DNS record by ID.
+// GetByID retrieves a specific DNS record by ID using the direct API endpoint.
+// This is the preferred method for getting a single DNS record as it uses the direct
+// GET /api/v1/dns-records/{id} endpoint introduced in API v1.1.0.
+func (c *DNSRecordsService) GetByID(recordID string) (*DNSRecord, error) {
+	endpoint := fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), recordID)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var record DNSRecord
+	err = json.Unmarshal(body, &record)
+	if err != nil {
+		return nil, err
+	}
+	return &record, nil
+}
+
+// GetDNSRecord retrieves a specific DNS record by ID using pagination search.
+// Deprecated: Use GetByID() instead for better performance with the direct API endpoint.
 func (c *DNSRecordsService) GetDNSRecord(recordID string) (*DNSRecord, error) {
 	pageSize := 10
 	page := 0

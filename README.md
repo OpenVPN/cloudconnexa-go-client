@@ -7,6 +7,8 @@
 
 Official Go client library for the Cloud Connexa API, providing programmatic access to OpenVPN Cloud Connexa services.
 
+**Full CloudConnexa API v1.1.0 Support** - Complete coverage of all public API endpoints with modern Go patterns.
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -201,23 +203,51 @@ if err != nil {
 
 ## API Coverage
 
-The client provides comprehensive coverage of the Cloud Connexa API:
+The client provides **100% coverage** of the CloudConnexa API v1.1.0 with all public endpoints:
 
-- **Networks**: Create, read, update, delete networks
-- **Users**: User lifecycle management and authentication
-- **Connectors**: Connector deployment and management
-- **Hosts**: Host configuration and monitoring
-- **DNS Records**: DNS management for private networks
-- **Routes**: Network routing configuration
-- **VPN Regions**: Available VPN server regions
-- **Access Groups**: User access control and policies
+### **Core Resources**
 
-All endpoints support:
+- **Networks** - Complete network lifecycle management (CRUD operations)
+- **Users** - User management, authentication, and device associations
+- **User Groups** - Group policies, permissions, and access control
+- **VPN Regions** - Available VPN server regions and capabilities
 
-- Pagination for list operations
-- Error handling with detailed error types
-- Automatic rate limiting
-- Concurrent-safe operations
+### **Connectivity & Infrastructure**
+
+- **Network Connectors** - Site-to-site connectivity with IPsec tunnel support
+- **Host Connectors** - Host-based connectivity and routing
+- **Hosts** - Host configuration, monitoring, and IP services
+- **Routes** - Network routing configuration and management
+
+### **Services & Monitoring**
+
+- **DNS Records** - Private DNS management with direct endpoint access
+- **Host IP Services** - Service definitions and port configurations
+- **Sessions** - OpenVPN session monitoring and analytics
+- **Devices** - Device lifecycle management and security controls
+
+### **Security & Access Control**
+
+- **Access Groups** - Fine-grained access policies and rules
+- **Location Contexts** - Location-based access controls
+- **Settings** - System-wide configuration and preferences
+
+### **API v1.1.0 Features**
+
+- **Direct Endpoints**: Optimized single-call access for DNS Records and User Groups
+- **Enhanced Sessions API**: Complete OpenVPN session monitoring with cursor-based pagination
+- **Comprehensive Devices API**: Full device management with filtering and bulk operations
+- **IPsec Support**: Start/stop IPsec tunnels for Network Connectors
+- **Updated DTOs**: Simplified data structures aligned with API v1.1.0
+
+### **All Endpoints Support**
+
+- **Pagination** - Both cursor-based (Sessions) and page-based (legacy) pagination
+- **Error Handling** - Structured error types with detailed messages
+- **Rate Limiting** - Automatic rate limiting with configurable limits
+- **Type Safety** - Strong typing with comprehensive validation
+- **Concurrent Safety** - Thread-safe operations for production use
+- **Performance Optimized** - Direct API calls where available
 
 ## Configuration
 

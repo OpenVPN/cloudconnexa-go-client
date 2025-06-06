@@ -223,3 +223,61 @@ func (c *NetworkConnectorsService) Delete(connectorID string, networkID string) 
 	_, err = c.client.DoRequest(req)
 	return err
 }
+
+// IPsecStartResponse represents the response from starting an IPsec tunnel.
+type IPsecStartResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+	Status  string `json:"status,omitempty"`
+}
+
+// IPsecStopResponse represents the response from stopping an IPsec tunnel.
+type IPsecStopResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+	Status  string `json:"status,omitempty"`
+}
+
+// StartIPsec starts an IPsec tunnel for the specified network connector.
+func (c *NetworkConnectorsService) StartIPsec(connectorID string) (*IPsecStartResponse, error) {
+	endpoint := fmt.Sprintf("%s/networks/connectors/%s/ipsec/start", c.client.GetV1Url(), connectorID)
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var response IPsecStartResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// StopIPsec stops an IPsec tunnel for the specified network connector.
+func (c *NetworkConnectorsService) StopIPsec(connectorID string) (*IPsecStopResponse, error) {
+	endpoint := fmt.Sprintf("%s/networks/connectors/%s/ipsec/stop", c.client.GetV1Url(), connectorID)
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.client.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var response IPsecStopResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
