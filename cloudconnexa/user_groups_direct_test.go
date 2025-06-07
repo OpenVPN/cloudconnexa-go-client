@@ -167,7 +167,7 @@ func TestUserGroupsService_GetByID_CompleteFields(t *testing.T) {
 		userGroup := UserGroup{
 			ID:                 "group-456",
 			Name:               "Complete Test Group",
-			ConnectAuth:        "SAML",
+			ConnectAuth:        "EVERY_TIME",
 			InternetAccess:     "GLOBAL_INTERNET",
 			MaxDevice:          10,
 			SystemSubnets:      []string{"172.16.0.0/12"},
@@ -188,8 +188,8 @@ func TestUserGroupsService_GetByID_CompleteFields(t *testing.T) {
 	}
 
 	// Verify all fields are properly populated
-	if result.ConnectAuth != "SAML" {
-		t.Errorf("Expected ConnectAuth 'SAML', got %s", result.ConnectAuth)
+	if result.ConnectAuth != "EVERY_TIME" {
+		t.Errorf("Expected ConnectAuth 'EVERY_TIME', got %s", result.ConnectAuth)
 	}
 
 	if result.InternetAccess != "GLOBAL_INTERNET" {
