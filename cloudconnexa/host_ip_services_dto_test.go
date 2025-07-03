@@ -34,7 +34,7 @@ func TestHostIPServicesService_UpdatedDTO(t *testing.T) {
 		}
 
 		// Mock response with the updated DTO structure (no duplicate routes)
-		service := IPServiceResponse{
+		service := HostIPServiceResponse{
 			ID:              "service-123",
 			Name:            "Test IP Service",
 			Description:     "Test service description",
@@ -118,8 +118,8 @@ func TestHostIPServicesService_List_UpdatedDTO(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Mock paginated response with updated DTO
 		// Note: The List() method calls GetIPByPage() which may make multiple requests
-		response := IPServicePageResponse{
-			Content: []IPServiceResponse{
+		response := HostIPServicePageResponse{
+			Content: []HostIPServiceResponse{
 				{
 					ID:              "service-1",
 					Name:            "Service 1",
@@ -204,7 +204,7 @@ func TestHostIPServicesService_Create_UpdatedDTO(t *testing.T) {
 		}
 
 		// Mock response with created service using updated DTO
-		service := IPServiceResponse{
+		service := HostIPServiceResponse{
 			ID:              "new-service-123",
 			Name:            "New Service",
 			Description:     "Newly created service",
@@ -275,10 +275,10 @@ func TestHostIPServicesService_Create_UpdatedDTO(t *testing.T) {
 }
 
 func TestIPServiceResponse_NoRoutesDuplication(t *testing.T) {
-	// Test that the updated IPServiceResponse structure doesn't have duplicate routes
+	// Test that the updated HostIPServiceResponse structure doesn't have duplicate routes
 	// This is a structural test to ensure API v1.1.0 compliance
 
-	service := IPServiceResponse{
+	service := HostIPServiceResponse{
 		ID:              "test-service",
 		Name:            "Test Service",
 		Description:     "Test description",
@@ -306,16 +306,16 @@ func TestIPServiceResponse_NoRoutesDuplication(t *testing.T) {
 	// Verify that there's no duplicate 'routes' field at the top level
 	// (routes should only be in the config if needed)
 	if _, exists := parsed["routes"]; exists {
-		t.Error("IPServiceResponse should not have a top-level 'routes' field in API v1.1.0")
+		t.Error("HostIPServiceResponse should not have a top-level 'routes' field in API v1.1.0")
 	}
 
 	// Verify expected fields are present
 	expectedFields := []string{"id", "name", "description", "networkItemType", "networkItemId", "type", "config"}
 	for _, field := range expectedFields {
 		if _, exists := parsed[field]; !exists {
-			t.Errorf("Expected field '%s' not found in IPServiceResponse", field)
+			t.Errorf("Expected field '%s' not found in HostIPServiceResponse", field)
 		}
 	}
 
-	t.Logf("IPServiceResponse JSON structure: %s", string(jsonData))
+	t.Logf("HostIPServiceResponse JSON structure: %s", string(jsonData))
 }

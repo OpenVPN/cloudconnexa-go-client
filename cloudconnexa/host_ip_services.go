@@ -45,9 +45,9 @@ type IPService struct {
 	Config          *IPServiceConfig  `json:"config"`
 }
 
-// IPServiceResponse represents the response structure for IP service operations.
+// HostIPServiceResponse represents the response structure for IP service operations.
 // Updated for API v1.1.0: Removed duplicate routing information to match the simplified DTO.
-type IPServiceResponse struct {
+type HostIPServiceResponse struct {
 	Name            string           `json:"name"`
 	Description     string           `json:"description"`
 	NetworkItemType string           `json:"networkItemType"`
@@ -57,45 +57,45 @@ type IPServiceResponse struct {
 	Config          *IPServiceConfig `json:"config"`
 }
 
-// IPServicePageResponse represents a paginated response from the CloudConnexa API
+// HostIPServicePageResponse represents a paginated response from the CloudConnexa API
 // containing a list of IP services and pagination metadata.
-type IPServicePageResponse struct {
-	Content          []IPServiceResponse `json:"content"`
-	NumberOfElements int                 `json:"numberOfElements"`
-	Page             int                 `json:"page"`
-	Size             int                 `json:"size"`
-	Success          bool                `json:"success"`
-	TotalElements    int                 `json:"totalElements"`
-	TotalPages       int                 `json:"totalPages"`
+type HostIPServicePageResponse struct {
+	Content          []HostIPServiceResponse `json:"content"`
+	NumberOfElements int                     `json:"numberOfElements"`
+	Page             int                     `json:"page"`
+	Size             int                     `json:"size"`
+	Success          bool                    `json:"success"`
+	TotalElements    int                     `json:"totalElements"`
+	TotalPages       int                     `json:"totalPages"`
 }
 
 // HostIPServicesService provides methods for managing IP services.
 type HostIPServicesService service
 
 // GetIPByPage retrieves IP services using pagination.
-func (c *HostIPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
+func (c *HostIPServicesService) GetIPByPage(page int, pageSize int) (HostIPServicePageResponse, error) {
 	endpoint := fmt.Sprintf("%s/hosts/ip-services?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return IPServicePageResponse{}, err
+		return HostIPServicePageResponse{}, err
 	}
 
 	body, err := c.client.DoRequest(req)
 	if err != nil {
-		return IPServicePageResponse{}, err
+		return HostIPServicePageResponse{}, err
 	}
 
-	var response IPServicePageResponse
+	var response HostIPServicePageResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return IPServicePageResponse{}, err
+		return HostIPServicePageResponse{}, err
 	}
 	return response, nil
 }
 
 // List retrieves all IP services by paginating through all available pages.
-func (c *HostIPServicesService) List() ([]IPServiceResponse, error) {
-	var allIPServices []IPServiceResponse
+func (c *HostIPServicesService) List() ([]HostIPServiceResponse, error) {
+	var allIPServices []HostIPServiceResponse
 	page := 0
 	pageSize := 10
 
@@ -115,7 +115,7 @@ func (c *HostIPServicesService) List() ([]IPServiceResponse, error) {
 }
 
 // Get retrieves a specific IP service by its ID.
-func (c *HostIPServicesService) Get(id string) (*IPServiceResponse, error) {
+func (c *HostIPServicesService) Get(id string) (*HostIPServiceResponse, error) {
 	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *HostIPServicesService) Get(id string) (*IPServiceResponse, error) {
 		return nil, err
 	}
 
-	var service IPServiceResponse
+	var service HostIPServiceResponse
 	err = json.Unmarshal(body, &service)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (c *HostIPServicesService) Get(id string) (*IPServiceResponse, error) {
 }
 
 // Create creates a new IP service.
-func (c *HostIPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
+func (c *HostIPServicesService) Create(ipService *IPService) (*HostIPServiceResponse, error) {
 	ipServiceJSON, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (c *HostIPServicesService) Create(ipService *IPService) (*IPServiceResponse
 		return nil, err
 	}
 
-	var s IPServiceResponse
+	var s HostIPServiceResponse
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func (c *HostIPServicesService) Create(ipService *IPService) (*IPServiceResponse
 }
 
 // Update updates an existing IP service by its ID.
-func (c *HostIPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
+func (c *HostIPServicesService) Update(id string, service *IPService) (*HostIPServiceResponse, error) {
 	serviceJSON, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
@@ -181,7 +181,7 @@ func (c *HostIPServicesService) Update(id string, service *IPService) (*IPServic
 		return nil, err
 	}
 
-	var s IPServiceResponse
+	var s HostIPServiceResponse
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
