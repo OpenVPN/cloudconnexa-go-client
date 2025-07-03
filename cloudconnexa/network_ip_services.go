@@ -7,6 +7,30 @@ import (
 	"net/http"
 )
 
+// NetworkIPServiceResponse represents the response structure for Network IP service operations.
+type NetworkIPServiceResponse struct {
+	Name            string           `json:"name"`
+	Description     string           `json:"description"`
+	NetworkItemType string           `json:"networkItemType"`
+	NetworkItemID   string           `json:"networkItemId"`
+	ID              string           `json:"id"`
+	Type            string           `json:"type"`
+	Config          *IPServiceConfig `json:"config"`
+	Routes          []*Route         `json:"routes"`
+}
+
+// NetworkIPServicePageResponse represents a paginated response from the CloudConnexa API
+// containing a list of IP services and pagination metadata.
+type NetworkIPServicePageResponse struct {
+	Content          []NetworkIPServiceResponse `json:"content"`
+	NumberOfElements int                        `json:"numberOfElements"`
+	Page             int                        `json:"page"`
+	Size             int                        `json:"size"`
+	Success          bool                       `json:"success"`
+	TotalElements    int                        `json:"totalElements"`
+	TotalPages       int                        `json:"totalPages"`
+}
+
 // NetworkIPServicesService handles communication with the CloudConnexa IP Services API
 type NetworkIPServicesService service
 
@@ -14,30 +38,30 @@ type NetworkIPServicesService service
 // page: The page number to retrieve
 // pageSize: The number of items per page
 // Returns a page of IP services and any error that occurred
-func (c *NetworkIPServicesService) GetIPByPage(page int, pageSize int) (IPServicePageResponse, error) {
+func (c *NetworkIPServicesService) GetIPByPage(page int, pageSize int) (NetworkIPServicePageResponse, error) {
 	endpoint := fmt.Sprintf("%s/networks/ip-services?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return IPServicePageResponse{}, err
+		return NetworkIPServicePageResponse{}, err
 	}
 
 	body, err := c.client.DoRequest(req)
 	if err != nil {
-		return IPServicePageResponse{}, err
+		return NetworkIPServicePageResponse{}, err
 	}
 
-	var response IPServicePageResponse
+	var response NetworkIPServicePageResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return IPServicePageResponse{}, err
+		return NetworkIPServicePageResponse{}, err
 	}
 	return response, nil
 }
 
 // List retrieves all IP services by paginating through all available pages
 // Returns a slice of IP services and any error that occurred
-func (c *NetworkIPServicesService) List() ([]IPServiceResponse, error) {
-	var allIPServices []IPServiceResponse
+func (c *NetworkIPServicesService) List() ([]NetworkIPServiceResponse, error) {
+	var allIPServices []NetworkIPServiceResponse
 	page := 0
 	pageSize := 10
 
@@ -59,7 +83,7 @@ func (c *NetworkIPServicesService) List() ([]IPServiceResponse, error) {
 // Get retrieves a specific IP service by its ID
 // id: The ID of the IP service to retrieve
 // Returns the IP service and any error that occurred
-func (c *NetworkIPServicesService) Get(id string) (*IPServiceResponse, error) {
+func (c *NetworkIPServicesService) Get(id string) (*NetworkIPServiceResponse, error) {
 	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -71,7 +95,7 @@ func (c *NetworkIPServicesService) Get(id string) (*IPServiceResponse, error) {
 		return nil, err
 	}
 
-	var service IPServiceResponse
+	var service NetworkIPServiceResponse
 	err = json.Unmarshal(body, &service)
 	if err != nil {
 		return nil, err
@@ -82,7 +106,7 @@ func (c *NetworkIPServicesService) Get(id string) (*IPServiceResponse, error) {
 // Create creates a new IP service
 // ipService: The IP service configuration to create
 // Returns the created IP service and any error that occurred
-func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceResponse, error) {
+func (c *NetworkIPServicesService) Create(ipService *IPService) (*NetworkIPServiceResponse, error) {
 	ipServiceJSON, err := json.Marshal(ipService)
 	if err != nil {
 		return nil, err
@@ -100,7 +124,7 @@ func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceRespo
 		return nil, err
 	}
 
-	var s IPServiceResponse
+	var s NetworkIPServiceResponse
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
@@ -112,7 +136,7 @@ func (c *NetworkIPServicesService) Create(ipService *IPService) (*IPServiceRespo
 // id: The ID of the IP service to update
 // service: The updated IP service configuration
 // Returns the updated IP service and any error that occurred
-func (c *NetworkIPServicesService) Update(id string, service *IPService) (*IPServiceResponse, error) {
+func (c *NetworkIPServicesService) Update(id string, service *IPService) (*NetworkIPServiceResponse, error) {
 	serviceJSON, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
@@ -130,7 +154,7 @@ func (c *NetworkIPServicesService) Update(id string, service *IPService) (*IPSer
 		return nil, err
 	}
 
-	var s IPServiceResponse
+	var s NetworkIPServiceResponse
 	err = json.Unmarshal(body, &s)
 	if err != nil {
 		return nil, err
