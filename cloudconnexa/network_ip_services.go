@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+// NetworkIPServiceResponse represents the response structure for Network IP service operations.
+
 type NetworkIPServiceResponse struct {
 	Name            string           `json:"name"`
 	Description     string           `json:"description"`
@@ -18,6 +20,8 @@ type NetworkIPServiceResponse struct {
 	Routes          []*Route         `json:"routes"`
 }
 
+// NetworkIPServicePageResponse represents a paginated response from the CloudConnexa API
+// containing a list of IP services and pagination metadata.
 type NetworkIPServicePageResponse struct {
 	Content          []NetworkIPServiceResponse `json:"content"`
 	NumberOfElements int                        `json:"numberOfElements"`
