@@ -8,7 +8,6 @@ import (
 )
 
 // NetworkIPServiceResponse represents the response structure for Network IP service operations.
-
 type NetworkIPServiceResponse struct {
 	Name            string           `json:"name"`
 	Description     string           `json:"description"`
