@@ -344,13 +344,13 @@ func (c *SettingsService) SetTopology(value string) (string, error) {
 	return c.setString("%s/settings/wpc/topology", value)
 }
 
-// GetDnsLogEnabled retrieves whether DNS Log is enabled
-func (c *SettingsService) GetDnsLogEnabled() (bool, error) {
+// GetDNSLogEnabled retrieves whether DNS Log is enabled
+func (c *SettingsService) GetDNSLogEnabled() (bool, error) {
 	return c.getBool("%s/dns-log/user-dns-resolutions/enabled")
 }
 
-// SetDnsLogEnabled sets whether DNS Log is enabled
-func (c *SettingsService) SetDnsLogEnabled(value bool) error {
+// SetDNSLogEnabled sets whether DNS Log is enabled
+func (c *SettingsService) SetDNSLogEnabled(value bool) error {
 	if value {
 		_, err := c.set("%s/dns-log/user-dns-resolutions/enable", []byte(strconv.FormatBool(value)))
 		if err != nil {
