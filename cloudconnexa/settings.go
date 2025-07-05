@@ -42,27 +42,27 @@ type SettingsService service
 
 // GetTrustedDevicesAllowed retrieves whether trusted devices are allowed
 func (c *SettingsService) GetTrustedDevicesAllowed() (bool, error) {
-	return c.getBool("/auth/trusted-devices-allowed")
+	return c.getBool("%s/settings/auth/trusted-devices-allowed")
 }
 
 // SetTrustedDevicesAllowed sets whether trusted devices are allowed
 func (c *SettingsService) SetTrustedDevicesAllowed(value bool) (bool, error) {
-	return c.setBool("/auth/trusted-devices-allowed", value)
+	return c.setBool("%s/settings/auth/trusted-devices-allowed", value)
 }
 
 // GetTwoFactorAuthEnabled retrieves whether two-factor authentication is enabled
 func (c *SettingsService) GetTwoFactorAuthEnabled() (bool, error) {
-	return c.getBool("/auth/two-factor-auth")
+	return c.getBool("%s/settings/auth/two-factor-auth")
 }
 
 // SetTwoFactorAuthEnabled sets whether two-factor authentication is enabled
 func (c *SettingsService) SetTwoFactorAuthEnabled(value bool) (bool, error) {
-	return c.setBool("/auth/two-factor-auth", value)
+	return c.setBool("%s/settings/auth/two-factor-auth", value)
 }
 
 // GetDNSServers retrieves the current DNS server configuration
 func (c *SettingsService) GetDNSServers() (*DNSServers, error) {
-	body, err := c.get("/dns/custom-servers")
+	body, err := c.get("%s/settings/dns/custom-servers")
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (c *SettingsService) SetDNSServers(value *DNSServers) (*DNSServers, error) 
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.set("/dns/custom-servers", jsonValue)
+	body, err := c.set("%s/settings/dns/custom-servers", jsonValue)
 	if err != nil {
 		return nil, err
 	}
@@ -104,27 +104,27 @@ func (c *SettingsService) SetDNSServers(value *DNSServers) (*DNSServers, error) 
 
 // GetDefaultDNSSuffix retrieves the default DNS suffix
 func (c *SettingsService) GetDefaultDNSSuffix() (string, error) {
-	return c.getString("/dns/default-suffix")
+	return c.getString("%s/settings/dns/default-suffix")
 }
 
 // SetDefaultDNSSuffix sets the default DNS suffix
 func (c *SettingsService) SetDefaultDNSSuffix(value string) (string, error) {
-	return c.setString("/dns/default-suffix", value)
+	return c.setString("%s/settings/dns/default-suffix", value)
 }
 
 // GetDNSProxyEnabled retrieves whether DNS proxy is enabled
 func (c *SettingsService) GetDNSProxyEnabled() (bool, error) {
-	return c.getBool("/dns/proxy-enabled")
+	return c.getBool("%s/settings/dns/proxy-enabled")
 }
 
 // SetDNSProxyEnabled sets whether DNS proxy is enabled
 func (c *SettingsService) SetDNSProxyEnabled(value bool) (bool, error) {
-	return c.setBool("/dns/proxy-enabled", value)
+	return c.setBool("%s/settings/dns/proxy-enabled", value)
 }
 
 // GetDNSZones retrieves the current DNS zones configuration
 func (c *SettingsService) GetDNSZones() ([]DNSZone, error) {
-	body, err := c.get("/dns/zones")
+	body, err := c.get("%s/settings/dns/zones")
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (c *SettingsService) SetDNSZones(value []DNSZone) ([]DNSZone, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.set("/dns/zones", jsonValue)
+	body, err := c.set("%s/settings/dns/zones", jsonValue)
 	if err != nil {
 		return nil, err
 	}
@@ -157,67 +157,67 @@ func (c *SettingsService) SetDNSZones(value []DNSZone) ([]DNSZone, error) {
 
 // GetDefaultConnectAuth retrieves the default connection authentication method
 func (c *SettingsService) GetDefaultConnectAuth() (string, error) {
-	return c.getString("/user/connect-auth")
+	return c.getString("%s/settings/user/connect-auth")
 }
 
 // SetDefaultConnectAuth sets the default connection authentication method
 func (c *SettingsService) SetDefaultConnectAuth(value string) (string, error) {
-	return c.setString("/user/connect-auth", value)
+	return c.setString("%s/settings/user/connect-auth", value)
 }
 
 // GetDefaultDeviceAllowancePerUser retrieves the default device allowance per user
 func (c *SettingsService) GetDefaultDeviceAllowancePerUser() (int, error) {
-	return c.getInt("/user/device-allowance")
+	return c.getInt("%s/settings/user/device-allowance")
 }
 
 // SetDefaultDeviceAllowancePerUser sets the default device allowance per user
 func (c *SettingsService) SetDefaultDeviceAllowancePerUser(value int) (int, error) {
-	return c.setInt("/user/device-allowance", value)
+	return c.setInt("%s/settings/user/device-allowance", value)
 }
 
 // GetForceUpdateDeviceAllowanceEnabled retrieves whether force update device allowance is enabled
 func (c *SettingsService) GetForceUpdateDeviceAllowanceEnabled() (bool, error) {
-	return c.getBool("/user/device-allowance-force-update")
+	return c.getBool("%s/settings/user/device-allowance-force-update")
 }
 
 // SetForceUpdateDeviceAllowanceEnabled sets whether force update device allowance is enabled
 func (c *SettingsService) SetForceUpdateDeviceAllowanceEnabled(value bool) (bool, error) {
-	return c.setBool("/user/device-allowance-force-update", value)
+	return c.setBool("%s/settings/user/device-allowance-force-update", value)
 }
 
 // GetDeviceEnforcement retrieves the device enforcement policy
 func (c *SettingsService) GetDeviceEnforcement() (string, error) {
-	return c.getString("/user/device-enforcement")
+	return c.getString("%s/settings/user/device-enforcement")
 }
 
 // SetDeviceEnforcement sets the device enforcement policy
 func (c *SettingsService) SetDeviceEnforcement(value string) (string, error) {
-	return c.setString("/user/device-enforcement", value)
+	return c.setString("%s/settings/user/device-enforcement", value)
 }
 
 // GetProfileDistribution retrieves the profile distribution method
 func (c *SettingsService) GetProfileDistribution() (string, error) {
-	return c.getString("/user/profile-distribution")
+	return c.getString("%s/settings/user/profile-distribution")
 }
 
 // SetProfileDistribution sets the profile distribution method
 func (c *SettingsService) SetProfileDistribution(value string) (string, error) {
-	return c.setString("/user/profile-distribution", value)
+	return c.setString("%s/settings/user/profile-distribution", value)
 }
 
 // GetConnectionTimeout retrieves the connection timeout value
 func (c *SettingsService) GetConnectionTimeout() (int, error) {
-	return c.getInt("/users/connection-timeout")
+	return c.getInt("%s/settings/users/connection-timeout")
 }
 
 // SetConnectionTimeout sets the connection timeout value
 func (c *SettingsService) SetConnectionTimeout(value int) (int, error) {
-	return c.setInt("/users/connection-timeout", value)
+	return c.setInt("%s/settings/users/connection-timeout", value)
 }
 
 // GetClientOptions retrieves the client options configuration
 func (c *SettingsService) GetClientOptions() ([]string, error) {
-	body, err := c.get("/wpc/client-options")
+	body, err := c.get("%s/settings/wpc/client-options")
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (c *SettingsService) SetClientOptions(value []string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.set("/wpc/client-options", jsonValue)
+	body, err := c.set("%s/settings/wpc/client-options", jsonValue)
 	if err != nil {
 		return nil, err
 	}
@@ -250,17 +250,17 @@ func (c *SettingsService) SetClientOptions(value []string) ([]string, error) {
 
 // GetDefaultRegion retrieves the default region setting
 func (c *SettingsService) GetDefaultRegion() (string, error) {
-	return c.getString("/wpc/default-region")
+	return c.getString("%s/settings/wpc/default-region")
 }
 
 // SetDefaultRegion sets the default region
 func (c *SettingsService) SetDefaultRegion(value string) (string, error) {
-	return c.setString("/wpc/default-region", value)
+	return c.setString("%s/settings/wpc/default-region", value)
 }
 
 // GetDomainRoutingSubnet retrieves the domain routing subnet configuration
 func (c *SettingsService) GetDomainRoutingSubnet() (*DomainRoutingSubnet, error) {
-	body, err := c.get("/wpc/domain-routing-subnet")
+	body, err := c.get("%s/settings/wpc/domain-routing-subnet")
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func (c *SettingsService) SetDomainRoutingSubnet(value DomainRoutingSubnet) (*Do
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.set("/wpc/domain-routing-subnet", jsonValue)
+	body, err := c.set("%s/settings/wpc/domain-routing-subnet", jsonValue)
 	if err != nil {
 		return nil, err
 	}
@@ -293,17 +293,17 @@ func (c *SettingsService) SetDomainRoutingSubnet(value DomainRoutingSubnet) (*Do
 
 // GetSnatEnabled retrieves whether SNAT is enabled
 func (c *SettingsService) GetSnatEnabled() (bool, error) {
-	return c.getBool("/wpc/snat")
+	return c.getBool("%s/settings/wpc/snat")
 }
 
 // SetSnatEnabled sets whether SNAT is enabled
 func (c *SettingsService) SetSnatEnabled(value bool) (bool, error) {
-	return c.setBool("/wpc/snat", value)
+	return c.setBool("%s/settings/wpc/snat", value)
 }
 
 // GetSubnet retrieves the subnet configuration
 func (c *SettingsService) GetSubnet() (*Subnet, error) {
-	body, err := c.get("/wpc/subnet")
+	body, err := c.get("%s/settings/wpc/subnet")
 	if err != nil {
 		return nil, err
 	}
@@ -322,7 +322,7 @@ func (c *SettingsService) SetSubnet(value Subnet) (*Subnet, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.set("/wpc/subnet", jsonValue)
+	body, err := c.set("%s/settings/wpc/subnet", jsonValue)
 	if err != nil {
 		return nil, err
 	}
@@ -336,12 +336,54 @@ func (c *SettingsService) SetSubnet(value Subnet) (*Subnet, error) {
 
 // GetTopology retrieves the network topology setting
 func (c *SettingsService) GetTopology() (string, error) {
-	return c.getString("/wpc/topology")
+	return c.getString("%s/settings/wpc/topology")
 }
 
 // SetTopology sets the network topology
 func (c *SettingsService) SetTopology(value string) (string, error) {
-	return c.setString("/wpc/topology", value)
+	return c.setString("%s/settings/wpc/topology", value)
+}
+
+// GetDNSLogEnabled retrieves whether DNS Log is enabled
+func (c *SettingsService) GetDNSLogEnabled() (bool, error) {
+	return c.getBool("%s/dns-log/user-dns-resolutions/enabled")
+}
+
+// SetDNSLogEnabled sets whether DNS Log is enabled
+func (c *SettingsService) SetDNSLogEnabled(value bool) error {
+	if value {
+		_, err := c.set("%s/dns-log/user-dns-resolutions/enable", []byte(strconv.FormatBool(value)))
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := c.set("%s/dns-log/user-dns-resolutions/disable", []byte(strconv.FormatBool(value)))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// GetAccessVisibilityEnabled retrieves whether Access Visibility is enabled
+func (c *SettingsService) GetAccessVisibilityEnabled() (bool, error) {
+	return c.getBool("%s/access-visibility/enabled")
+}
+
+// SetAccessVisibilityEnabled sets whether Access Visibility is enabled
+func (c *SettingsService) SetAccessVisibilityEnabled(value bool) error {
+	if value {
+		_, err := c.set("%s/access-visibility/enable", []byte(strconv.FormatBool(value)))
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := c.set("%s/access-visibility/disable", []byte(strconv.FormatBool(value)))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // getBool retrieves a boolean value from the specified path
@@ -375,7 +417,7 @@ func (c *SettingsService) setBool(path string, value bool) (bool, error) {
 
 // getString retrieves a string value from the specified path
 func (c *SettingsService) getString(path string) (string, error) {
-	endpoint := fmt.Sprintf("%s/settings"+path, c.client.GetV1Url())
+	endpoint := fmt.Sprintf(path, c.client.GetV1Url())
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
@@ -389,7 +431,7 @@ func (c *SettingsService) getString(path string) (string, error) {
 
 // setString sets a string value at the specified path
 func (c *SettingsService) setString(path string, value string) (string, error) {
-	endpoint := fmt.Sprintf("%s/settings"+path, c.client.GetV1Url())
+	endpoint := fmt.Sprintf(path, c.client.GetV1Url())
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer([]byte(value)))
 	if err != nil {
 		return "", err
@@ -422,7 +464,7 @@ func (c *SettingsService) setInt(path string, value int) (int, error) {
 
 // get performs a GET request to the specified path
 func (c *SettingsService) get(path string) ([]byte, error) {
-	endpoint := fmt.Sprintf("%s/settings"+path, c.client.GetV1Url())
+	endpoint := fmt.Sprintf(path, c.client.GetV1Url())
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -436,7 +478,7 @@ func (c *SettingsService) get(path string) ([]byte, error) {
 
 // set performs a PUT request to the specified path with the given value
 func (c *SettingsService) set(path string, value []byte) ([]byte, error) {
-	endpoint := fmt.Sprintf("%s/settings"+path, c.client.GetV1Url())
+	endpoint := fmt.Sprintf(path, c.client.GetV1Url())
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(value))
 	if err != nil {
 		return nil, err
