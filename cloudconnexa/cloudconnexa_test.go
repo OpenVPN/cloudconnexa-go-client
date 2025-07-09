@@ -79,10 +79,11 @@ func TestDoRequest(t *testing.T) {
 	defer server.Close()
 
 	client := &Client{
-		client:      server.Client(),
-		BaseURL:     server.URL,
-		Token:       "mock-access-token",
-		RateLimiter: rate.NewLimiter(rate.Every(1), 5),
+		client:            server.Client(),
+		BaseURL:           server.URL,
+		Token:             "mock-access-token",
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
 	}
 
 	tests := []struct {

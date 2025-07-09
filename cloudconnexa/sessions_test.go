@@ -13,10 +13,11 @@ import (
 // createTestSessionsClient creates a test client with the given server for sessions testing
 func createTestSessionsClient(server *httptest.Server) *Client {
 	client := &Client{
-		client:      server.Client(),
-		BaseURL:     server.URL,
-		Token:       "test-token",
-		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
+		client:            server.Client(),
+		BaseURL:           server.URL,
+		Token:             "test-token",
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
 	}
 	client.Sessions = (*SessionsService)(&service{client: client})
 	return client
@@ -176,7 +177,8 @@ func TestSessionsService_ListByDateRange(t *testing.T) {
 
 func TestSessionsService_List_InvalidSize(t *testing.T) {
 	client := &Client{
-		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
 	}
 	client.Sessions = (*SessionsService)(&service{client: client})
 
