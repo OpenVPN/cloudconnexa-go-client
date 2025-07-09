@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,9 +22,10 @@ const (
 type Client struct {
 	client *http.Client
 
-	BaseURL     string
-	Token       string
-	RateLimiter *rate.Limiter
+	BaseURL           string
+	Token             string
+	ReadRateLimiter   *rate.Limiter
+	UpdateRateLimiter *rate.Limiter
 
 	UserAgent string
 
@@ -115,11 +117,12 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	}
 
 	c := &Client{
-		client:      httpClient,
-		BaseURL:     baseURL,
-		Token:       credentials.AccessToken,
-		UserAgent:   userAgent,
-		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
+		client:            httpClient,
+		BaseURL:           baseURL,
+		Token:             credentials.AccessToken,
+		UserAgent:         userAgent,
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1*time.Second), 1),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(4*time.Second), 1),
 	}
 	c.common.client = c
 	c.HostConnectors = (*HostConnectorsService)(&c.common)
@@ -158,7 +161,13 @@ func (c *Client) setCommonHeaders(req *http.Request) {
 // DoRequest executes an HTTP request with authentication and rate limiting.
 // It automatically adds the Bearer token, sets headers, and handles errors.
 func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
-	err := c.RateLimiter.Wait(context.Background())
+	var rateLimiter *rate.Limiter
+	if req.Method == "GET" {
+		rateLimiter = c.ReadRateLimiter
+	} else {
+		rateLimiter = c.UpdateRateLimiter
+	}
+	err := rateLimiter.Wait(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +192,30 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		return nil, &ErrClientResponse{status: res.StatusCode, body: string(body)}
+	}
+
+	rateHeader := res.Header.Get("X-RateLimit-Replenish-Rate")
+	timeHeader := res.Header.Get("X-RateLimit-Replenish-Time")
+	remainingHeader := res.Header.Get("X-RateLimit-Remaining")
+
+	if rateHeader != "" && timeHeader != "" && remainingHeader != "" {
+		rateValue, err := strconv.Atoi(rateHeader)
+		if err != nil {
+			return nil, err
+		}
+		timeValue, err := strconv.Atoi(timeHeader)
+		if err != nil {
+			return nil, err
+		}
+		remainingValue, err := strconv.Atoi(remainingHeader)
+		if err != nil {
+			return nil, err
+		}
+		if remainingValue <= 0 {
+			remainingValue = 1
+		}
+		rateLimiter.SetLimit(rate.Every(time.Duration(timeValue * 1_000_000_000 / rateValue)))
+		rateLimiter.SetBurst(remainingValue)
 	}
 
 	return body, nil
