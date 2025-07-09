@@ -194,6 +194,16 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 		return nil, &ErrClientResponse{status: res.StatusCode, body: string(body)}
 	}
 
+	err = c.AssignLimits(res, rateLimiter)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+// AssignLimits adjusts the rate limiter according to values received in response headers from the API
+func (c *Client) AssignLimits(res *http.Response, rateLimiter *rate.Limiter) error {
 	rateHeader := res.Header.Get("X-RateLimit-Replenish-Rate")
 	timeHeader := res.Header.Get("X-RateLimit-Replenish-Time")
 	remainingHeader := res.Header.Get("X-RateLimit-Remaining")
@@ -201,15 +211,15 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	if rateHeader != "" && timeHeader != "" && remainingHeader != "" {
 		rateValue, err := strconv.Atoi(rateHeader)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		timeValue, err := strconv.Atoi(timeHeader)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		remainingValue, err := strconv.Atoi(remainingHeader)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if remainingValue <= 0 {
 			remainingValue = 1
@@ -217,8 +227,7 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 		rateLimiter.SetLimit(rate.Every(time.Duration(timeValue * 1_000_000_000 / rateValue)))
 		rateLimiter.SetBurst(remainingValue)
 	}
-
-	return body, nil
+	return nil
 }
 
 // GetV1Url returns the base URL for CloudConnexa API v1 endpoints.
