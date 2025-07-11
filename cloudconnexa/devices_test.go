@@ -13,10 +13,11 @@ import (
 // createTestClient creates a test client with the given server
 func createTestClient(server *httptest.Server) *Client {
 	client := &Client{
-		client:      server.Client(),
-		BaseURL:     server.URL,
-		Token:       "test-token",
-		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
+		client:            server.Client(),
+		BaseURL:           server.URL,
+		Token:             "test-token",
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
 	}
 	client.Devices = (*DevicesService)(&service{client: client})
 	client.Sessions = (*SessionsService)(&service{client: client})
@@ -280,7 +281,8 @@ func TestDevicesService_ListByUserID(t *testing.T) {
 
 func TestDevicesService_List_InvalidSize(t *testing.T) {
 	client := &Client{
-		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
 	}
 	client.Devices = (*DevicesService)(&service{client: client})
 

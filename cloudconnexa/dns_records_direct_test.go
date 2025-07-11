@@ -2,21 +2,20 @@ package cloudconnexa
 
 import (
 	"encoding/json"
+	"golang.org/x/time/rate"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
-
-	"golang.org/x/time/rate"
 )
 
 // createTestDNSClient creates a test client with the given server for DNS testing
 func createTestDNSClient(server *httptest.Server) *Client {
 	client := &Client{
-		client:      server.Client(),
-		BaseURL:     server.URL,
-		Token:       "test-token",
-		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
+		client:            server.Client(),
+		BaseURL:           server.URL,
+		Token:             "test-token",
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
 	}
 	client.DNSRecords = (*DNSRecordsService)(&service{client: client})
 	return client
