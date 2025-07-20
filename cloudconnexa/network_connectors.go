@@ -60,7 +60,6 @@ type Phase struct {
 }
 
 // Rekey represents a rekey configuration used in ipsec.
-
 type Rekey struct {
 	MarginTimeSec    int `json:"marginTimeSec"`
 	FuzzPercent      int `json:"fuzzPercent"`
