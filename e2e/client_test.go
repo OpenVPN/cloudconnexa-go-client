@@ -121,11 +121,12 @@ func TestCreateNetwork(t *testing.T) {
 		Subnet:      fmt.Sprintf("10.%d.%d.0/24", timestamp%256, (timestamp/256)%256),
 	}
 	network := cloudconnexa.Network{
-		Description:    "test",
-		Egress:         false,
-		Name:           testName,
-		InternetAccess: cloudconnexa.InternetAccessSplitTunnelOn,
-		Connectors:     []cloudconnexa.NetworkConnector{connector},
+		Description:       "test",
+		Egress:            false,
+		Name:              testName,
+		InternetAccess:    cloudconnexa.InternetAccessSplitTunnelOn,
+		Connectors:        []cloudconnexa.NetworkConnector{connector},
+		TunnelingProtocol: "OPENVPN",
 	}
 	response, err := c.Networks.Create(network)
 	require.NoError(t, err)
