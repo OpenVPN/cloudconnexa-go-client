@@ -21,15 +21,15 @@ type NetworkConnector struct {
 	IPv6Address       string       `json:"ipV6Address"`
 	Profile           string       `json:"profile"`
 	ConnectionStatus  string       `json:"connectionStatus"`
-	IpSecConfig       *IpSecConfig `json:"ipSecConfig,omitempty"`
+	IPSecConfig       *IPSecConfig `json:"IPSecConfig,omitempty"`
 	TunnelingProtocol string       `json:"tunnelingProtocol"`
 }
 
-// IpSecConfig represents a network connector ipsec configuration.
-type IpSecConfig struct {
+// IPSecConfig represents a network connector ipsec configuration.
+type IPSecConfig struct {
 	Platform                     string      `json:"platform,omitempty"`
 	AuthenticationType           string      `json:"authenticationType,omitempty"`
-	RemoteSitePublicIp           string      `json:"remoteSitePublicIp,omitempty"`
+	RemoteSitePublicIP           string      `json:"remoteSitePublicIp,omitempty"`
 	PreSharedKey                 string      `json:"preSharedKey,omitempty"`
 	CaCertificate                string      `json:"caCertificate,omitempty"`
 	PeerCertificate              string      `json:"peerCertificate,omitempty"`
@@ -52,7 +52,6 @@ type IkeProtocol struct {
 }
 
 // Phase represents a phase configuration used in ipsec.
-
 type Phase struct {
 	EncryptionAlgorithms []string `json:"encryptionAlgorithms,omitempty"`
 	IntegrityAlgorithms  []string `json:"integrityAlgorithms,omitempty"`
