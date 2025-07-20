@@ -11,16 +11,65 @@ import (
 
 // NetworkConnector represents a network connector configuration.
 type NetworkConnector struct {
-	ID               string `json:"id,omitempty"`
-	Name             string `json:"name"`
-	Description      string `json:"description,omitempty"`
-	NetworkItemID    string `json:"networkItemId"`
-	NetworkItemType  string `json:"networkItemType"`
-	VpnRegionID      string `json:"vpnRegionId"`
-	IPv4Address      string `json:"ipV4Address"`
-	IPv6Address      string `json:"ipV6Address"`
-	Profile          string `json:"profile"`
-	ConnectionStatus string `json:"connectionStatus"`
+	ID                string       `json:"id,omitempty"`
+	Name              string       `json:"name"`
+	Description       string       `json:"description,omitempty"`
+	NetworkItemID     string       `json:"networkItemId"`
+	NetworkItemType   string       `json:"networkItemType"`
+	VpnRegionID       string       `json:"vpnRegionId"`
+	IPv4Address       string       `json:"ipV4Address"`
+	IPv6Address       string       `json:"ipV6Address"`
+	Profile           string       `json:"profile"`
+	ConnectionStatus  string       `json:"connectionStatus"`
+	IPSecConfig       *IPSecConfig `json:"IPSecConfig,omitempty"`
+	TunnelingProtocol string       `json:"tunnelingProtocol"`
+}
+
+// IPSecConfig represents a network connector ipsec configuration.
+type IPSecConfig struct {
+	Platform                     string      `json:"platform,omitempty"`
+	AuthenticationType           string      `json:"authenticationType,omitempty"`
+	RemoteSitePublicIP           string      `json:"remoteSitePublicIp,omitempty"`
+	PreSharedKey                 string      `json:"preSharedKey,omitempty"`
+	CaCertificate                string      `json:"caCertificate,omitempty"`
+	PeerCertificate              string      `json:"peerCertificate,omitempty"`
+	RemoteGatewayCertificate     string      `json:"remoteGatewayCertificate,omitempty"`
+	PeerCertificatePrivateKey    string      `json:"peerCertificatePrivateKey,omitempty"`
+	PeerCertificateKeyPassphrase string      `json:"peerCertificateKeyPassphrase,omitempty"`
+	IkeProtocol                  IkeProtocol `json:"ikeProtocol,omitempty"`
+	Hostname                     string      `json:"hostname,omitempty"`
+	Domain                       string      `json:"domain,omitempty"`
+}
+
+// IkeProtocol represents an ike protocol configuration for ipsec config.
+type IkeProtocol struct {
+	ProtocolVersion   string            `json:"protocolVersion,omitempty"`
+	Phase1            Phase             `json:"phase1,omitempty"`
+	Phase2            Phase             `json:"phase2,omitempty"`
+	Rekey             Rekey             `json:"rekey,omitempty"`
+	DeadPeerDetection DeadPeerDetection `json:"deadPeerDetection,omitempty"`
+	StartupAction     string            `json:"startupAction,omitempty"`
+}
+
+// Phase represents a phase configuration used in ipsec.
+type Phase struct {
+	EncryptionAlgorithms []string `json:"encryptionAlgorithms,omitempty"`
+	IntegrityAlgorithms  []string `json:"integrityAlgorithms,omitempty"`
+	DiffieHellmanGroups  []string `json:"diffieHellmanGroups,omitempty"`
+	LifetimeSec          int      `json:"lifetimeSec"`
+}
+
+// Rekey represents a rekey configuration used in ipsec.
+type Rekey struct {
+	MarginTimeSec    int `json:"marginTimeSec"`
+	FuzzPercent      int `json:"fuzzPercent"`
+	ReplayWindowSize int `json:"replayWindowSize"`
+}
+
+// DeadPeerDetection represents a dead peer detection configuration used in ipsec.
+type DeadPeerDetection struct {
+	TimeoutSec       int    `json:"timeoutSec,omitempty"`
+	DeadPeerHandling string `json:"deadPeerHandling,omitempty"`
 }
 
 // NetworkConnectorPageResponse represents a paginated response of network connectors.
@@ -224,60 +273,33 @@ func (c *NetworkConnectorsService) Delete(connectorID string, networkID string) 
 	return err
 }
 
-// IPsecStartResponse represents the response from starting an IPsec tunnel.
-type IPsecStartResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message,omitempty"`
-	Status  string `json:"status,omitempty"`
-}
-
-// IPsecStopResponse represents the response from stopping an IPsec tunnel.
-type IPsecStopResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message,omitempty"`
-	Status  string `json:"status,omitempty"`
-}
-
 // StartIPsec starts an IPsec tunnel for the specified network connector.
-func (c *NetworkConnectorsService) StartIPsec(connectorID string) (*IPsecStartResponse, error) {
+func (c *NetworkConnectorsService) StartIPsec(connectorID string) error {
 	endpoint := fmt.Sprintf("%s/networks/connectors/%s/ipsec/start", c.client.GetV1Url(), connectorID)
 	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	body, err := c.client.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	var response IPsecStartResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
+	return nil
 }
 
 // StopIPsec stops an IPsec tunnel for the specified network connector.
-func (c *NetworkConnectorsService) StopIPsec(connectorID string) (*IPsecStopResponse, error) {
+func (c *NetworkConnectorsService) StopIPsec(connectorID string) error {
 	endpoint := fmt.Sprintf("%s/networks/connectors/%s/ipsec/stop", c.client.GetV1Url(), connectorID)
 	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	body, err := c.client.DoRequest(req)
+	_, err = c.client.DoRequest(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var response IPsecStopResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
+	return nil
 }
