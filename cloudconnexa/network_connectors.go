@@ -21,7 +21,7 @@ type NetworkConnector struct {
 	IPv6Address       string       `json:"ipV6Address"`
 	Profile           string       `json:"profile"`
 	ConnectionStatus  string       `json:"connectionStatus"`
-	IPSecConfig       *IPSecConfig `json:"IPSecConfig,omitempty"`
+	IPSecConfig       *IPSecConfig `json:"ipSecConfig,omitempty"`
 	TunnelingProtocol string       `json:"tunnelingProtocol"`
 }
 
