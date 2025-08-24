@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -86,10 +87,9 @@ func (c *HostApplicationsService) GetApplicationsByPage(page int, pageSize int) 
 func (c *HostApplicationsService) List() ([]ApplicationResponse, error) {
 	var allApplications []ApplicationResponse
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetApplicationsByPage(page, pageSize)
+		response, err := c.GetApplicationsByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -122,6 +122,30 @@ func (c *HostApplicationsService) Get(id string) (*ApplicationResponse, error) {
 		return nil, err
 	}
 	return &application, nil
+}
+
+// GetByName retrieves an application by its name
+// name: The name of the application to retrieve
+// Returns the application and any error that occurred
+func (c *HostApplicationsService) GetByName(name string) (*ApplicationResponse, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]ApplicationResponse, 0)
+	for _, item := range items {
+		if item.Name == name {
+			filtered = append(filtered, item)
+		}
+	}
+	if len(filtered) > 1 {
+		return nil, errors.New("different host applications found with name: " + name)
+	}
+	if len(filtered) == 1 {
+		return &filtered[0], nil
+	}
+	return nil, errors.New("host application not found")
 }
 
 // Create creates a new host application.

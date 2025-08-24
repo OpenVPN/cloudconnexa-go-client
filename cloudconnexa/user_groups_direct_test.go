@@ -2,10 +2,11 @@ package cloudconnexa
 
 import (
 	"encoding/json"
-	"golang.org/x/time/rate"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"golang.org/x/time/rate"
 )
 
 // createTestUserGroupsClient creates a test client with the given server for user groups testing
@@ -125,7 +126,7 @@ func TestUserGroupsService_GetByID_vs_Get(t *testing.T) {
 					{ID: "group-123", Name: "Test Group"},
 				},
 				Page:       0,
-				Size:       10,
+				Size:       100,
 				TotalPages: 1,
 			}
 			w.Header().Set("Content-Type", "application/json")

@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	userAgent = "cloudconnexa-go"
+	userAgent       = "cloudconnexa-go"
+	defaultPageSize = 100
 )
 
 // Client represents a CloudConnexa API client with all service endpoints.

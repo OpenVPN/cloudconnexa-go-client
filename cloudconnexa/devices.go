@@ -159,10 +159,9 @@ func (d *DevicesService) GetByPage(page int, pageSize int) (*DevicePageResponse,
 func (d *DevicesService) ListAll() ([]DeviceDetail, error) {
 	var allDevices []DeviceDetail
 	page := 0
-	pageSize := 100 // Use maximum page size for efficiency
 
 	for {
-		response, err := d.GetByPage(page, pageSize)
+		response, err := d.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -232,13 +231,12 @@ func (d *DevicesService) Update(deviceID string, updateRequest DeviceUpdateReque
 func (d *DevicesService) ListByUserID(userID string) ([]DeviceDetail, error) {
 	var allDevices []DeviceDetail
 	page := 0
-	pageSize := 100
 
 	for {
 		options := DeviceListOptions{
 			UserID: userID,
 			Page:   page,
-			Size:   pageSize,
+			Size:   defaultPageSize,
 		}
 
 		response, err := d.List(options)

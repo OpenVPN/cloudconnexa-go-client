@@ -54,7 +54,7 @@ func TestDevicesService_List(t *testing.T) {
 			},
 			NumberOfElements: 2,
 			Page:             0,
-			Size:             10,
+			Size:             100,
 			Success:          true,
 			TotalElements:    2,
 			TotalPages:       1,
@@ -71,7 +71,7 @@ func TestDevicesService_List(t *testing.T) {
 	// Test the List method
 	options := DeviceListOptions{
 		Page: 0,
-		Size: 10,
+		Size: 100,
 	}
 	result, err := client.Devices.List(options)
 	if err != nil {

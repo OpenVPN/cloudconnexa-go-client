@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -55,11 +56,10 @@ func (c *HostsService) GetHostsByPage(page int, size int) (HostPageResponse, err
 // List retrieves all hosts.
 func (c *HostsService) List() ([]Host, error) {
 	var allHosts []Host
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetHostsByPage(page, pageSize)
+		response, err := c.GetHostsByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -93,6 +93,23 @@ func (c *HostsService) Get(id string) (*Host, error) {
 		return nil, err
 	}
 	return &host, nil
+}
+
+// GetByName retrieves a host by its name
+// name: The name of the host to retrieve
+// Returns the host and any error that occurred
+func (c *HostsService) GetByName(name string) (*Host, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range items {
+		if item.Name == name {
+			return &item, nil
+		}
+	}
+	return nil, errors.New("host not found")
 }
 
 // Create creates a new host.

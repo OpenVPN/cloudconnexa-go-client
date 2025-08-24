@@ -81,11 +81,10 @@ func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, erro
 // role: The role to filter by
 // Returns the user and any error that occurred
 func (c *UsersService) List(username string, role string) (*User, error) {
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -138,11 +137,10 @@ func (c *UsersService) GetByID(userID string) (*User, error) {
 // username: The username to search for
 // Returns the user and any error that occurred
 func (c *UsersService) GetByUsername(username string) (*User, error) {
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}

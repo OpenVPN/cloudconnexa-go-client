@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -97,10 +98,9 @@ func (c *HostIPServicesService) GetIPByPage(page int, pageSize int) (HostIPServi
 func (c *HostIPServicesService) List() ([]HostIPServiceResponse, error) {
 	var allIPServices []HostIPServiceResponse
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetIPByPage(page, pageSize)
+		response, err := c.GetIPByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -133,6 +133,30 @@ func (c *HostIPServicesService) Get(id string) (*HostIPServiceResponse, error) {
 		return nil, err
 	}
 	return &service, nil
+}
+
+// GetByName retrieves an IP Service by its name
+// name: The name of the IP Service to retrieve
+// Returns the IP Service and any error that occurred
+func (c *HostIPServicesService) GetByName(name string) (*HostIPServiceResponse, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]HostIPServiceResponse, 0)
+	for _, item := range items {
+		if item.Name == name {
+			filtered = append(filtered, item)
+		}
+	}
+	if len(filtered) > 1 {
+		return nil, errors.New("different host IP services found with name: " + name)
+	}
+	if len(filtered) == 1 {
+		return &filtered[0], nil
+	}
+	return nil, errors.New("host IP service not found")
 }
 
 // Create creates a new IP service.

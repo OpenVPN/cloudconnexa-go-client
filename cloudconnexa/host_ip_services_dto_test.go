@@ -2,10 +2,11 @@ package cloudconnexa
 
 import (
 	"encoding/json"
-	"golang.org/x/time/rate"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"golang.org/x/time/rate"
 )
 
 // createTestHostIPServicesClient creates a test client with the given server for host IP services testing
@@ -151,7 +152,7 @@ func TestHostIPServicesService_List_UpdatedDTO(t *testing.T) {
 			},
 			NumberOfElements: 2,
 			Page:             0,
-			Size:             10,
+			Size:             100,
 			Success:          true,
 			TotalElements:    2,
 			TotalPages:       1,
@@ -165,7 +166,7 @@ func TestHostIPServicesService_List_UpdatedDTO(t *testing.T) {
 	client := createTestHostIPServicesClient(server)
 
 	// Test the GetIPByPage method directly to avoid pagination issues
-	result, err := client.HostIPServices.GetIPByPage(0, 10)
+	result, err := client.HostIPServices.GetIPByPage(0, 100)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
