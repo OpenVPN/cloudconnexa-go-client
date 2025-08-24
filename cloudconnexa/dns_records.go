@@ -83,11 +83,10 @@ func (c *DNSRecordsService) GetByID(recordID string) (*DNSRecord, error) {
 // GetDNSRecord retrieves a specific DNS record by ID using pagination search.
 // Deprecated: Use GetByID() instead for better performance with the direct API endpoint.
 func (c *DNSRecordsService) GetDNSRecord(recordID string) (*DNSRecord, error) {
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}

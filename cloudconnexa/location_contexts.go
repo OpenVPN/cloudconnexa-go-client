@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -81,10 +82,9 @@ func (c *LocationContextsService) GetLocationContextByPage(page int, pageSize in
 func (c *LocationContextsService) List() ([]LocationContext, error) {
 	var allLocationContexts []LocationContext
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetLocationContextByPage(page, pageSize)
+		response, err := c.GetLocationContextByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -117,6 +117,23 @@ func (c *LocationContextsService) Get(id string) (*LocationContext, error) {
 		return nil, err
 	}
 	return &locationContext, nil
+}
+
+// GetByName retrieves a location context by its name
+// name: The name of the location context to retrieve
+// Returns the location context and any error that occurred
+func (c *LocationContextsService) GetByName(name string) (*LocationContext, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range items {
+		if item.Name == name {
+			return &item, nil
+		}
+	}
+	return nil, errors.New("location context not found")
 }
 
 // Create creates a new location context.

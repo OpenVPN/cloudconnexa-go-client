@@ -2,10 +2,11 @@ package cloudconnexa
 
 import (
 	"encoding/json"
-	"golang.org/x/time/rate"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"golang.org/x/time/rate"
 )
 
 // createTestDNSClient creates a test client with the given server for DNS testing
@@ -114,7 +115,7 @@ func TestDNSRecordsService_GetByID_vs_GetDNSRecord(t *testing.T) {
 					{ID: "record-123", Domain: "example.com"},
 				},
 				Page:       0,
-				Size:       10,
+				Size:       100,
 				TotalPages: 1,
 			}
 			w.Header().Set("Content-Type", "application/json")

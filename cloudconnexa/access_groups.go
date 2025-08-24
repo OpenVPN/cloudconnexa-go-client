@@ -6,6 +6,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -76,10 +77,9 @@ func (c *AccessGroupsService) GetAccessGroupsByPage(page int, size int) (AccessG
 func (c *AccessGroupsService) List() ([]AccessGroup, error) {
 	var allGroups []AccessGroup
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetAccessGroupsByPage(page, pageSize)
+		response, err := c.GetAccessGroupsByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -112,6 +112,23 @@ func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
 		return nil, err
 	}
 	return &accessGroup, nil
+}
+
+// GetByName retrieves an access group by its name
+// name: The name of the access group to retrieve
+// Returns the access group and any error that occurred
+func (c *AccessGroupsService) GetByName(name string) (*AccessGroup, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range items {
+		if item.Name == name {
+			return &item, nil
+		}
+	}
+	return nil, errors.New("access group not found")
 }
 
 // Create creates a new access group in the CloudConnexa API.

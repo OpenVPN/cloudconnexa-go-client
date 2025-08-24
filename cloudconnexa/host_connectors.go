@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -101,10 +102,9 @@ func (c *HostConnectorsService) List() ([]HostConnector, error) {
 func (c *HostConnectorsService) ListByHostID(hostID string) ([]HostConnector, error) {
 	var allConnectors []HostConnector
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetByPageAndHostID(page, pageSize, hostID)
+		response, err := c.GetByPageAndHostID(page, defaultPageSize, hostID)
 		if err != nil {
 			return nil, err
 		}
@@ -138,6 +138,30 @@ func (c *HostConnectorsService) GetByID(id string) (*HostConnector, error) {
 		return nil, err
 	}
 	return &connector, nil
+}
+
+// GetByName retrieves a connector by its name
+// name: The name of the connector to retrieve
+// Returns the connector and any error that occurred
+func (c *HostConnectorsService) GetByName(name string) (*HostConnector, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]HostConnector, 0)
+	for _, item := range items {
+		if item.Name == name {
+			filtered = append(filtered, item)
+		}
+	}
+	if len(filtered) > 1 {
+		return nil, errors.New("different host connectors found with name: " + name)
+	}
+	if len(filtered) == 1 {
+		return &filtered[0], nil
+	}
+	return nil, errors.New("host connector not found")
 }
 
 // GetProfile retrieves the profile configuration for a host connector.

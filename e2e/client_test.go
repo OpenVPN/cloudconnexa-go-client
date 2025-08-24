@@ -53,7 +53,7 @@ func setUpClient(t *testing.T) *cloudconnexa.Client {
 // It verifies that networks can be retrieved successfully
 func TestListNetworks(t *testing.T) {
 	c := setUpClient(t)
-	response, err := c.Networks.GetByPage(0, 10)
+	response, err := c.Networks.GetByPage(0, 100)
 	require.NoError(t, err)
 	fmt.Printf("found %d networks\n", len(response.Content))
 }
