@@ -58,6 +58,6 @@ jobs:
       - name: E2E Test
         run: make e2e
         env:
-          OVPN_HOST: ${{ vars.OVPN_HOST }}
+          CLOUDCONNEXA_BASE_URL: ${{ vars.CLOUDCONNEXA_BASE_URL }}
           CLOUDCONNEXA_CLIENT_ID: ${{ secrets.CLOUDCONNEXA_CLIENT_ID }}
           CLOUDCONNEXA_CLIENT_SECRET: ${{ secrets.CLOUDCONNEXA_CLIENT_SECRET }}

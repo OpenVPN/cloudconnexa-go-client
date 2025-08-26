@@ -27,7 +27,7 @@ func validateEnvVar(t *testing.T, envVar string) {
 
 // Environment variable names for client configuration
 const (
-	HostEnvVar         = "OVPN_HOST"
+	HostEnvVar         = "CLOUDCONNEXA_BASE_URL"
 	ClientIDEnvVar     = "CLOUDCONNEXA_CLIENT_ID"
 	ClientSecretEnvVar = "CLOUDCONNEXA_CLIENT_SECRET" //nolint:gosec // This is an environment variable name, not a credential
 )
