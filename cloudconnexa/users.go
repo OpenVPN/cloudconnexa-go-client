@@ -15,18 +15,19 @@ var (
 
 // User represents a user configuration
 type User struct {
-	ID               string   `json:"id"`
-	Name             string   `json:"name"`
-	Username         string   `json:"username"`
-	Role             string   `json:"role"`
-	Email            string   `json:"email,omitempty"`
-	AuthType         string   `json:"authType"`
-	FirstName        string   `json:"firstName,omitempty"`
-	LastName         string   `json:"lastName,omitempty"`
-	GroupID          string   `json:"groupId"`
-	Status           string   `json:"status"`
-	Devices          []Device `json:"devices"`
-	ConnectionStatus string   `json:"connectionStatus"`
+	ID                string   `json:"id"`
+	Name              string   `json:"name"`
+	Username          string   `json:"username"`
+	Role              string   `json:"role"`
+	Email             string   `json:"email,omitempty"`
+	AuthType          string   `json:"authType"`
+	FirstName         string   `json:"firstName,omitempty"`
+	LastName          string   `json:"lastName,omitempty"`
+	GroupID           string   `json:"groupId"`
+	SecondaryGroupIds []string `json:"secondaryGroupIds,omitempty"`
+	Status            string   `json:"status"`
+	Devices           []Device `json:"devices"`
+	ConnectionStatus  string   `json:"connectionStatus"`
 }
 
 // UserPageResponse represents a paginated response of users
@@ -81,11 +82,10 @@ func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, erro
 // role: The role to filter by
 // Returns the user and any error that occurred
 func (c *UsersService) List(username string, role string) (*User, error) {
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -138,11 +138,10 @@ func (c *UsersService) GetByID(userID string) (*User, error) {
 // username: The username to search for
 // Returns the user and any error that occurred
 func (c *UsersService) GetByUsername(username string) (*User, error) {
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}

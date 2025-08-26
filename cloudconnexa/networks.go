@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -72,11 +73,10 @@ func (c *NetworksService) GetByPage(page int, size int) (NetworkPageResponse, er
 // Returns a slice of all networks and any error that occurred
 func (c *NetworksService) List() ([]Network, error) {
 	var allNetworks []Network
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -112,6 +112,23 @@ func (c *NetworksService) Get(id string) (*Network, error) {
 		return nil, err
 	}
 	return &network, nil
+}
+
+// GetByName retrieves a network by its name
+// name: The name of the network to retrieve
+// Returns the network and any error that occurred
+func (c *NetworksService) GetByName(name string) (*Network, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range items {
+		if item.Name == name {
+			return &item, nil
+		}
+	}
+	return nil, errors.New("network not found")
 }
 
 // Create creates a new network.

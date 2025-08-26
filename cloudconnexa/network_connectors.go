@@ -3,6 +3,7 @@ package cloudconnexa
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -148,10 +149,9 @@ func (c *NetworkConnectorsService) Update(connector NetworkConnector) (*NetworkC
 func (c *NetworkConnectorsService) List() ([]NetworkConnector, error) {
 	var allConnectors []NetworkConnector
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
@@ -170,10 +170,9 @@ func (c *NetworkConnectorsService) List() ([]NetworkConnector, error) {
 func (c *NetworkConnectorsService) ListByNetworkID(networkID string) ([]NetworkConnector, error) {
 	var allConnectors []NetworkConnector
 	page := 0
-	pageSize := 10
 
 	for {
-		response, err := c.GetByPageAndNetworkID(page, pageSize, networkID)
+		response, err := c.GetByPageAndNetworkID(page, defaultPageSize, networkID)
 		if err != nil {
 			return nil, err
 		}
@@ -207,6 +206,30 @@ func (c *NetworkConnectorsService) GetByID(id string) (*NetworkConnector, error)
 		return nil, err
 	}
 	return &connector, nil
+}
+
+// GetByName retrieves a network connector by its name
+// name: The name of the network connector to retrieve
+// Returns the network connector and any error that occurred
+func (c *NetworkConnectorsService) GetByName(name string) (*NetworkConnector, error) {
+	items, err := c.List()
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]NetworkConnector, 0)
+	for _, item := range items {
+		if item.Name == name {
+			filtered = append(filtered, item)
+		}
+	}
+	if len(filtered) > 1 {
+		return nil, errors.New("different network connectors found with name: " + name)
+	}
+	if len(filtered) == 1 {
+		return &filtered[0], nil
+	}
+	return nil, errors.New("network connector not found")
 }
 
 // GetProfile retrieves the profile configuration for a specific network connector.

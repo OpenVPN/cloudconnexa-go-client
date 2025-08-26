@@ -27,7 +27,7 @@ func validateEnvVar(t *testing.T, envVar string) {
 
 // Environment variable names for client configuration
 const (
-	HostEnvVar         = "OVPN_HOST"
+	HostEnvVar         = "CLOUDCONNEXA_BASE_URL"
 	ClientIDEnvVar     = "CLOUDCONNEXA_CLIENT_ID"
 	ClientSecretEnvVar = "CLOUDCONNEXA_CLIENT_SECRET" //nolint:gosec // This is an environment variable name, not a credential
 )
@@ -53,7 +53,7 @@ func setUpClient(t *testing.T) *cloudconnexa.Client {
 // It verifies that networks can be retrieved successfully
 func TestListNetworks(t *testing.T) {
 	c := setUpClient(t)
-	response, err := c.Networks.GetByPage(0, 10)
+	response, err := c.Networks.GetByPage(0, 100)
 	require.NoError(t, err)
 	fmt.Printf("found %d networks\n", len(response.Content))
 }

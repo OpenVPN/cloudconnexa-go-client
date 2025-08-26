@@ -62,11 +62,10 @@ func (c *RoutesService) GetByPage(networkID string, page int, size int) (RoutePa
 // Returns a slice of routes and any error that occurred
 func (c *RoutesService) List(networkID string) ([]Route, error) {
 	var allRoutes []Route
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(networkID, page, pageSize)
+		response, err := c.GetByPage(networkID, page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}
