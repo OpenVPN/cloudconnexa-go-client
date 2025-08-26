@@ -139,7 +139,7 @@ func (c *SettingsService) GetDNSZones() ([]DNSZone, error) {
 
 // SetDNSZones updates the DNS zones configuration
 func (c *SettingsService) SetDNSZones(value []DNSZone) ([]DNSZone, error) {
-	jsonValue, err := json.Marshal(value)
+	jsonValue, err := json.Marshal(DNSZones{value})
 	if err != nil {
 		return nil, err
 	}
