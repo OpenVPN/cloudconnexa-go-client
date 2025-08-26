@@ -67,11 +67,10 @@ func (c *UserGroupsService) GetByPage(page int, pageSize int) (UserGroupPageResp
 // Returns a slice of user groups and any error that occurred
 func (c *UserGroupsService) List() ([]UserGroup, error) {
 	var allUserGroups []UserGroup
-	pageSize := 10
 	page := 0
 
 	for {
-		response, err := c.GetByPage(page, pageSize)
+		response, err := c.GetByPage(page, defaultPageSize)
 		if err != nil {
 			return nil, err
 		}

@@ -36,8 +36,8 @@ func TestSessionsService_List(t *testing.T) {
 
 		// Check query parameters
 		query := r.URL.Query()
-		if query.Get("size") != "10" {
-			t.Errorf("Expected size=10, got %s", query.Get("size"))
+		if query.Get("size") != "100" {
+			t.Errorf("Expected size=100, got %s", query.Get("size"))
 		}
 
 		// Mock response
@@ -67,7 +67,7 @@ func TestSessionsService_List(t *testing.T) {
 
 	// Test the List method
 	options := SessionsListOptions{
-		Size: 10,
+		Size: 100,
 	}
 	result, err := client.Sessions.List(options)
 	if err != nil {
