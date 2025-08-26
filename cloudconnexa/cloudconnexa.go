@@ -1,12 +1,12 @@
 package cloudconnexa
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -78,14 +78,12 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 		return nil, ErrCredentialsRequired
 	}
 
-	values := map[string]string{"grant_type": "client_credentials", "scope": "default"}
-	jsonData, err := json.Marshal(values)
-	if err != nil {
-		return nil, err
-	}
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("scope", "default")
 
 	tokenURL := fmt.Sprintf("%s/api/v1/oauth/token", strings.TrimRight(baseURL, "/"))
-	req, err := http.NewRequest(http.MethodPost, tokenURL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
 
 	if err != nil {
 		return nil, err
@@ -93,6 +91,7 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 
 	req.SetBasicAuth(clientID, clientSecret)
 	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -109,6 +108,10 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, &ErrClientResponse{status: resp.StatusCode, body: string(body)}
 	}
 
 	var credentials Credentials
