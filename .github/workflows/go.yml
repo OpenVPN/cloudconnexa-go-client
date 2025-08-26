@@ -31,7 +31,7 @@ jobs:
           - "1.24"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Go cache
         uses: actions/cache@v4
