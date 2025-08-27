@@ -24,7 +24,7 @@ type User struct {
 	FirstName         string   `json:"firstName,omitempty"`
 	LastName          string   `json:"lastName,omitempty"`
 	GroupID           string   `json:"groupId"`
-	SecondaryGroupIds []string `json:"secondaryGroupIds,omitempty"`
+	SecondaryGroupIDs []string `json:"secondaryGroupIds,omitempty"`
 	Status            string   `json:"status"`
 	Devices           []Device `json:"devices"`
 	ConnectionStatus  string   `json:"connectionStatus"`
