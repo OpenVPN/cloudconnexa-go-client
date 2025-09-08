@@ -52,9 +52,40 @@ func setUpClient(t *testing.T) *cloudconnexa.Client {
 
 // cidrOverlaps returns true if two IPv4 networks overlap
 func cidrOverlaps(a *net.IPNet, b *net.IPNet) bool {
-	return a.Contains(b.IP) || b.Contains(a.IP)
+	aStart, aEnd := subnetRange(a)
+	bStart, bEnd := subnetRange(b)
+	// Overlap if aStart <= bEnd && aEnd >= bStart
+	return bytesCompare(aStart, bEnd) <= 0 && bytesCompare(aEnd, bStart) >= 0
 }
 
+// subnetRange returns the first and last IP in the subnet
+func subnetRange(ipnet *net.IPNet) (net.IP, net.IP) {
+	ip := ipnet.IP.To4()
+	if ip == nil {
+		return nil, nil
+	}
+	mask := ipnet.Mask
+	start := make(net.IP, len(ip))
+	end := make(net.IP, len(ip))
+	for i := 0; i < len(ip); i++ {
+		start[i] = ip[i] & mask[i]
+		end[i] = ip[i] | (^mask[i])
+	}
+	return start, end
+}
+
+// bytesCompare compares two net.IPs (IPv4 only)
+func bytesCompare(a, b net.IP) int {
+	for i := 0; i < 4; i++ {
+		if a[i] < b[i] {
+			return -1
+		}
+		if a[i] > b[i] {
+			return 1
+		}
+	}
+	return 0
+}
 // parseCIDROrNil parses CIDR string and returns *net.IPNet or nil on error
 func parseCIDROrNil(cidr string) *net.IPNet {
 	_, ipnet, err := net.ParseCIDR(cidr)
