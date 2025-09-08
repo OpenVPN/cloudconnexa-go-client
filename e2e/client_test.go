@@ -50,42 +50,18 @@ func setUpClient(t *testing.T) *cloudconnexa.Client {
 	return client
 }
 
-// cidrOverlaps returns true if two IPv4 networks overlap
+// cidrOverlaps returns true if two IPv4 networks overlap (IPv4 only, safe)
 func cidrOverlaps(a *net.IPNet, b *net.IPNet) bool {
-	aStart, aEnd := subnetRange(a)
-	bStart, bEnd := subnetRange(b)
-	// Overlap if aStart <= bEnd && aEnd >= bStart
-	return bytesCompare(aStart, bEnd) <= 0 && bytesCompare(aEnd, bStart) >= 0
+	if a == nil || b == nil {
+		return false
+	}
+	if a.IP.To4() == nil || b.IP.To4() == nil {
+		return false
+	}
+	// For CIDR-aligned subnets, if they overlap then one network's base IP is contained in the other
+	return a.Contains(b.IP) || b.Contains(a.IP)
 }
 
-// subnetRange returns the first and last IP in the subnet
-func subnetRange(ipnet *net.IPNet) (net.IP, net.IP) {
-	ip := ipnet.IP.To4()
-	if ip == nil {
-		return nil, nil
-	}
-	mask := ipnet.Mask
-	start := make(net.IP, len(ip))
-	end := make(net.IP, len(ip))
-	for i := 0; i < len(ip); i++ {
-		start[i] = ip[i] & mask[i]
-		end[i] = ip[i] | (^mask[i])
-	}
-	return start, end
-}
-
-// bytesCompare compares two net.IPs (IPv4 only)
-func bytesCompare(a, b net.IP) int {
-	for i := 0; i < 4; i++ {
-		if a[i] < b[i] {
-			return -1
-		}
-		if a[i] > b[i] {
-			return 1
-		}
-	}
-	return 0
-}
 // parseCIDROrNil parses CIDR string and returns *net.IPNet or nil on error
 func parseCIDROrNil(cidr string) *net.IPNet {
 	_, ipnet, err := net.ParseCIDR(cidr)
@@ -93,6 +69,30 @@ func parseCIDROrNil(cidr string) *net.IPNet {
 		return nil
 	}
 	return ipnet
+}
+
+// findAvailableInRange scans used subnets and returns a free 10.a.b.0/24 within [startA, endA]
+func findAvailableInRange(used []*net.IPNet, startA, endA int) (string, bool) {
+	for a := startA; a <= endA; a++ {
+		for b := 0; b <= 255; b++ {
+			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
+			_, ipn, err := net.ParseCIDR(candidate)
+			if err != nil {
+				continue
+			}
+			overlap := false
+			for _, u := range used {
+				if cidrOverlaps(ipn, u) {
+					overlap = true
+					break
+				}
+			}
+			if !overlap {
+				return candidate, true
+			}
+		}
+	}
+	return "", false
 }
 
 // findAvailableIPv4Subnet scans existing networks' routes and system subnets
@@ -121,43 +121,11 @@ func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
 	}
 
 	// Prefer high 10.200.0.0/16 space, then sweep remaining 10.0.0.0/8
-	for a := 200; a <= 254; a++ {
-		for b := 0; b <= 255; b++ {
-			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
-			_, ipn, err := net.ParseCIDR(candidate)
-			if err != nil {
-				continue
-			}
-			overlap := false
-			for _, u := range used {
-				if cidrOverlaps(ipn, u) {
-					overlap = true
-					break
-				}
-			}
-			if !overlap {
-				return candidate, nil
-			}
-		}
+	if candidate, ok := findAvailableInRange(used, 200, 254); ok {
+		return candidate, nil
 	}
-	for a := 0; a <= 199; a++ {
-		for b := 0; b <= 255; b++ {
-			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
-			_, ipn, err := net.ParseCIDR(candidate)
-			if err != nil {
-				continue
-			}
-			overlap := false
-			for _, u := range used {
-				if cidrOverlaps(ipn, u) {
-					overlap = true
-					break
-				}
-			}
-			if !overlap {
-				return candidate, nil
-			}
-		}
+	if candidate, ok := findAvailableInRange(used, 0, 199); ok {
+		return candidate, nil
 	}
 
 	return "", fmt.Errorf("no available /24 subnet found in 10.0.0.0/8")
