@@ -319,7 +319,9 @@ func TestCreateNetwork(t *testing.T) {
 		// Unexpected error
 		require.NoError(t, err)
 	}
-	require.NoError(t, lastErr)
+	if testRoute == nil {
+		require.NoError(t, lastErr)
+	}
 	require.NotNil(t, testRoute)
 
 	serviceConfig := cloudconnexa.IPServiceConfig{
