@@ -2,8 +2,10 @@ package client
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -70,12 +72,22 @@ func parseCIDROrNil(cidr string) *net.IPNet {
 	return ipnet
 }
 
+func shuffledRange(start, end int, rnd *rand.Rand) []int {
+	n := end - start + 1
+	arr := make([]int, n)
+	for i := 0; i < n; i++ {
+		arr[i] = start + i
+	}
+	rnd.Shuffle(n, func(i, j int) { arr[i], arr[j] = arr[j], arr[i] })
+	return arr
+}
+
 // findAvailableInRange scans used subnets and returns a free 10.a.b.0/24 within [startA, endA]
-func findAvailableInRange(used []*net.IPNet, startA, endA int) (string, bool) {
+func findAvailableInRange(used []*net.IPNet, startA, endA int, rnd *rand.Rand) (string, bool) {
 	// Skip the commonly reserved 10.200.0.0/16 range first
 	reserved := parseCIDROrNil("10.200.0.0/16")
-	for a := startA; a <= endA; a++ {
-		for b := 0; b <= 255; b++ {
+	for _, a := range shuffledRange(startA, endA, rnd) {
+		for _, b := range shuffledRange(0, 255, rnd) {
 			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
 			_, ipn, err := net.ParseCIDR(candidate)
 			if err != nil {
@@ -100,9 +112,9 @@ func findAvailableInRange(used []*net.IPNet, startA, endA int) (string, bool) {
 }
 
 // findAvailableInRange172 scans used subnets for a free 172.16-31.b.0/24
-func findAvailableInRange172(used []*net.IPNet) (string, bool) {
-	for a := 16; a <= 31; a++ {
-		for b := 0; b <= 255; b++ {
+func findAvailableInRange172(used []*net.IPNet, rnd *rand.Rand) (string, bool) {
+	for _, a := range shuffledRange(16, 31, rnd) {
+		for _, b := range shuffledRange(0, 255, rnd) {
 			candidate := fmt.Sprintf("172.%d.%d.0/24", a, b)
 			_, ipn, err := net.ParseCIDR(candidate)
 			if err != nil {
@@ -124,8 +136,8 @@ func findAvailableInRange172(used []*net.IPNet) (string, bool) {
 }
 
 // findAvailableInRange192168 scans used subnets for a free 192.168.b.0/24
-func findAvailableInRange192168(used []*net.IPNet) (string, bool) {
-	for b := 0; b <= 255; b++ {
+func findAvailableInRange192168(used []*net.IPNet, rnd *rand.Rand) (string, bool) {
+	for _, b := range shuffledRange(0, 255, rnd) {
 		candidate := fmt.Sprintf("192.168.%d.0/24", b)
 		_, ipn, err := net.ParseCIDR(candidate)
 		if err != nil {
@@ -148,6 +160,8 @@ func findAvailableInRange192168(used []*net.IPNet) (string, bool) {
 // findAvailableIPv4Subnet scans existing networks' routes and system subnets
 // and returns an available RFC1918 /24 subnet that does not overlap
 func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano() ^ int64(os.Getpid())))
+
 	networks, err := c.Networks.List()
 	if err != nil {
 		return "", err
@@ -178,21 +192,21 @@ func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
 	}
 
 	// Try 10.0.0.0/8 excluding known reserved 10.200.0.0/16, prefer higher ranges
-	if candidate, ok := findAvailableInRange(used, 201, 254); ok {
+	if candidate, ok := findAvailableInRange(used, 201, 254, rnd); ok {
 		return candidate, nil
 	}
-	if candidate, ok := findAvailableInRange(used, 0, 199); ok {
+	if candidate, ok := findAvailableInRange(used, 0, 199, rnd); ok {
 		return candidate, nil
 	}
-	if candidate, ok := findAvailableInRange(used, 200, 200); ok {
+	if candidate, ok := findAvailableInRange(used, 200, 200, rnd); ok {
 		return candidate, nil
 	}
 	// Try 172.16.0.0/12
-	if candidate, ok := findAvailableInRange172(used); ok {
+	if candidate, ok := findAvailableInRange172(used, rnd); ok {
 		return candidate, nil
 	}
 	// Try 192.168.0.0/16
-	if candidate, ok := findAvailableInRange192168(used); ok {
+	if candidate, ok := findAvailableInRange192168(used, rnd); ok {
 		return candidate, nil
 	}
 
@@ -265,13 +279,7 @@ func TestCreateNetwork(t *testing.T) {
 		Name:        testName,
 		VpnRegionID: "it-mxp",
 	}
-	subnet, err := findAvailableIPv4Subnet(c)
-	require.NoError(t, err)
-	route := cloudconnexa.Route{
-		Description: "test",
-		Type:        "IP_V4",
-		Subnet:      subnet,
-	}
+
 	network := cloudconnexa.Network{
 		Description:       "test",
 		Egress:            false,
@@ -285,15 +293,41 @@ func TestCreateNetwork(t *testing.T) {
 	fmt.Printf("created %s network\n", response.ID)
 	// Ensure cleanup even if subsequent steps fail
 	defer func() { _ = c.Networks.Delete(response.ID) }()
-	test, err := c.Routes.Create(response.ID, route)
-	require.NoError(t, err)
-	fmt.Printf("created %s route\n", test.ID)
+
+	// Attempt to create a non-overlapping route with retries to avoid CI matrix collisions
+	var testRoute *cloudconnexa.Route
+	var lastErr error
+	for attempts := 0; attempts < 20; attempts++ {
+		subnet, serr := findAvailableIPv4Subnet(c)
+		require.NoError(t, serr)
+		route := cloudconnexa.Route{
+			Description: "test",
+			Type:        "IP_V4",
+			Subnet:      subnet,
+		}
+		testRoute, err = c.Routes.Create(response.ID, route)
+		if err == nil {
+			fmt.Printf("created %s route\n", testRoute.ID)
+			break
+		}
+		lastErr = err
+		if strings.Contains(err.Error(), "overlaps with an existing one") || strings.Contains(err.Error(), "400") {
+			// Refresh and retry
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+		// Unexpected error
+		require.NoError(t, err)
+	}
+	require.NoError(t, lastErr)
+	require.NotNil(t, testRoute)
+
 	serviceConfig := cloudconnexa.IPServiceConfig{
 		ServiceTypes: []string{"ANY"},
 	}
 	ipServiceRoute := cloudconnexa.IPServiceRoute{
 		Description: "test",
-		Value:       subnet,
+		Value:       testRoute.Subnet,
 	}
 	service := cloudconnexa.IPService{
 		Name:            testName,
