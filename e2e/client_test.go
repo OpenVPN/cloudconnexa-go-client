@@ -58,7 +58,6 @@ func cidrOverlaps(a *net.IPNet, b *net.IPNet) bool {
 	if a.IP.To4() == nil || b.IP.To4() == nil {
 		return false
 	}
-	// For CIDR-aligned subnets, if they overlap then one network's base IP is contained in the other
 	return a.Contains(b.IP) || b.Contains(a.IP)
 }
 
@@ -73,9 +72,38 @@ func parseCIDROrNil(cidr string) *net.IPNet {
 
 // findAvailableInRange scans used subnets and returns a free 10.a.b.0/24 within [startA, endA]
 func findAvailableInRange(used []*net.IPNet, startA, endA int) (string, bool) {
+	// Skip the commonly reserved 10.200.0.0/16 range first
+	reserved := parseCIDROrNil("10.200.0.0/16")
 	for a := startA; a <= endA; a++ {
 		for b := 0; b <= 255; b++ {
 			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
+			_, ipn, err := net.ParseCIDR(candidate)
+			if err != nil {
+				continue
+			}
+			if reserved != nil && cidrOverlaps(ipn, reserved) {
+				continue
+			}
+			overlap := false
+			for _, u := range used {
+				if cidrOverlaps(ipn, u) {
+					overlap = true
+					break
+				}
+			}
+			if !overlap {
+				return candidate, true
+			}
+		}
+	}
+	return "", false
+}
+
+// findAvailableInRange172 scans used subnets for a free 172.16-31.b.0/24
+func findAvailableInRange172(used []*net.IPNet) (string, bool) {
+	for a := 16; a <= 31; a++ {
+		for b := 0; b <= 255; b++ {
+			candidate := fmt.Sprintf("172.%d.%d.0/24", a, b)
 			_, ipn, err := net.ParseCIDR(candidate)
 			if err != nil {
 				continue
@@ -95,8 +123,30 @@ func findAvailableInRange(used []*net.IPNet, startA, endA int) (string, bool) {
 	return "", false
 }
 
+// findAvailableInRange192168 scans used subnets for a free 192.168.b.0/24
+func findAvailableInRange192168(used []*net.IPNet) (string, bool) {
+	for b := 0; b <= 255; b++ {
+		candidate := fmt.Sprintf("192.168.%d.0/24", b)
+		_, ipn, err := net.ParseCIDR(candidate)
+		if err != nil {
+			continue
+		}
+		overlap := false
+		for _, u := range used {
+			if cidrOverlaps(ipn, u) {
+				overlap = true
+				break
+			}
+		}
+		if !overlap {
+			return candidate, true
+		}
+	}
+	return "", false
+}
+
 // findAvailableIPv4Subnet scans existing networks' routes and system subnets
-// and returns an available 10.a.b.0/24 subnet that does not overlap
+// and returns an available RFC1918 /24 subnet that does not overlap
 func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
 	networks, err := c.Networks.List()
 	if err != nil {
@@ -105,30 +155,48 @@ func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
 
 	var used []*net.IPNet
 	for _, n := range networks {
-		for _, r := range n.Routes {
-			if r.Subnet == "" {
-				continue
-			}
-			if ipn := parseCIDROrNil(r.Subnet); ipn != nil {
-				used = append(used, ipn)
+		// Collect existing routes via API to ensure we see them
+		routes, err := c.Routes.List(n.ID)
+		if err == nil {
+			for _, r := range routes {
+				if r.Subnet == "" {
+					continue
+				}
+				if ipn := parseCIDROrNil(r.Subnet); ipn != nil {
+					used = append(used, ipn)
+				}
 			}
 		}
-		for _, s := range n.SystemSubnets {
-			if ipn := parseCIDROrNil(s); ipn != nil {
-				used = append(used, ipn)
+		// Collect system subnets from GET network (may not be present in List)
+		if nn, err := c.Networks.Get(n.ID); err == nil && nn != nil {
+			for _, s := range nn.SystemSubnets {
+				if ipn := parseCIDROrNil(s); ipn != nil {
+					used = append(used, ipn)
+				}
 			}
 		}
 	}
 
-	// Prefer high 10.200.0.0/16 space, then sweep remaining 10.0.0.0/8
-	if candidate, ok := findAvailableInRange(used, 200, 254); ok {
+	// Try 10.0.0.0/8 excluding known reserved 10.200.0.0/16, prefer higher ranges
+	if candidate, ok := findAvailableInRange(used, 201, 254); ok {
 		return candidate, nil
 	}
 	if candidate, ok := findAvailableInRange(used, 0, 199); ok {
 		return candidate, nil
 	}
+	if candidate, ok := findAvailableInRange(used, 200, 200); ok {
+		return candidate, nil
+	}
+	// Try 172.16.0.0/12
+	if candidate, ok := findAvailableInRange172(used); ok {
+		return candidate, nil
+	}
+	// Try 192.168.0.0/16
+	if candidate, ok := findAvailableInRange192168(used); ok {
+		return candidate, nil
+	}
 
-	return "", fmt.Errorf("no available /24 subnet found in 10.0.0.0/8")
+	return "", fmt.Errorf("no available /24 subnet found in RFC1918 ranges")
 }
 
 // TestListNetworks tests the retrieval of networks using pagination
