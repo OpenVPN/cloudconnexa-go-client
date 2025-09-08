@@ -1,11 +1,13 @@
 package client
 
 import (
+	"crypto/rand"
+	"encoding/binary"
+	"errors"
 	"fmt"
-	"math/rand"
+	mrand "math/rand"
 	"net"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -72,7 +74,7 @@ func parseCIDROrNil(cidr string) *net.IPNet {
 	return ipnet
 }
 
-func shuffledRange(start, end int, rnd *rand.Rand) []int {
+func shuffledRange(start, end int, rnd *mrand.Rand) []int {
 	n := end - start + 1
 	arr := make([]int, n)
 	for i := 0; i < n; i++ {
@@ -83,7 +85,7 @@ func shuffledRange(start, end int, rnd *rand.Rand) []int {
 }
 
 // findAvailableInRange scans used subnets and returns a free 10.a.b.0/24 within [startA, endA]
-func findAvailableInRange(used []*net.IPNet, startA, endA int, rnd *rand.Rand) (string, bool) {
+func findAvailableInRange(used []*net.IPNet, startA, endA int, rnd *mrand.Rand) (string, bool) {
 	// Skip the commonly reserved 10.200.0.0/16 range first
 	reserved := parseCIDROrNil("10.200.0.0/16")
 	for _, a := range shuffledRange(startA, endA, rnd) {
@@ -112,7 +114,7 @@ func findAvailableInRange(used []*net.IPNet, startA, endA int, rnd *rand.Rand) (
 }
 
 // findAvailableInRange172 scans used subnets for a free 172.16-31.b.0/24
-func findAvailableInRange172(used []*net.IPNet, rnd *rand.Rand) (string, bool) {
+func findAvailableInRange172(used []*net.IPNet, rnd *mrand.Rand) (string, bool) {
 	for _, a := range shuffledRange(16, 31, rnd) {
 		for _, b := range shuffledRange(0, 255, rnd) {
 			candidate := fmt.Sprintf("172.%d.%d.0/24", a, b)
@@ -136,7 +138,7 @@ func findAvailableInRange172(used []*net.IPNet, rnd *rand.Rand) (string, bool) {
 }
 
 // findAvailableInRange192168 scans used subnets for a free 192.168.b.0/24
-func findAvailableInRange192168(used []*net.IPNet, rnd *rand.Rand) (string, bool) {
+func findAvailableInRange192168(used []*net.IPNet, rnd *mrand.Rand) (string, bool) {
 	for _, b := range shuffledRange(0, 255, rnd) {
 		candidate := fmt.Sprintf("192.168.%d.0/24", b)
 		_, ipn, err := net.ParseCIDR(candidate)
@@ -160,7 +162,9 @@ func findAvailableInRange192168(used []*net.IPNet, rnd *rand.Rand) (string, bool
 // findAvailableIPv4Subnet scans existing networks' routes and system subnets
 // and returns an available RFC1918 /24 subnet that does not overlap
 func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano() ^ int64(os.Getpid())))
+	var seedBytes [8]byte
+	_, _ = rand.Read(seedBytes[:])
+	rnd := mrand.New(mrand.NewSource(int64(binary.LittleEndian.Uint64(seedBytes[:]))))
 
 	networks, err := c.Networks.List()
 	if err != nil {
@@ -311,17 +315,18 @@ func TestCreateNetwork(t *testing.T) {
 			break
 		}
 		lastErr = err
-		if strings.Contains(err.Error(), "overlaps with an existing one") || strings.Contains(err.Error(), "400") {
-			// Refresh and retry
-			time.Sleep(500 * time.Millisecond)
-			continue
+		var apiErr *cloudconnexa.ErrClientResponse
+		if errors.As(err, &apiErr) {
+			if apiErr.StatusCode() == 400 {
+				// Overlap or validation error, refresh and retry
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
 		}
 		// Unexpected error
 		require.NoError(t, err)
 	}
-	if testRoute == nil {
-		require.NoError(t, lastErr)
-	}
+	require.NoError(t, lastErr)
 	require.NotNil(t, testRoute)
 
 	serviceConfig := cloudconnexa.IPServiceConfig{
