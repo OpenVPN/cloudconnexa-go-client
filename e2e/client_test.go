@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -47,6 +48,88 @@ func setUpClient(t *testing.T) *cloudconnexa.Client {
 	client, err := cloudconnexa.NewClient(os.Getenv(HostEnvVar), os.Getenv(ClientIDEnvVar), os.Getenv(ClientSecretEnvVar))
 	require.NoError(t, err)
 	return client
+}
+
+// cidrOverlaps returns true if two IPv4 networks overlap
+func cidrOverlaps(a *net.IPNet, b *net.IPNet) bool {
+	return a.Contains(b.IP) || b.Contains(a.IP)
+}
+
+// parseCIDROrNil parses CIDR string and returns *net.IPNet or nil on error
+func parseCIDROrNil(cidr string) *net.IPNet {
+	_, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil
+	}
+	return ipnet
+}
+
+// findAvailableIPv4Subnet scans existing networks' routes and system subnets
+// and returns an available 10.a.b.0/24 subnet that does not overlap
+func findAvailableIPv4Subnet(c *cloudconnexa.Client) (string, error) {
+	networks, err := c.Networks.List()
+	if err != nil {
+		return "", err
+	}
+
+	var used []*net.IPNet
+	for _, n := range networks {
+		for _, r := range n.Routes {
+			if r.Subnet == "" {
+				continue
+			}
+			if ipn := parseCIDROrNil(r.Subnet); ipn != nil {
+				used = append(used, ipn)
+			}
+		}
+		for _, s := range n.SystemSubnets {
+			if ipn := parseCIDROrNil(s); ipn != nil {
+				used = append(used, ipn)
+			}
+		}
+	}
+
+	// Prefer high 10.200.0.0/16 space, then sweep remaining 10.0.0.0/8
+	for a := 200; a <= 254; a++ {
+		for b := 0; b <= 255; b++ {
+			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
+			_, ipn, err := net.ParseCIDR(candidate)
+			if err != nil {
+				continue
+			}
+			overlap := false
+			for _, u := range used {
+				if cidrOverlaps(ipn, u) {
+					overlap = true
+					break
+				}
+			}
+			if !overlap {
+				return candidate, nil
+			}
+		}
+	}
+	for a := 0; a <= 199; a++ {
+		for b := 0; b <= 255; b++ {
+			candidate := fmt.Sprintf("10.%d.%d.0/24", a, b)
+			_, ipn, err := net.ParseCIDR(candidate)
+			if err != nil {
+				continue
+			}
+			overlap := false
+			for _, u := range used {
+				if cidrOverlaps(ipn, u) {
+					overlap = true
+					break
+				}
+			}
+			if !overlap {
+				return candidate, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no available /24 subnet found in 10.0.0.0/8")
 }
 
 // TestListNetworks tests the retrieval of networks using pagination
@@ -115,10 +198,12 @@ func TestCreateNetwork(t *testing.T) {
 		Name:        testName,
 		VpnRegionID: "it-mxp",
 	}
+	subnet, err := findAvailableIPv4Subnet(c)
+	require.NoError(t, err)
 	route := cloudconnexa.Route{
 		Description: "test",
 		Type:        "IP_V4",
-		Subnet:      fmt.Sprintf("10.%d.%d.0/24", timestamp%256, (timestamp/256)%256),
+		Subnet:      subnet,
 	}
 	network := cloudconnexa.Network{
 		Description:       "test",
@@ -131,6 +216,8 @@ func TestCreateNetwork(t *testing.T) {
 	response, err := c.Networks.Create(network)
 	require.NoError(t, err)
 	fmt.Printf("created %s network\n", response.ID)
+	// Ensure cleanup even if subsequent steps fail
+	defer func() { _ = c.Networks.Delete(response.ID) }()
 	test, err := c.Routes.Create(response.ID, route)
 	require.NoError(t, err)
 	fmt.Printf("created %s route\n", test.ID)
@@ -139,7 +226,7 @@ func TestCreateNetwork(t *testing.T) {
 	}
 	ipServiceRoute := cloudconnexa.IPServiceRoute{
 		Description: "test",
-		Value:       fmt.Sprintf("10.%d.%d.0/24", timestamp%256, (timestamp/256)%256),
+		Value:       subnet,
 	}
 	service := cloudconnexa.IPService{
 		Name:            testName,
