@@ -24,6 +24,7 @@ jobs:
     environment: TestingEnv
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         go:
           - "1.23"

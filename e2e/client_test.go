@@ -292,16 +292,34 @@ func TestCreateNetwork(t *testing.T) {
 		Connectors:        []cloudconnexa.NetworkConnector{connector},
 		TunnelingProtocol: "OPENVPN",
 	}
-	response, err := c.Networks.Create(network)
-	require.NoError(t, err)
+
+	// Create network with 429 retry/backoff
+	var response *cloudconnexa.Network
+	var lastErr error
+	for backoff, attempts := 200*time.Millisecond, 0; attempts < 8; attempts++ {
+		response, err = c.Networks.Create(network)
+		if err == nil {
+			break
+		}
+		lastErr = err
+		var apiErr *cloudconnexa.ErrClientResponse
+		if errors.As(err, &apiErr) && apiErr.StatusCode() == 429 {
+			time.Sleep(backoff)
+			backoff *= 2
+			continue
+		}
+		require.NoError(t, err)
+	}
+	require.NoError(t, lastErr)
+	require.NotNil(t, response)
 	fmt.Printf("created %s network\n", response.ID)
 	// Ensure cleanup even if subsequent steps fail
 	defer func() { _ = c.Networks.Delete(response.ID) }()
 
 	// Attempt to create a non-overlapping route with retries to avoid CI matrix collisions
 	var testRoute *cloudconnexa.Route
-	var lastErr error
-	for attempts := 0; attempts < 20; attempts++ {
+	lastErr = nil
+	for backoff, attempts := 200*time.Millisecond, 0; attempts < 20; attempts++ {
 		subnet, serr := findAvailableIPv4Subnet(c)
 		require.NoError(t, serr)
 		route := cloudconnexa.Route{
@@ -317,13 +335,16 @@ func TestCreateNetwork(t *testing.T) {
 		lastErr = err
 		var apiErr *cloudconnexa.ErrClientResponse
 		if errors.As(err, &apiErr) {
-			if apiErr.StatusCode() == 400 {
-				// Overlap or validation error, refresh and retry
-				time.Sleep(500 * time.Millisecond)
+			if apiErr.StatusCode() == 400 { // overlap/validation
+				time.Sleep(300 * time.Millisecond)
+				continue
+			}
+			if apiErr.StatusCode() == 429 { // rate limit
+				time.Sleep(backoff)
+				backoff *= 2
 				continue
 			}
 		}
-		// Unexpected error
 		require.NoError(t, err)
 	}
 	require.NoError(t, lastErr)
@@ -345,8 +366,26 @@ func TestCreateNetwork(t *testing.T) {
 		Config:          &serviceConfig,
 		Routes:          []*cloudconnexa.IPServiceRoute{&ipServiceRoute},
 	}
-	s, err := c.NetworkIPServices.Create(&service)
-	require.NoError(t, err)
+
+	// Create IP service with 429 retry/backoff
+	var s *cloudconnexa.NetworkIPServiceResponse
+	lastErr = nil
+	for backoff, attempts := 200*time.Millisecond, 0; attempts < 8; attempts++ {
+		s, err = c.NetworkIPServices.Create(&service)
+		if err == nil {
+			break
+		}
+		lastErr = err
+		var apiErr *cloudconnexa.ErrClientResponse
+		if errors.As(err, &apiErr) && apiErr.StatusCode() == 429 {
+			time.Sleep(backoff)
+			backoff *= 2
+			continue
+		}
+		require.NoError(t, err)
+	}
+	require.NoError(t, lastErr)
+	require.NotNil(t, s)
 	fmt.Printf("created %s service\n", s.ID)
 	err = c.Networks.Delete(response.ID)
 	require.NoError(t, err)
