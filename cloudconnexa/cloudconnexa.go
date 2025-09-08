@@ -71,6 +71,12 @@ func (e ErrClientResponse) Error() string {
 	return fmt.Sprintf("status code: %d, response body: %s", e.status, e.body)
 }
 
+// StatusCode returns the HTTP status code of the API error response.
+func (e ErrClientResponse) StatusCode() int { return e.status }
+
+// Body returns the raw response body of the API error response.
+func (e ErrClientResponse) Body() string { return e.body }
+
 // NewClient creates a new CloudConnexa API client with the given credentials.
 // It authenticates using OAuth2 client credentials flow and returns a configured client.
 func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
