@@ -26,15 +26,8 @@ jobs:
         uses: securego/gosec@master
         with:
           args: ./...
-        env:
-          CLOUDCONNEXA_BASE_URL: ${{ vars.CLOUDCONNEXA_BASE_URL }}
-          CLOUDCONNEXA_CLIENT_ID: ${{ secrets.CLOUDCONNEXA_CLIENT_ID }}
-          CLOUDCONNEXA_CLIENT_SECRET: ${{ secrets.CLOUDCONNEXA_CLIENT_SECRET }}
 
-      - name: Generate dependencies list
-        run: go list -json -m all > go.list
-
-      - name: Run nancy for dependency scanning
-        uses: sonatype-nexus-community/nancy-github-action@main
-        with:
-          goListFile: go.list
+      - name: Run govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
