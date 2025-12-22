@@ -3,7 +3,7 @@ version: "2"
 run:
   timeout: 5m
   tests: true
-  go: "1.23"
+  go: "1.24"
 
 linters:
   enable:

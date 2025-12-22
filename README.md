@@ -24,7 +24,7 @@ The official Go client library for the Cloud Connexa API provides programmatic a
 
 ## Installation
 
-Requires Go 1.23 or later.
+Requires Go 1.24 or later.
 
 ```bash
 go get github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa
@@ -377,6 +377,6 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) file for 
 
 ### Requirements
 
-- Go 1.23 or later
+- Go 1.24 or later
 - Valid Cloud Connexa API credentials
 - Network access to Cloud Connexa API endpoints

@@ -21,7 +21,7 @@ A clear and concise description of what you expected to happen.
 
 **Environment:**
 
-- Go version: [e.g. 1.23]
+- Go version: [e.g. 1.24]
 - Library version: [e.g. v2.1.0]
 
 **Additional context**
