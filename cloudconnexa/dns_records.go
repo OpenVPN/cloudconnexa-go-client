@@ -71,10 +71,10 @@ func (c *DNSRecordsService) List() ([]DNSRecord, error) {
 
 		allRecords = append(allRecords, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allRecords, nil
 }

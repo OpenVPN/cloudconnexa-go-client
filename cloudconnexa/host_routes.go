@@ -73,10 +73,10 @@ func (c *HostRoutesService) List(hostID string) ([]HostRoute, error) {
 
 		allRoutes = append(allRoutes, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allRoutes, nil
 }
