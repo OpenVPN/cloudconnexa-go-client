@@ -28,6 +28,7 @@ type User struct {
 	Status            string   `json:"status"`
 	Devices           []Device `json:"devices"`
 	ConnectionStatus  string   `json:"connectionStatus"`
+	Licensed          bool     `json:"licensed"`
 }
 
 // UserPageResponse represents a paginated response of users
@@ -213,6 +214,32 @@ func (c *UsersService) Update(user User) error {
 // Returns any error that occurred
 func (c *UsersService) Delete(userID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.client.DoRequest(req)
+	return err
+}
+
+// Activate activates a suspended user
+// userID: The ID of the user to activate
+// Returns any error that occurred
+func (c *UsersService) Activate(userID string) error {
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s/activate", c.client.GetV1Url(), userID), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.client.DoRequest(req)
+	return err
+}
+
+// Suspend suspends an active user
+// userID: The ID of the user to suspend
+// Returns any error that occurred
+func (c *UsersService) Suspend(userID string) error {
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s/suspend", c.client.GetV1Url(), userID), nil)
 	if err != nil {
 		return err
 	}

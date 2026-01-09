@@ -20,6 +20,7 @@ type HostConnector struct {
 	IPv6Address      string `json:"ipV6Address"`
 	Profile          string `json:"profile"`
 	ConnectionStatus string `json:"connectionStatus"`
+	Licensed         bool   `json:"licensed"`
 }
 
 // HostConnectorPageResponse represents a paginated response of host connectors.
@@ -220,6 +221,32 @@ func (c *HostConnectorsService) Create(connector HostConnector, hostID string) (
 // Delete deletes a host connector by ID.
 func (c *HostConnectorsService) Delete(connectorID string, hostID string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/connectors/%s?hostId=%s", c.client.GetV1Url(), connectorID, hostID), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.client.DoRequest(req)
+	return err
+}
+
+// Activate activates a suspended host connector.
+// connectorID: The ID of the connector to activate
+// Returns any error that occurred
+func (c *HostConnectorsService) Activate(connectorID string) error {
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s/activate", c.client.GetV1Url(), connectorID), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.client.DoRequest(req)
+	return err
+}
+
+// Suspend suspends an active host connector.
+// connectorID: The ID of the connector to suspend
+// Returns any error that occurred
+func (c *HostConnectorsService) Suspend(connectorID string) error {
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s/suspend", c.client.GetV1Url(), connectorID), nil)
 	if err != nil {
 		return err
 	}
