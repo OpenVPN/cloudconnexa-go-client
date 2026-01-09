@@ -6,7 +6,7 @@
 
 The official Go client library for the Cloud Connexa API provides programmatic access to OpenVPN Cloud Connexa services.
 
-**Full CloudConnexa API v1.1.0 Support** - Complete coverage of all public API endpoints with modern Go patterns.
+**Full CloudConnexa API v1.2.0 Support** - Complete coverage of all public API endpoints with modern Go patterns.
 
 ## Table of Contents
 
@@ -202,7 +202,7 @@ if err != nil {
 
 ## API Coverage
 
-The client provides **100% coverage** of the CloudConnexa API v1.1.0 with all public endpoints:
+The client provides **100% coverage** of the CloudConnexa API v1.2.0 with all public endpoints:
 
 ### **Core Resources**
 
@@ -238,6 +238,13 @@ The client provides **100% coverage** of the CloudConnexa API v1.1.0 with all pu
 - **Comprehensive Devices API**: Full device management with filtering and bulk operations
 - **IPsec Support**: Start/stop IPsec tunnels for Network Connectors
 - **Updated DTOs**: Simplified data structures aligned with API v1.1.0
+
+### **API v1.2.0 Features**
+
+- **User Lifecycle Management**: Activate and suspend users with dedicated endpoints
+- **Connector Lifecycle Management**: Activate and suspend host and network connectors
+- **IPsec Enhancements**: CloudConnexa public IP (`serverIp`), server ID, and connector state fields
+- **Licensed Status**: Track licensing status for users and connectors (`licensed` field)
 
 ### **All Endpoints Support**
 
@@ -366,7 +373,7 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) file for 
 
 ### Documentation
 
-- [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api-v1-1-0.html)
+- [Cloud Connexa API Documentation](https://openvpn.net/cloud-docs/developer/cloudconnexa-api-v1-2-0.html)
 - [Go Package Documentation](https://pkg.go.dev/github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa)
 
 ### Issues and Questions
