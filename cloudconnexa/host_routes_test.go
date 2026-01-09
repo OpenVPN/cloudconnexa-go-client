@@ -71,7 +71,7 @@ func TestHostRoutesService_GetByPage(t *testing.T) {
 }
 
 func TestHostRoutesService_List(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		response := HostRoutePageResponse{
 			Content: []HostRoute{
 				{ID: "route-1", Subnet: "10.0.0.0/24"},
