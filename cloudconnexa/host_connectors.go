@@ -112,10 +112,10 @@ func (c *HostConnectorsService) ListByHostID(hostID string) ([]HostConnector, er
 
 		allConnectors = append(allConnectors, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allConnectors, nil
 }

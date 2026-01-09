@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 )
 
 // DeviceStatus represents the possible statuses of a device.
@@ -34,41 +33,15 @@ const (
 	DeviceTypeConnector DeviceType = "CONNECTOR"
 )
 
-// DeviceDetail represents a detailed device in CloudConnexa.
+// DeviceDetail represents a device in CloudConnexa.
+// Fields match the API v1.2.0 DeviceResponse schema.
 type DeviceDetail struct {
-	ID                 string                 `json:"id"`
-	Name               string                 `json:"name"`
-	Description        string                 `json:"description,omitempty"`
-	UserID             string                 `json:"userId"`
-	Status             string                 `json:"status"`
-	Type               string                 `json:"type"`
-	Platform           string                 `json:"platform,omitempty"`
-	Version            string                 `json:"version,omitempty"`
-	LastSeen           *time.Time             `json:"lastSeen,omitempty"`
-	CreatedAt          time.Time              `json:"createdAt"`
-	UpdatedAt          time.Time              `json:"updatedAt"`
-	IPv4Address        string                 `json:"ipv4Address,omitempty"`
-	IPv6Address        string                 `json:"ipv6Address,omitempty"`
-	PublicKey          string                 `json:"publicKey,omitempty"`
-	Fingerprint        string                 `json:"fingerprint,omitempty"`
-	SerialNumber       string                 `json:"serialNumber,omitempty"`
-	MACAddress         string                 `json:"macAddress,omitempty"`
-	Hostname           string                 `json:"hostname,omitempty"`
-	OperatingSystem    string                 `json:"operatingSystem,omitempty"`
-	OSVersion          string                 `json:"osVersion,omitempty"`
-	ClientVersion      string                 `json:"clientVersion,omitempty"`
-	IsOnline           bool                   `json:"isOnline"`
-	LastConnectedAt    *time.Time             `json:"lastConnectedAt,omitempty"`
-	LastDisconnectedAt *time.Time             `json:"lastDisconnectedAt,omitempty"`
-	TotalBytesIn       int64                  `json:"totalBytesIn"`
-	TotalBytesOut      int64                  `json:"totalBytesOut"`
-	SessionCount       int                    `json:"sessionCount"`
-	Region             string                 `json:"region,omitempty"`
-	Gateway            string                 `json:"gateway,omitempty"`
-	UserGroupID        string                 `json:"userGroupId,omitempty"`
-	NetworkID          string                 `json:"networkId,omitempty"`
-	Tags               []string               `json:"tags,omitempty"`
-	Metadata           map[string]interface{} `json:"metadata,omitempty"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Platform    string `json:"platform,omitempty"`
+	Status      string `json:"status"`
+	UserID      string `json:"userId"`
 }
 
 // DevicePageResponse represents a paginated response of devices.
@@ -91,11 +64,8 @@ type DeviceListOptions struct {
 
 // DeviceUpdateRequest represents the request body for updating a device.
 type DeviceUpdateRequest struct {
-	Name        string                 `json:"name,omitempty"`
-	Description string                 `json:"description,omitempty"`
-	Status      string                 `json:"status,omitempty"`
-	Tags        []string               `json:"tags,omitempty"`
-	Metadata    map[string]interface{} `json:"metadata,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 // DevicesService provides methods for managing devices.
@@ -256,22 +226,6 @@ func (d *DevicesService) ListByUserID(userID string) ([]DeviceDetail, error) {
 	return allDevices, nil
 }
 
-// Block blocks a device by updating its status to BLOCKED.
-func (d *DevicesService) Block(deviceID string) (*DeviceDetail, error) {
-	updateRequest := DeviceUpdateRequest{
-		Status: string(DeviceStatusBlocked),
-	}
-	return d.Update(deviceID, updateRequest)
-}
-
-// Unblock unblocks a device by updating its status to ACTIVE.
-func (d *DevicesService) Unblock(deviceID string) (*DeviceDetail, error) {
-	updateRequest := DeviceUpdateRequest{
-		Status: string(DeviceStatusActive),
-	}
-	return d.Update(deviceID, updateRequest)
-}
-
 // UpdateName updates the name of a device.
 func (d *DevicesService) UpdateName(deviceID string, name string) (*DeviceDetail, error) {
 	updateRequest := DeviceUpdateRequest{
@@ -284,14 +238,6 @@ func (d *DevicesService) UpdateName(deviceID string, name string) (*DeviceDetail
 func (d *DevicesService) UpdateDescription(deviceID string, description string) (*DeviceDetail, error) {
 	updateRequest := DeviceUpdateRequest{
 		Description: description,
-	}
-	return d.Update(deviceID, updateRequest)
-}
-
-// UpdateTags updates the tags of a device.
-func (d *DevicesService) UpdateTags(deviceID string, tags []string) (*DeviceDetail, error) {
-	updateRequest := DeviceUpdateRequest{
-		Tags: tags,
 	}
 	return d.Update(deviceID, updateRequest)
 }

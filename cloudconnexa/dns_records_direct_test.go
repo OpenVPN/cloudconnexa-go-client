@@ -154,3 +154,108 @@ func TestDNSRecordsService_GetByID_vs_GetDNSRecord(t *testing.T) {
 
 	t.Logf("GetByID made %d API calls, GetDNSRecord made %d API calls", directCalls, paginationCalls)
 }
+
+func TestDNSRecordsService_List(t *testing.T) {
+	pageRequests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Expected GET request, got %s", r.Method)
+		}
+
+		pageRequests++
+		page := r.URL.Query().Get("page")
+
+		var response DNSRecordPageResponse
+		switch page {
+		case "0":
+			response = DNSRecordPageResponse{
+				Content: []DNSRecord{
+					{ID: "record-1", Domain: "example1.com"},
+					{ID: "record-2", Domain: "example2.com"},
+				},
+				Page:             0,
+				Size:             2,
+				TotalPages:       2,
+				TotalElements:    3,
+				NumberOfElements: 2,
+				Success:          true,
+			}
+		case "1":
+			response = DNSRecordPageResponse{
+				Content: []DNSRecord{
+					{ID: "record-3", Domain: "example3.com"},
+				},
+				Page:             1,
+				Size:             2,
+				TotalPages:       2,
+				TotalElements:    3,
+				NumberOfElements: 1,
+				Success:          true,
+			}
+		default:
+			response = DNSRecordPageResponse{
+				Content:       []DNSRecord{},
+				Page:          2,
+				TotalPages:    2,
+				TotalElements: 3,
+				Success:       true,
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := createTestDNSClient(server)
+
+	records, err := client.DNSRecords.List()
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(records) != 3 {
+		t.Errorf("Expected 3 records, got %d", len(records))
+	}
+
+	if records[0].ID != "record-1" {
+		t.Errorf("Expected first record ID 'record-1', got %s", records[0].ID)
+	}
+
+	if records[2].ID != "record-3" {
+		t.Errorf("Expected third record ID 'record-3', got %s", records[2].ID)
+	}
+
+	if pageRequests != 2 {
+		t.Errorf("Expected 2 page requests for pagination, got %d", pageRequests)
+	}
+}
+
+func TestDNSRecordsService_List_Empty(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		response := DNSRecordPageResponse{
+			Content:          []DNSRecord{},
+			Page:             0,
+			Size:             100,
+			TotalPages:       0,
+			TotalElements:    0,
+			NumberOfElements: 0,
+			Success:          true,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := createTestDNSClient(server)
+
+	records, err := client.DNSRecords.List()
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(records) != 0 {
+		t.Errorf("Expected 0 records, got %d", len(records))
+	}
+}

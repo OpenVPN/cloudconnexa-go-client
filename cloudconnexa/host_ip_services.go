@@ -106,10 +106,11 @@ func (c *HostIPServicesService) List() ([]HostIPServiceResponse, error) {
 		}
 
 		allIPServices = append(allIPServices, response.Content...)
+
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allIPServices, nil
 }

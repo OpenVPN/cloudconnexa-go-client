@@ -77,10 +77,10 @@ func (c *UserGroupsService) List() ([]UserGroup, error) {
 
 		allUserGroups = append(allUserGroups, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allUserGroups, nil
 }

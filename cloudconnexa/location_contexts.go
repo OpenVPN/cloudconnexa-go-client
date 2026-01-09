@@ -90,10 +90,11 @@ func (c *LocationContextsService) List() ([]LocationContext, error) {
 		}
 
 		allLocationContexts = append(allLocationContexts, response.Content...)
+
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allLocationContexts, nil
 }

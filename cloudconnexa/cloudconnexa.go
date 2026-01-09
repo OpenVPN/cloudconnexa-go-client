@@ -42,6 +42,7 @@ type Client struct {
 	NetworkApplications *NetworkApplicationsService
 	Networks            *NetworksService
 	Routes              *RoutesService
+	HostRoutes          *HostRoutesService
 	Users               *UsersService
 	UserGroups          *UserGroupsService
 	VPNRegions          *VPNRegionsService
@@ -142,6 +143,7 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 	c.NetworkApplications = (*NetworkApplicationsService)(&c.common)
 	c.Networks = (*NetworksService)(&c.common)
 	c.Routes = (*RoutesService)(&c.common)
+	c.HostRoutes = (*HostRoutesService)(&c.common)
 	c.Users = (*UsersService)(&c.common)
 	c.UserGroups = (*UserGroupsService)(&c.common)
 	c.VPNRegions = (*VPNRegionsService)(&c.common)

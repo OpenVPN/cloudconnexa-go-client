@@ -57,6 +57,28 @@ func (c *DNSRecordsService) GetByPage(page int, pageSize int) (DNSRecordPageResp
 	return response, nil
 }
 
+// List retrieves all DNS records by paginating through all available pages.
+// Returns a slice of DNS records and any error that occurred.
+func (c *DNSRecordsService) List() ([]DNSRecord, error) {
+	var allRecords []DNSRecord
+	page := 0
+
+	for {
+		response, err := c.GetByPage(page, defaultPageSize)
+		if err != nil {
+			return nil, err
+		}
+
+		allRecords = append(allRecords, response.Content...)
+
+		page++
+		if page >= response.TotalPages {
+			break
+		}
+	}
+	return allRecords, nil
+}
+
 // GetByID retrieves a specific DNS record by ID using the direct API endpoint.
 // This is the preferred method for getting a single DNS record as it uses the direct
 // GET /api/v1/dns-records/{id} endpoint introduced in API v1.1.0.
@@ -97,10 +119,10 @@ func (c *DNSRecordsService) GetDNSRecord(recordID string) (*DNSRecord, error) {
 			}
 		}
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return nil, ErrDNSRecordNotFound
 }

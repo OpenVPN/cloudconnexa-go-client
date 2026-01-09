@@ -22,31 +22,23 @@ const (
 )
 
 // Session represents an OpenVPN session in CloudConnexa.
+// Fields match the API v1.2.0 SessionResponse schema.
 type Session struct {
-	ID               string     `json:"id"`
-	UserID           string     `json:"userId"`
-	DeviceID         string     `json:"deviceId"`
-	Status           string     `json:"status"`
-	StartTime        time.Time  `json:"startTime"`
-	EndTime          *time.Time `json:"endTime,omitempty"`
-	Duration         *int64     `json:"duration,omitempty"`
-	BytesReceived    int64      `json:"bytesReceived"`
-	BytesSent        int64      `json:"bytesSent"`
-	ClientIP         string     `json:"clientIp"`
-	ServerIP         string     `json:"serverIp"`
-	Protocol         string     `json:"protocol"`
-	Port             int        `json:"port"`
-	Region           string     `json:"region"`
-	Gateway          string     `json:"gateway"`
-	DisconnectReason string     `json:"disconnectReason,omitempty"`
-	ClientVersion    string     `json:"clientVersion,omitempty"`
-	ClientOS         string     `json:"clientOs,omitempty"`
-	ClientOSVersion  string     `json:"clientOsVersion,omitempty"`
-	TunnelIPv4       string     `json:"tunnelIpv4,omitempty"`
-	TunnelIPv6       string     `json:"tunnelIpv6,omitempty"`
-	PublicIP         string     `json:"publicIp,omitempty"`
-	CreatedAt        time.Time  `json:"createdAt"`
-	UpdatedAt        time.Time  `json:"updatedAt"`
+	SessionID        string    `json:"sessionId"`
+	UserID           string    `json:"userId"`
+	DeviceID         string    `json:"deviceId"`
+	RegionID         string    `json:"regionId"`
+	BytesIn          int64     `json:"bytesIn"`
+	BytesOut         int64     `json:"bytesOut"`
+	ConnectorName    string    `json:"connectorName,omitempty"`
+	UserName         string    `json:"userName,omitempty"`
+	DeviceName       string    `json:"deviceName,omitempty"`
+	ClientIP         string    `json:"clientIp,omitempty"`
+	StartDateTime    time.Time `json:"startDateTime"`
+	VpnIPv4          string    `json:"vpnIpv4,omitempty"`
+	NetworkName      string    `json:"networkName,omitempty"`
+	RegionName       string    `json:"regionName,omitempty"`
+	ConnectionStatus string    `json:"connectionStatus,omitempty"`
 }
 
 // SessionsResponse represents the response from the sessions API endpoint.

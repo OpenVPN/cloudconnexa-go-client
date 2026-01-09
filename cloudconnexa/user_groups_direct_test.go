@@ -153,9 +153,14 @@ func TestUserGroupsService_GetByID_vs_Get(t *testing.T) {
 	}
 	paginationCalls := callCount
 
-	// GetByID should make fewer API calls
-	if directCalls >= paginationCalls {
-		t.Errorf("Expected GetByID to make fewer calls than Get. GetByID: %d, Get: %d", directCalls, paginationCalls)
+	// GetByID should make fewer or equal API calls (equal when data fits in one page)
+	if directCalls > paginationCalls {
+		t.Errorf("Expected GetByID to make fewer or equal calls than Get. GetByID: %d, Get: %d", directCalls, paginationCalls)
+	}
+
+	// Both should make exactly 1 call in this test case (single page)
+	if directCalls != 1 {
+		t.Errorf("Expected GetByID to make exactly 1 call, got %d", directCalls)
 	}
 
 	t.Logf("GetByID made %d API calls, Get made %d API calls", directCalls, paginationCalls)

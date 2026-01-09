@@ -164,10 +164,10 @@ func (c *NetworkConnectorsService) List() ([]NetworkConnector, error) {
 
 		allConnectors = append(allConnectors, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allConnectors, nil
 }
@@ -185,10 +185,10 @@ func (c *NetworkConnectorsService) ListByNetworkID(networkID string) ([]NetworkC
 
 		allConnectors = append(allConnectors, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allConnectors, nil
 }

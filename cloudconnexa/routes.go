@@ -72,10 +72,10 @@ func (c *RoutesService) List(networkID string) ([]Route, error) {
 
 		allRoutes = append(allRoutes, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allRoutes, nil
 }
@@ -108,9 +108,6 @@ func (c *RoutesService) Get(routeID string) (*Route, error) {
 	}
 
 	for _, n := range networks {
-		if err != nil {
-			continue
-		}
 		for _, r := range n.Routes {
 			if r.ID == routeID {
 				r.NetworkItemID = n.ID
