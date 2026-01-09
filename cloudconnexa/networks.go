@@ -19,15 +19,14 @@ const (
 
 // Network represents a network in CloudConnexa.
 type Network struct {
-	Connectors        []NetworkConnector `json:"connectors"`
+	ID                string             `json:"id"`
+	Name              string             `json:"name"`
 	Description       string             `json:"description"`
 	Egress            bool               `json:"egress"`
-	ID                string             `json:"id"`
 	InternetAccess    string             `json:"internetAccess"`
-	Name              string             `json:"name"`
-	Routes            []Route            `json:"routes"`
 	SystemSubnets     []string           `json:"systemSubnets"`
-	NetworkItemID     string             `json:"NetworkItemID"`
+	Connectors        []NetworkConnector `json:"connectors"`
+	Routes            []Route            `json:"routes"`
 	TunnelingProtocol string             `json:"tunnelingProtocol"`
 }
 

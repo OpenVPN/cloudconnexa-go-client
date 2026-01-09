@@ -13,10 +13,10 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-// User represents a user configuration
+// User represents a user configuration.
+// Fields match the API v1.2.0 UserResponse schema.
 type User struct {
 	ID                string   `json:"id"`
-	Name              string   `json:"name"`
 	Username          string   `json:"username"`
 	Role              string   `json:"role"`
 	Email             string   `json:"email,omitempty"`
