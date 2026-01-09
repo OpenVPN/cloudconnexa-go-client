@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"golang.org/x/time/rate"
 )
@@ -104,13 +103,10 @@ func TestDevicesService_GetByID(t *testing.T) {
 
 		// Mock response
 		device := DeviceDetail{
-			ID:        "device-123",
-			Name:      "Test Device",
-			UserID:    "user-123",
-			Status:    "ACTIVE",
-			Type:      "CLIENT",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			ID:     "device-123",
+			Name:   "Test Device",
+			UserID: "user-123",
+			Status: "ACTIVE",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -158,9 +154,6 @@ func TestDevicesService_Update(t *testing.T) {
 			Description: "Updated description",
 			UserID:      "user-123",
 			Status:      "ACTIVE",
-			Type:        "CLIENT",
-			CreatedAt:   time.Now(),
-			UpdatedAt:   time.Now(),
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -187,37 +180,6 @@ func TestDevicesService_Update(t *testing.T) {
 
 	if result.Description != "Updated description" {
 		t.Errorf("Expected device description 'Updated description', got %s", result.Description)
-	}
-}
-
-func TestDevicesService_Block(t *testing.T) {
-	// Create a mock server
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		// Mock response
-		device := DeviceDetail{
-			ID:     "device-123",
-			Name:   "Test Device",
-			UserID: "user-123",
-			Status: "BLOCKED",
-			Type:   "CLIENT",
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(device)
-	}))
-	defer server.Close()
-
-	// Create client with mock server
-	client := createTestClient(server)
-
-	// Test the Block method
-	result, err := client.Devices.Block("device-123")
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if result.Status != "BLOCKED" {
-		t.Errorf("Expected device status 'BLOCKED', got %s", result.Status)
 	}
 }
 

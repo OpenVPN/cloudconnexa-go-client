@@ -44,14 +44,14 @@ func TestSessionsService_List(t *testing.T) {
 		response := SessionsResponse{
 			Sessions: []Session{
 				{
-					ID:     "session-1",
-					UserID: "user-1",
-					Status: "ACTIVE",
+					SessionID:        "session-1",
+					UserID:           "user-1",
+					ConnectionStatus: "ACTIVE",
 				},
 				{
-					ID:     "session-2",
-					UserID: "user-2",
-					Status: "COMPLETED",
+					SessionID:        "session-2",
+					UserID:           "user-2",
+					ConnectionStatus: "COMPLETED",
 				},
 			},
 			NextCursor: "next-cursor-123",
@@ -78,8 +78,8 @@ func TestSessionsService_List(t *testing.T) {
 		t.Errorf("Expected 2 sessions, got %d", len(result.Sessions))
 	}
 
-	if result.Sessions[0].ID != "session-1" {
-		t.Errorf("Expected session ID 'session-1', got %s", result.Sessions[0].ID)
+	if result.Sessions[0].SessionID != "session-1" {
+		t.Errorf("Expected session ID 'session-1', got %s", result.Sessions[0].SessionID)
 	}
 
 	if result.NextCursor != "next-cursor-123" {
@@ -100,9 +100,9 @@ func TestSessionsService_ListActive(t *testing.T) {
 		response := SessionsResponse{
 			Sessions: []Session{
 				{
-					ID:     "session-1",
-					UserID: "user-1",
-					Status: "ACTIVE",
+					SessionID:        "session-1",
+					UserID:           "user-1",
+					ConnectionStatus: "ACTIVE",
 				},
 			},
 		}
@@ -125,8 +125,8 @@ func TestSessionsService_ListActive(t *testing.T) {
 		t.Errorf("Expected 1 session, got %d", len(result.Sessions))
 	}
 
-	if result.Sessions[0].Status != "ACTIVE" {
-		t.Errorf("Expected session status 'ACTIVE', got %s", result.Sessions[0].Status)
+	if result.Sessions[0].ConnectionStatus != "ACTIVE" {
+		t.Errorf("Expected session status 'ACTIVE', got %s", result.Sessions[0].ConnectionStatus)
 	}
 }
 
@@ -146,10 +146,9 @@ func TestSessionsService_ListByDateRange(t *testing.T) {
 		response := SessionsResponse{
 			Sessions: []Session{
 				{
-					ID:        "session-1",
-					UserID:    "user-1",
-					Status:    "COMPLETED",
-					StartTime: time.Now(),
+					SessionID:        "session-1",
+					UserID:           "user-1",
+					ConnectionStatus: "COMPLETED",
 				},
 			},
 		}
