@@ -24,20 +24,26 @@ type NetworkConnector struct {
 	ConnectionStatus  string       `json:"connectionStatus"`
 	IPSecConfig       *IPSecConfig `json:"ipSecConfig,omitempty"`
 	TunnelingProtocol string       `json:"tunnelingProtocol"`
+	Licensed          bool         `json:"licensed"`
 }
 
 // IPSecConfig represents a network connector ipsec configuration.
 type IPSecConfig struct {
 	Platform                     string      `json:"platform,omitempty"`
+	ConnectorState               string      `json:"connectorState,omitempty"`
 	AuthenticationType           string      `json:"authenticationType,omitempty"`
 	RemoteSitePublicIP           string      `json:"remoteSitePublicIp,omitempty"`
 	PreSharedKey                 string      `json:"preSharedKey,omitempty"`
 	CaCertificate                string      `json:"caCertificate,omitempty"`
+	CaCertificateFileName        string      `json:"caCertificateFileName,omitempty"`
 	PeerCertificate              string      `json:"peerCertificate,omitempty"`
 	RemoteGatewayCertificate     string      `json:"remoteGatewayCertificate,omitempty"`
 	PeerCertificatePrivateKey    string      `json:"peerCertificatePrivateKey,omitempty"`
 	PeerCertificateKeyPassphrase string      `json:"peerCertificateKeyPassphrase,omitempty"`
+	PairedAwsConnectorID         string      `json:"pairedAwsConnectorId,omitempty"`
 	IkeProtocol                  IkeProtocol `json:"ikeProtocol,omitempty"`
+	ServerID                     string      `json:"serverId,omitempty"`
+	ServerIP                     string      `json:"serverIp,omitempty"`
 	Hostname                     string      `json:"hostname,omitempty"`
 	Domain                       string      `json:"domain,omitempty"`
 }
@@ -325,4 +331,32 @@ func (c *NetworkConnectorsService) StopIPsec(connectorID string) error {
 	}
 
 	return nil
+}
+
+// Activate activates a suspended network connector.
+// connectorID: The ID of the connector to activate
+// Returns any error that occurred
+func (c *NetworkConnectorsService) Activate(connectorID string) error {
+	endpoint := fmt.Sprintf("%s/networks/connectors/%s/activate", c.client.GetV1Url(), connectorID)
+	req, err := http.NewRequest(http.MethodPut, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.client.DoRequest(req)
+	return err
+}
+
+// Suspend suspends an active network connector.
+// connectorID: The ID of the connector to suspend
+// Returns any error that occurred
+func (c *NetworkConnectorsService) Suspend(connectorID string) error {
+	endpoint := fmt.Sprintf("%s/networks/connectors/%s/suspend", c.client.GetV1Url(), connectorID)
+	req, err := http.NewRequest(http.MethodPut, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.client.DoRequest(req)
+	return err
 }
