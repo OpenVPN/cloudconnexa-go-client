@@ -72,10 +72,10 @@ func (c *RoutesService) List(networkID string) ([]Route, error) {
 
 		allRoutes = append(allRoutes, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allRoutes, nil
 }

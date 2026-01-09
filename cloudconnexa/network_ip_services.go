@@ -72,10 +72,11 @@ func (c *NetworkIPServicesService) List() ([]NetworkIPServiceResponse, error) {
 		}
 
 		allIPServices = append(allIPServices, response.Content...)
+
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allIPServices, nil
 }

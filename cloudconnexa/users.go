@@ -97,10 +97,10 @@ func (c *UsersService) List(username string, role string) (*User, error) {
 			}
 		}
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return nil, ErrUserNotFound
 }
@@ -153,10 +153,10 @@ func (c *UsersService) GetByUsername(username string) (*User, error) {
 			}
 		}
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return nil, ErrUserNotFound
 }

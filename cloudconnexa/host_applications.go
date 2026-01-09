@@ -95,10 +95,11 @@ func (c *HostApplicationsService) List() ([]ApplicationResponse, error) {
 		}
 
 		allApplications = append(allApplications, response.Content...)
+
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allApplications, nil
 }

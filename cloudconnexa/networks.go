@@ -82,10 +82,10 @@ func (c *NetworksService) List() ([]Network, error) {
 
 		allNetworks = append(allNetworks, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allNetworks, nil
 }

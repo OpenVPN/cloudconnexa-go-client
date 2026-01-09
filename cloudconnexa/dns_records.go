@@ -119,10 +119,10 @@ func (c *DNSRecordsService) GetDNSRecord(recordID string) (*DNSRecord, error) {
 			}
 		}
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return nil, ErrDNSRecordNotFound
 }

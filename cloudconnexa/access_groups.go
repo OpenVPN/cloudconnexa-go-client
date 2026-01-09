@@ -85,10 +85,11 @@ func (c *AccessGroupsService) List() ([]AccessGroup, error) {
 		}
 
 		allGroups = append(allGroups, response.Content...)
+
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allGroups, nil
 }

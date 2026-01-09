@@ -66,10 +66,10 @@ func (c *HostsService) List() ([]Host, error) {
 
 		allHosts = append(allHosts, response.Content...)
 
+		page++
 		if page >= response.TotalPages {
 			break
 		}
-		page++
 	}
 	return allHosts, nil
 }
