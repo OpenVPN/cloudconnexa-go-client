@@ -42,7 +42,9 @@ func TestVPNRegionsService_List(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := NewClient(server.URL, "test", "test")
+	client, err := NewClientWithOptions(server.URL, "test", "test", &ClientOptions{
+		AllowInsecureHTTP: true,
+	})
 	assert.NoError(t, err)
 	regions, err := client.VPNRegions.List()
 
@@ -73,7 +75,9 @@ func TestVPNRegionsService_GetByID(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := NewClient(server.URL, "test", "test")
+	client, err := NewClientWithOptions(server.URL, "test", "test", &ClientOptions{
+		AllowInsecureHTTP: true,
+	})
 	assert.NoError(t, err)
 
 	// Test existing region

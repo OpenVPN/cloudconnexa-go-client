@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -26,6 +27,96 @@ const (
 	// DefaultMaxTokenResponseSize is the maximum OAuth token response size (1 MB).
 	DefaultMaxTokenResponseSize int64 = 1 << 20
 )
+
+// ClientOptions provides optional configuration for the API client.
+type ClientOptions struct {
+	// AllowInsecureHTTP permits HTTP connections for loopback addresses only
+	// (localhost, 127.0.0.1, ::1). This is intended for local development and testing.
+	// WARNING: HTTP connections to non-loopback addresses are always rejected.
+	AllowInsecureHTTP bool
+}
+
+// validateBaseURL validates the base URL for the API client.
+// It ensures the URL is well-formed and uses HTTPS unless allowHTTP is true
+// and the host is a loopback address (per RFC 9700 OAuth security best practices).
+func validateBaseURL(rawURL string, allowHTTP bool) (string, error) {
+	if rawURL == "" {
+		return "", fmt.Errorf("%w: URL cannot be empty", ErrInvalidBaseURL)
+	}
+
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("%w: %v", ErrInvalidBaseURL, err)
+	}
+
+	// Validate scheme is present
+	if parsed.Scheme == "" {
+		return "", fmt.Errorf("%w: URL must include scheme (e.g., https://)", ErrInvalidBaseURL)
+	}
+
+	// Normalize scheme to lowercase
+	scheme := strings.ToLower(parsed.Scheme)
+
+	// Validate host is present
+	if parsed.Host == "" {
+		return "", fmt.Errorf("%w: URL must include a host", ErrInvalidBaseURL)
+	}
+
+	// Reject URLs with embedded credentials (security: prevents logging leaks)
+	if parsed.User != nil {
+		return "", fmt.Errorf("%w: URL must not contain credentials", ErrInvalidBaseURL)
+	}
+
+	// Check scheme - only allow http or https
+	switch scheme {
+	case "https":
+		// HTTPS is always allowed
+	case "http":
+		if !allowHTTP {
+			return "", ErrHTTPSRequired
+		}
+		// Even with allowHTTP, only permit loopback addresses
+		if !isLoopbackHost(parsed.Host) {
+			return "", fmt.Errorf("%w: HTTP is only allowed for localhost/127.0.0.1/::1", ErrHTTPSRequired)
+		}
+	default:
+		return "", fmt.Errorf("%w: unsupported scheme %q; only https is allowed", ErrInvalidBaseURL, scheme)
+	}
+
+	// Normalize: strip path, query, fragment - only keep scheme://host
+	normalized := fmt.Sprintf("%s://%s", scheme, parsed.Host)
+	return normalized, nil
+}
+
+// isLoopbackHost checks if the host is a loopback address.
+// This includes localhost, 127.0.0.0/8 range, and ::1.
+func isLoopbackHost(host string) bool {
+	// Extract hostname without port using net.SplitHostPort for robustness
+	hostname := host
+
+	// Try to split host and port
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		hostname = h
+	}
+
+	// Strip brackets from IPv6 (may remain if no port was present, e.g., "[::1]")
+	hostname = strings.TrimPrefix(hostname, "[")
+	hostname = strings.TrimSuffix(hostname, "]")
+	hostname = strings.ToLower(hostname)
+
+	// Check common loopback names
+	if hostname == "localhost" || hostname == "::1" {
+		return true
+	}
+
+	// Check 127.0.0.0/8 range
+	ip := net.ParseIP(hostname)
+	if ip != nil {
+		return ip.IsLoopback()
+	}
+
+	return false
+}
 
 // Client represents a CloudConnexa API client with all service endpoints.
 type Client struct {
@@ -87,10 +178,27 @@ func (e ErrClientResponse) StatusCode() int { return e.status }
 func (e ErrClientResponse) Body() string { return e.body }
 
 // NewClient creates a new CloudConnexa API client with the given credentials.
+// The baseURL must use HTTPS. For development with localhost HTTP, use NewClientWithOptions.
 // It authenticates using OAuth2 client credentials flow and returns a configured client.
 func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
+	return NewClientWithOptions(baseURL, clientID, clientSecret, nil)
+}
+
+// NewClientWithOptions creates a new CloudConnexa API client with custom options.
+// It authenticates using OAuth2 client credentials flow and returns a configured client.
+func NewClientWithOptions(baseURL, clientID, clientSecret string, opts *ClientOptions) (*Client, error) {
 	if clientID == "" || clientSecret == "" {
 		return nil, ErrCredentialsRequired
+	}
+
+	allowHTTP := false
+	if opts != nil {
+		allowHTTP = opts.AllowInsecureHTTP
+	}
+
+	normalizedURL, err := validateBaseURL(baseURL, allowHTTP)
+	if err != nil {
+		return nil, err
 	}
 
 	values := map[string]string{"grant_type": "client_credentials", "scope": "default"}
@@ -99,7 +207,7 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 		return nil, err
 	}
 
-	tokenURL := fmt.Sprintf("%s/api/v1/oauth/token", strings.TrimRight(baseURL, "/"))
+	tokenURL := fmt.Sprintf("%s/api/v1/oauth/token", normalizedURL)
 	req, err := http.NewRequest(http.MethodPost, tokenURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -140,7 +248,7 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 
 	c := &Client{
 		client:            httpClient,
-		BaseURL:           baseURL,
+		BaseURL:           normalizedURL,
 		Token:             credentials.AccessToken,
 		UserAgent:         userAgent,
 		ReadRateLimiter:   rate.NewLimiter(rate.Every(1*time.Second), 1),
