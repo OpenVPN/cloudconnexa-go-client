@@ -7,3 +7,6 @@ var ErrCredentialsRequired = errors.New("both client_id and client_secret creden
 
 // ErrEmptyID is returned when an empty ID is provided to a method that requires one.
 var ErrEmptyID = errors.New("id cannot be empty")
+
+// ErrResponseTooLarge is returned when a response body exceeds the configured size limit.
+var ErrResponseTooLarge = errors.New("response body exceeds maximum allowed size")

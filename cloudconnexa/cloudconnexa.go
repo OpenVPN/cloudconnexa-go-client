@@ -18,6 +18,13 @@ import (
 const (
 	userAgent       = "cloudconnexa-go"
 	defaultPageSize = 100
+
+	// DefaultMaxResponseSize is the maximum API response body size (10 MB).
+	// This prevents memory exhaustion from malicious or compromised servers (CWE-400).
+	DefaultMaxResponseSize int64 = 10 << 20
+
+	// DefaultMaxTokenResponseSize is the maximum OAuth token response size (1 MB).
+	DefaultMaxTokenResponseSize int64 = 1 << 20
 )
 
 // Client represents a CloudConnexa API client with all service endpoints.
@@ -114,9 +121,15 @@ func NewClient(baseURL, clientID, clientSecret string) (*Client, error) {
 		}
 	}()
 
-	body, err := io.ReadAll(resp.Body)
+	// Bound OAuth response size to prevent memory exhaustion (CWE-400)
+	limitedReader := io.LimitReader(resp.Body, DefaultMaxTokenResponseSize+1)
+	body, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return nil, err
+	}
+
+	if int64(len(body)) > DefaultMaxTokenResponseSize {
+		return nil, fmt.Errorf("%w: OAuth response exceeded %d bytes", ErrResponseTooLarge, DefaultMaxTokenResponseSize)
 	}
 
 	var credentials Credentials
@@ -195,9 +208,15 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 		}
 	}()
 
-	body, err := io.ReadAll(res.Body)
+	// Bound response body size to prevent memory exhaustion (CWE-400)
+	limitedReader := io.LimitReader(res.Body, DefaultMaxResponseSize+1)
+	body, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return nil, err
+	}
+
+	if int64(len(body)) > DefaultMaxResponseSize {
+		return nil, fmt.Errorf("%w: response exceeded %d bytes", ErrResponseTooLarge, DefaultMaxResponseSize)
 	}
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {

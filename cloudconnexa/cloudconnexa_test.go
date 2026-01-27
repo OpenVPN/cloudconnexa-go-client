@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -206,4 +207,68 @@ func TestValidateID(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestDoRequest_ResponseUnderLimit verifies that normal-sized responses succeed.
+func TestDoRequest_ResponseUnderLimit(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status": "ok"}`))
+	}))
+	defer server.Close()
+
+	client := &Client{
+		client:            server.Client(),
+		BaseURL:           server.URL,
+		Token:             "mock-access-token",
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
+	}
+
+	req, _ := http.NewRequest("GET", server.URL+"/test", nil)
+	body, err := client.DoRequest(req)
+
+	assert.NoError(t, err, "DoRequest should succeed for small response")
+	assert.NotEmpty(t, body, "Response body should not be empty")
+}
+
+// TestDoRequest_ResponseOverLimit verifies that oversized responses are rejected with ErrResponseTooLarge.
+func TestDoRequest_ResponseOverLimit(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		// Write more than DefaultMaxResponseSize to trigger the limit
+		data := make([]byte, DefaultMaxResponseSize+1)
+		_, _ = w.Write(data)
+	}))
+	defer server.Close()
+
+	client := &Client{
+		client:            server.Client(),
+		BaseURL:           server.URL,
+		Token:             "mock-access-token",
+		ReadRateLimiter:   rate.NewLimiter(rate.Every(1), 5),
+		UpdateRateLimiter: rate.NewLimiter(rate.Every(1), 5),
+	}
+
+	req, _ := http.NewRequest("GET", server.URL+"/test", nil)
+	_, err := client.DoRequest(req)
+
+	assert.Error(t, err, "DoRequest should fail for oversized response")
+	assert.True(t, errors.Is(err, ErrResponseTooLarge), "Error should be ErrResponseTooLarge, got: %v", err)
+}
+
+// TestNewClient_TokenResponseOverLimit verifies that oversized OAuth token responses are rejected.
+func TestNewClient_TokenResponseOverLimit(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/v1/oauth/token" {
+			// Return response larger than token limit
+			data := make([]byte, DefaultMaxTokenResponseSize+1)
+			_, _ = w.Write(data)
+		}
+	}))
+	defer server.Close()
+
+	_, err := NewClient(server.URL, "client-id", "client-secret")
+
+	assert.Error(t, err, "NewClient should fail for oversized OAuth response")
+	assert.True(t, errors.Is(err, ErrResponseTooLarge), "Error should be ErrResponseTooLarge, got: %v", err)
 }
