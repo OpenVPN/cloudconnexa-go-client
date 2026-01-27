@@ -106,7 +106,10 @@ func (c *HostApplicationsService) List() ([]ApplicationResponse, error) {
 
 // Get retrieves a specific host application by its ID.
 func (c *HostApplicationsService) Get(id string) (*ApplicationResponse, error) {
-	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "applications", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -178,12 +181,15 @@ func (c *HostApplicationsService) Create(application *Application) (*Application
 
 // Update updates an existing host application by its ID.
 func (c *HostApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "applications", id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJSON))
 	if err != nil {
@@ -205,7 +211,10 @@ func (c *HostApplicationsService) Update(id string, application *Application) (*
 
 // Delete removes a host application by its ID.
 func (c *HostApplicationsService) Delete(id string) error {
-	endpoint := fmt.Sprintf("%s/hosts/applications/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "applications", id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

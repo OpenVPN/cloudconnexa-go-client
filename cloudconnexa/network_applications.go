@@ -55,7 +55,10 @@ func (c *NetworkApplicationsService) List() ([]ApplicationResponse, error) {
 
 // Get retrieves a specific network application by its ID.
 func (c *NetworkApplicationsService) Get(id string) (*ApplicationResponse, error) {
-	endpoint := fmt.Sprintf("%s/networks/applications/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "applications", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -127,12 +130,15 @@ func (c *NetworkApplicationsService) Create(application *Application) (*Applicat
 
 // Update updates an existing network application by its ID.
 func (c *NetworkApplicationsService) Update(id string, application *Application) (*ApplicationResponse, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/networks/applications/%s", c.client.GetV1Url(), id)
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "applications", id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(applicationJSON))
 	if err != nil {
@@ -154,7 +160,10 @@ func (c *NetworkApplicationsService) Update(id string, application *Application)
 
 // Delete removes a network application by its ID.
 func (c *NetworkApplicationsService) Delete(id string) error {
-	endpoint := fmt.Sprintf("%s/networks/applications/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "applications", id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

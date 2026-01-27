@@ -101,7 +101,10 @@ func (c *LocationContextsService) List() ([]LocationContext, error) {
 
 // Get retrieves a specific location context by its ID.
 func (c *LocationContextsService) Get(id string) (*LocationContext, error) {
-	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "location-contexts", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -144,7 +147,7 @@ func (c *LocationContextsService) Create(locationContext *LocationContext) (*Loc
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/location-contexts/", c.client.GetV1Url())
+	endpoint := buildURL(c.client.GetV1Url(), "location-contexts")
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(locationContextJSON))
 	if err != nil {
 		return nil, err
@@ -165,12 +168,15 @@ func (c *LocationContextsService) Create(locationContext *LocationContext) (*Loc
 
 // Update updates an existing location context by its ID.
 func (c *LocationContextsService) Update(id string, locationContext *LocationContext) (*LocationContext, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	locationContextJSON, err := json.Marshal(locationContext)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
+	endpoint := buildURL(c.client.GetV1Url(), "location-contexts", id)
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(locationContextJSON))
 	if err != nil {
 		return nil, err
@@ -191,7 +197,10 @@ func (c *LocationContextsService) Update(id string, locationContext *LocationCon
 
 // Delete removes a location context by its ID.
 func (c *LocationContextsService) Delete(id string) error {
-	endpoint := fmt.Sprintf("%s/location-contexts/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "location-contexts", id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

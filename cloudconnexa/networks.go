@@ -94,7 +94,10 @@ func (c *NetworksService) List() ([]Network, error) {
 // id: The ID of the network to retrieve
 // Returns the network and any error that occurred
 func (c *NetworksService) Get(id string) (*Network, error) {
-	endpoint := fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -139,7 +142,7 @@ func (c *NetworksService) Create(network Network) (*Network, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks", c.client.GetV1Url()), bytes.NewBuffer(networkJSON))
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "networks"), bytes.NewBuffer(networkJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -161,12 +164,15 @@ func (c *NetworksService) Create(network Network) (*Network, error) {
 // network: The updated network configuration
 // Returns any error that occurred during the update
 func (c *NetworksService) Update(network Network) error {
+	if err := validateID(network.ID); err != nil {
+		return err
+	}
 	networkJSON, err := json.Marshal(network)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), network.ID), bytes.NewBuffer(networkJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "networks", network.ID), bytes.NewBuffer(networkJSON))
 	if err != nil {
 		return err
 	}
@@ -179,7 +185,10 @@ func (c *NetworksService) Update(network Network) error {
 // networkID: The ID of the network to delete
 // Returns any error that occurred during deletion
 func (c *NetworksService) Delete(networkID string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/%s", c.client.GetV1Url(), networkID), nil)
+	if err := validateID(networkID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, buildURL(c.client.GetV1Url(), "networks", networkID), nil)
 	if err != nil {
 		return err
 	}

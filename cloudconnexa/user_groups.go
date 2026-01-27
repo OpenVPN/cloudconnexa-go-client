@@ -108,7 +108,10 @@ func (c *UserGroupsService) GetByName(name string) (*UserGroup, error) {
 // id: The ID of the user group to retrieve
 // Returns the user group and any error that occurred
 func (c *UserGroupsService) GetByID(id string) (*UserGroup, error) {
-	endpoint := fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "user-groups", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -154,7 +157,7 @@ func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user-groups", c.client.GetV1Url()), bytes.NewBuffer(userGroupJSON))
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "user-groups"), bytes.NewBuffer(userGroupJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -177,12 +180,15 @@ func (c *UserGroupsService) Create(userGroup *UserGroup) (*UserGroup, error) {
 // userGroup: The updated user group configuration
 // Returns the updated user group and any error that occurred
 func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	userGroupJSON, err := json.Marshal(userGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), bytes.NewBuffer(userGroupJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "user-groups", id), bytes.NewBuffer(userGroupJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +209,10 @@ func (c *UserGroupsService) Update(id string, userGroup *UserGroup) (*UserGroup,
 // id: The ID of the user group to delete
 // Returns any error that occurred during deletion
 func (c *UserGroupsService) Delete(id string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/user-groups/%s", c.client.GetV1Url(), id), nil)
+	if err := validateID(id); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, buildURL(c.client.GetV1Url(), "user-groups", id), nil)
 	if err != nil {
 		return err
 	}

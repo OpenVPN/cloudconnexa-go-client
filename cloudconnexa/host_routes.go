@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 // HostRoute represents a host route configuration.
@@ -39,7 +41,14 @@ type HostRoutesService service
 // size: The number of items per page
 // Returns a page of routes and any error that occurred
 func (c *HostRoutesService) GetByPage(hostID string, page int, size int) (HostRoutePageResponse, error) {
-	endpoint := fmt.Sprintf("%s/hosts/routes?hostId=%s&page=%d&size=%d", c.client.GetV1Url(), hostID, page, size)
+	if err := validateID(hostID); err != nil {
+		return HostRoutePageResponse{}, err
+	}
+	params := url.Values{}
+	params.Set("hostId", hostID)
+	params.Set("page", strconv.Itoa(page))
+	params.Set("size", strconv.Itoa(size))
+	endpoint := fmt.Sprintf("%s/hosts/routes?%s", c.client.GetV1Url(), params.Encode())
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return HostRoutePageResponse{}, err
@@ -85,7 +94,10 @@ func (c *HostRoutesService) List(hostID string) ([]HostRoute, error) {
 // routeID: The ID of the route to retrieve
 // Returns the route and any error that occurred
 func (c *HostRoutesService) GetByID(routeID string) (*HostRoute, error) {
-	endpoint := fmt.Sprintf("%s/hosts/routes/%s", c.client.GetV1Url(), routeID)
+	if err := validateID(routeID); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "routes", routeID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -109,6 +121,9 @@ func (c *HostRoutesService) GetByID(routeID string) (*HostRoute, error) {
 // route: The route configuration to create
 // Returns the created route and any error that occurred
 func (c *HostRoutesService) Create(hostID string, route HostRoute) (*HostRoute, error) {
+	if err := validateID(hostID); err != nil {
+		return nil, err
+	}
 	type newRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
@@ -122,7 +137,9 @@ func (c *HostRoutesService) Create(hostID string, route HostRoute) (*HostRoute, 
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/hosts/routes?hostId=%s", c.client.GetV1Url(), hostID)
+	params := url.Values{}
+	params.Set("hostId", hostID)
+	endpoint := fmt.Sprintf("%s/hosts/routes?%s", c.client.GetV1Url(), params.Encode())
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(routeJSON))
 	if err != nil {
 		return nil, err
@@ -145,6 +162,9 @@ func (c *HostRoutesService) Create(hostID string, route HostRoute) (*HostRoute, 
 // route: The updated route configuration (must include ID)
 // Returns any error that occurred during the update
 func (c *HostRoutesService) Update(route HostRoute) error {
+	if err := validateID(route.ID); err != nil {
+		return err
+	}
 	type updatedRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
@@ -159,7 +179,7 @@ func (c *HostRoutesService) Update(route HostRoute) error {
 		return err
 	}
 
-	endpoint := fmt.Sprintf("%s/hosts/routes/%s", c.client.GetV1Url(), route.ID)
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "routes", route.ID)
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(routeJSON))
 	if err != nil {
 		return err
@@ -173,7 +193,10 @@ func (c *HostRoutesService) Update(route HostRoute) error {
 // routeID: The ID of the route to delete
 // Returns any error that occurred during deletion
 func (c *HostRoutesService) Delete(routeID string) error {
-	endpoint := fmt.Sprintf("%s/hosts/routes/%s", c.client.GetV1Url(), routeID)
+	if err := validateID(routeID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "routes", routeID)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

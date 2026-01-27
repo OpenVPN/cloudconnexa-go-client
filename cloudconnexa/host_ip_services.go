@@ -117,7 +117,10 @@ func (c *HostIPServicesService) List() ([]HostIPServiceResponse, error) {
 
 // Get retrieves a specific IP service by its ID.
 func (c *HostIPServicesService) Get(id string) (*HostIPServiceResponse, error) {
-	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "ip-services", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -189,12 +192,15 @@ func (c *HostIPServicesService) Create(ipService *IPService) (*HostIPServiceResp
 
 // Update updates an existing IP service by its ID.
 func (c *HostIPServicesService) Update(id string, service *IPService) (*HostIPServiceResponse, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	serviceJSON, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), id)
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "ip-services", id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJSON))
 	if err != nil {
@@ -216,7 +222,10 @@ func (c *HostIPServicesService) Update(id string, service *IPService) (*HostIPSe
 
 // Delete removes an IP service by its ID.
 func (c *HostIPServicesService) Delete(ipServiceID string) error {
-	endpoint := fmt.Sprintf("%s/hosts/ip-services/%s", c.client.GetV1Url(), ipServiceID)
+	if err := validateID(ipServiceID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "ip-services", ipServiceID)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err

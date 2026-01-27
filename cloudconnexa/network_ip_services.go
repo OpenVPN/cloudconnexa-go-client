@@ -85,7 +85,10 @@ func (c *NetworkIPServicesService) List() ([]NetworkIPServiceResponse, error) {
 // id: The ID of the IP service to retrieve
 // Returns the IP service and any error that occurred
 func (c *NetworkIPServicesService) Get(id string) (*NetworkIPServiceResponse, error) {
-	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "ip-services", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -162,12 +165,15 @@ func (c *NetworkIPServicesService) Create(ipService *IPService) (*NetworkIPServi
 // service: The updated IP service configuration
 // Returns the updated IP service and any error that occurred
 func (c *NetworkIPServicesService) Update(id string, service *IPService) (*NetworkIPServiceResponse, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	serviceJSON, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), id)
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "ip-services", id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(serviceJSON))
 	if err != nil {
@@ -191,7 +197,10 @@ func (c *NetworkIPServicesService) Update(id string, service *IPService) (*Netwo
 // IPServiceID: The ID of the IP service to delete
 // Returns any error that occurred during deletion
 func (c *NetworkIPServicesService) Delete(IPServiceID string) error {
-	endpoint := fmt.Sprintf("%s/networks/ip-services/%s", c.client.GetV1Url(), IPServiceID)
+	if err := validateID(IPServiceID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "ip-services", IPServiceID)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
