@@ -60,7 +60,10 @@ func TestNewClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := NewClient(tt.baseURL, tt.clientID, tt.clientSecret)
+			// Use NewClientWithOptions with AllowInsecureHTTP for localhost test server
+			client, err := NewClientWithOptions(tt.baseURL, tt.clientID, tt.clientSecret, &ClientOptions{
+				AllowInsecureHTTP: true,
+			})
 
 			if tt.wantErr {
 				assert.Error(t, err, "NewClient should return an error for invalid credentials")
@@ -267,8 +270,118 @@ func TestNewClient_TokenResponseOverLimit(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := NewClient(server.URL, "client-id", "client-secret")
+	_, err := NewClientWithOptions(server.URL, "client-id", "client-secret", &ClientOptions{
+		AllowInsecureHTTP: true,
+	})
 
 	assert.Error(t, err, "NewClient should fail for oversized OAuth response")
 	assert.True(t, errors.Is(err, ErrResponseTooLarge), "Error should be ErrResponseTooLarge, got: %v", err)
+}
+
+// TestValidateBaseURL tests the validateBaseURL function that validates base URL parameters.
+func TestValidateBaseURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		url       string
+		allowHTTP bool
+		wantErr   error
+		wantURL   string
+	}{
+		// Valid HTTPS URLs
+		{"valid https", "https://api.example.com", false, nil, "https://api.example.com"},
+		{"https with port", "https://api.example.com:443", false, nil, "https://api.example.com:443"},
+		{"https with path stripped", "https://api.example.com/v1/", false, nil, "https://api.example.com"},
+		{"https trailing slash stripped", "https://api.example.com/", false, nil, "https://api.example.com"},
+
+		// Invalid: HTTP without allowHTTP
+		{"http not allowed", "http://api.example.com", false, ErrHTTPSRequired, ""},
+
+		// Valid: HTTP with allowHTTP for loopback
+		{"http localhost allowed", "http://localhost:8080", true, nil, "http://localhost:8080"},
+		{"http 127.0.0.1 allowed", "http://127.0.0.1:8080", true, nil, "http://127.0.0.1:8080"},
+		{"http 127.0.0.2 allowed", "http://127.0.0.2:9999", true, nil, "http://127.0.0.2:9999"},
+		{"http ::1 allowed", "http://[::1]:8080", true, nil, "http://[::1]:8080"},
+
+		// Invalid: HTTP with allowHTTP for non-loopback
+		{"http remote rejected even with allowHTTP", "http://api.example.com", true, ErrHTTPSRequired, ""},
+
+		// Invalid URLs
+		{"empty url", "", false, ErrInvalidBaseURL, ""},
+		{"missing scheme", "api.example.com", false, ErrInvalidBaseURL, ""},
+		{"ftp scheme", "ftp://api.example.com", false, ErrInvalidBaseURL, ""},
+		{"missing host", "https://", false, ErrInvalidBaseURL, ""},
+
+		// Security: credentials in URL rejected
+		{"url with userinfo", "https://user:pass@api.example.com", false, ErrInvalidBaseURL, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := validateBaseURL(tt.url, tt.allowHTTP)
+			if tt.wantErr != nil {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, tt.wantErr), "expected error %v, got %v", tt.wantErr, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantURL, result)
+			}
+		})
+	}
+}
+
+// TestIsLoopbackHost tests the isLoopbackHost function that checks for loopback addresses.
+func TestIsLoopbackHost(t *testing.T) {
+	tests := []struct {
+		host     string
+		expected bool
+	}{
+		{"localhost", true},
+		{"localhost:8080", true},
+		{"LOCALHOST", true},
+		{"127.0.0.1", true},
+		{"127.0.0.1:8080", true},
+		{"127.0.0.2", true},
+		{"127.255.255.255", true},
+		{"[::1]", true},
+		{"[::1]:8080", true},
+		{"::1", true},
+		{"api.example.com", false},
+		{"192.168.1.1", false},
+		{"10.0.0.1", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.host, func(t *testing.T) {
+			result := isLoopbackHost(tt.host)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// TestNewClient_HTTPSRequired tests that NewClient rejects HTTP URLs by default.
+func TestNewClient_HTTPSRequired(t *testing.T) {
+	_, err := NewClient("http://api.example.com", "id", "secret")
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrHTTPSRequired), "expected ErrHTTPSRequired, got: %v", err)
+}
+
+// TestNewClientWithOptions_AllowHTTPForLocalhost tests that NewClientWithOptions allows HTTP for localhost.
+func TestNewClientWithOptions_AllowHTTPForLocalhost(t *testing.T) {
+	server := setupMockServer()
+	defer server.Close()
+
+	client, err := NewClientWithOptions(server.URL, "test-id", "test-secret", &ClientOptions{
+		AllowInsecureHTTP: true,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
+}
+
+// TestNewClientWithOptions_HTTPRemoteRejected tests that HTTP to non-localhost is always rejected.
+func TestNewClientWithOptions_HTTPRemoteRejected(t *testing.T) {
+	_, err := NewClientWithOptions("http://api.example.com", "test-id", "test-secret", &ClientOptions{
+		AllowInsecureHTTP: true,
+	})
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrHTTPSRequired), "expected ErrHTTPSRequired, got: %v", err)
 }
