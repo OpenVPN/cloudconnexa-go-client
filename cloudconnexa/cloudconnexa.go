@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -242,4 +243,27 @@ func (c *Client) AssignLimits(res *http.Response, rateLimiter *rate.Limiter) err
 // GetV1Url returns the base URL for CloudConnexa API v1 endpoints.
 func (c *Client) GetV1Url() string {
 	return c.BaseURL + "/api/v1"
+}
+
+// buildURL constructs a URL with escaped path segments for safe API calls.
+// Example: buildURL(c.GetV1Url(), "users", userID, "activate")
+// Returns: https://api.example.com/api/v1/users/{escaped-id}/activate
+func buildURL(base string, segments ...string) string {
+	if len(segments) == 0 {
+		return base
+	}
+	escaped := make([]string, len(segments))
+	for i, seg := range segments {
+		escaped[i] = url.PathEscape(seg)
+	}
+	return base + "/" + strings.Join(escaped, "/")
+}
+
+// validateID returns an error if the provided ID is empty.
+// This should be called before making API calls that require an ID parameter.
+func validateID(id string) error {
+	if id == "" {
+		return ErrEmptyID
+	}
+	return nil
 }

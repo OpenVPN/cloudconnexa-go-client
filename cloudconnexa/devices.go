@@ -150,7 +150,10 @@ func (d *DevicesService) ListAll() ([]DeviceDetail, error) {
 
 // GetByID retrieves a specific device by its ID.
 func (d *DevicesService) GetByID(deviceID string) (*DeviceDetail, error) {
-	endpoint := fmt.Sprintf("%s/devices/%s", d.client.GetV1Url(), deviceID)
+	if err := validateID(deviceID); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(d.client.GetV1Url(), "devices", deviceID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -172,12 +175,15 @@ func (d *DevicesService) GetByID(deviceID string) (*DeviceDetail, error) {
 
 // Update updates an existing device by its ID.
 func (d *DevicesService) Update(deviceID string, updateRequest DeviceUpdateRequest) (*DeviceDetail, error) {
+	if err := validateID(deviceID); err != nil {
+		return nil, err
+	}
 	requestJSON, err := json.Marshal(updateRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/devices/%s", d.client.GetV1Url(), deviceID)
+	endpoint := buildURL(d.client.GetV1Url(), "devices", deviceID)
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return nil, err

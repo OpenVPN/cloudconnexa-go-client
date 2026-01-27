@@ -116,7 +116,10 @@ func (c *UsersService) Get(userID string) (*User, error) {
 // userID: The ID of the user to retrieve
 // Returns the user and any error that occurred
 func (c *UsersService) GetByID(userID string) (*User, error) {
-	endpoint := fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID)
+	if err := validateID(userID); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "users", userID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -170,7 +173,7 @@ func (c *UsersService) Create(user User) (*User, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/users", c.client.GetV1Url()), bytes.NewBuffer(userJSON))
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "users"), bytes.NewBuffer(userJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -192,12 +195,15 @@ func (c *UsersService) Create(user User) (*User, error) {
 // user: The user configuration to update
 // Returns any error that occurred
 func (c *UsersService) Update(user User) error {
+	if err := validateID(user.ID); err != nil {
+		return err
+	}
 	userJSON, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), user.ID), bytes.NewBuffer(userJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "users", user.ID), bytes.NewBuffer(userJSON))
 	if err != nil {
 		return err
 	}
@@ -213,7 +219,10 @@ func (c *UsersService) Update(user User) error {
 // userID: The ID of the user to delete
 // Returns any error that occurred
 func (c *UsersService) Delete(userID string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/%s", c.client.GetV1Url(), userID), nil)
+	if err := validateID(userID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, buildURL(c.client.GetV1Url(), "users", userID), nil)
 	if err != nil {
 		return err
 	}
@@ -226,7 +235,10 @@ func (c *UsersService) Delete(userID string) error {
 // userID: The ID of the user to activate
 // Returns any error that occurred
 func (c *UsersService) Activate(userID string) error {
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s/activate", c.client.GetV1Url(), userID), nil)
+	if err := validateID(userID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "users", userID, "activate"), nil)
 	if err != nil {
 		return err
 	}
@@ -239,7 +251,10 @@ func (c *UsersService) Activate(userID string) error {
 // userID: The ID of the user to suspend
 // Returns any error that occurred
 func (c *UsersService) Suspend(userID string) error {
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/users/%s/suspend", c.client.GetV1Url(), userID), nil)
+	if err := validateID(userID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "users", userID, "suspend"), nil)
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 // Route represents a network route configuration
@@ -39,7 +41,15 @@ type RoutesService service
 // size: The number of items per page
 // Returns a page of routes and any error that occurred
 func (c *RoutesService) GetByPage(networkID string, page int, size int) (RoutePageResponse, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/networks/routes?networkId=%s&page=%d&size=%d", c.client.GetV1Url(), networkID, page, size), nil)
+	if err := validateID(networkID); err != nil {
+		return RoutePageResponse{}, err
+	}
+	params := url.Values{}
+	params.Set("networkId", networkID)
+	params.Set("page", strconv.Itoa(page))
+	params.Set("size", strconv.Itoa(size))
+	endpoint := fmt.Sprintf("%s/networks/routes?%s", c.client.GetV1Url(), params.Encode())
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return RoutePageResponse{}, err
 	}
@@ -123,6 +133,9 @@ func (c *RoutesService) Get(routeID string) (*Route, error) {
 // route: The route configuration to create
 // Returns the created route and any error that occurred
 func (c *RoutesService) Create(networkID string, route Route) (*Route, error) {
+	if err := validateID(networkID); err != nil {
+		return nil, err
+	}
 	type newRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
@@ -136,9 +149,12 @@ func (c *RoutesService) Create(networkID string, route Route) (*Route, error) {
 		return nil, err
 	}
 
+	params := url.Values{}
+	params.Set("networkId", networkID)
+	endpoint := fmt.Sprintf("%s/networks/routes?%s", c.client.GetV1Url(), params.Encode())
 	req, err := http.NewRequest(
 		http.MethodPost,
-		fmt.Sprintf("%s/networks/routes?networkId=%s", c.client.GetV1Url(), networkID),
+		endpoint,
 		bytes.NewBuffer(routeJSON),
 	)
 	if err != nil {
@@ -162,6 +178,9 @@ func (c *RoutesService) Create(networkID string, route Route) (*Route, error) {
 // route: The updated route configuration
 // Returns any error that occurred during the update
 func (c *RoutesService) Update(route Route) error {
+	if err := validateID(route.ID); err != nil {
+		return err
+	}
 	type updatedRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
@@ -178,7 +197,7 @@ func (c *RoutesService) Update(route Route) error {
 
 	req, err := http.NewRequest(
 		http.MethodPut,
-		fmt.Sprintf("%s/networks/routes/%s", c.client.GetV1Url(), route.ID),
+		buildURL(c.client.GetV1Url(), "networks", "routes", route.ID),
 		bytes.NewBuffer(routeJSON),
 	)
 	if err != nil {
@@ -193,7 +212,10 @@ func (c *RoutesService) Update(route Route) error {
 // id: The ID of the route to delete
 // Returns any error that occurred during deletion
 func (c *RoutesService) Delete(id string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/routes/%s", c.client.GetV1Url(), id), nil)
+	if err := validateID(id); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, buildURL(c.client.GetV1Url(), "networks", "routes", id), nil)
 	if err != nil {
 		return err
 	}

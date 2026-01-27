@@ -76,7 +76,10 @@ func (c *HostsService) List() ([]Host, error) {
 
 // Get retrieves a specific host by ID.
 func (c *HostsService) Get(id string) (*Host, error) {
-	endpoint := fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -119,7 +122,7 @@ func (c *HostsService) Create(host Host) (*Host, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts", c.client.GetV1Url()), bytes.NewBuffer(hostJSON))
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "hosts"), bytes.NewBuffer(hostJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -139,12 +142,15 @@ func (c *HostsService) Create(host Host) (*Host, error) {
 
 // Update updates an existing host.
 func (c *HostsService) Update(host Host) error {
+	if err := validateID(host.ID); err != nil {
+		return err
+	}
 	hostJSON, err := json.Marshal(host)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), host.ID), bytes.NewBuffer(hostJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "hosts", host.ID), bytes.NewBuffer(hostJSON))
 	if err != nil {
 		return err
 	}
@@ -155,7 +161,10 @@ func (c *HostsService) Update(host Host) error {
 
 // Delete deletes a host by ID.
 func (c *HostsService) Delete(hostID string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/%s", c.client.GetV1Url(), hostID), nil)
+	if err := validateID(hostID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, buildURL(c.client.GetV1Url(), "hosts", hostID), nil)
 	if err != nil {
 		return err
 	}

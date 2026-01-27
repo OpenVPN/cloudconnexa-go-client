@@ -83,7 +83,10 @@ func (c *DNSRecordsService) List() ([]DNSRecord, error) {
 // This is the preferred method for getting a single DNS record as it uses the direct
 // GET /api/v1/dns-records/{id} endpoint introduced in API v1.1.0.
 func (c *DNSRecordsService) GetByID(recordID string) (*DNSRecord, error) {
-	endpoint := fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), recordID)
+	if err := validateID(recordID); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "dns-records", recordID)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -134,7 +137,7 @@ func (c *DNSRecordsService) Create(record DNSRecord) (*DNSRecord, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/dns-records", c.client.GetV1Url()), bytes.NewBuffer(recordJSON))
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "dns-records"), bytes.NewBuffer(recordJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -154,12 +157,15 @@ func (c *DNSRecordsService) Create(record DNSRecord) (*DNSRecord, error) {
 
 // Update updates an existing DNS record.
 func (c *DNSRecordsService) Update(record DNSRecord) error {
+	if err := validateID(record.ID); err != nil {
+		return err
+	}
 	recordJSON, err := json.Marshal(record)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), record.ID), bytes.NewBuffer(recordJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "dns-records", record.ID), bytes.NewBuffer(recordJSON))
 	if err != nil {
 		return err
 	}
@@ -170,7 +176,10 @@ func (c *DNSRecordsService) Update(record DNSRecord) error {
 
 // Delete deletes a DNS record by ID.
 func (c *DNSRecordsService) Delete(recordID string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/dns-records/%s", c.client.GetV1Url(), recordID), nil)
+	if err := validateID(recordID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodDelete, buildURL(c.client.GetV1Url(), "dns-records", recordID), nil)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 // HostConnector represents a host connector in CloudConnexa.
@@ -44,13 +46,14 @@ func (c *HostConnectorsService) GetByPage(page int, pageSize int) (HostConnector
 
 // GetByPageAndHostID retrieves host connectors using pagination, optionally filtered by host ID.
 func (c *HostConnectorsService) GetByPageAndHostID(page int, pageSize int, hostID string) (HostConnectorPageResponse, error) {
-	var endpoint string
+	params := url.Values{}
+	params.Set("page", strconv.Itoa(page))
+	params.Set("size", strconv.Itoa(pageSize))
 	if hostID != "" {
-		endpoint = fmt.Sprintf("%s/hosts/connectors?hostId=%s&page=%d&size=%d", c.client.GetV1Url(), hostID, page, pageSize)
-	} else {
-		endpoint = fmt.Sprintf("%s/hosts/connectors?page=%d&size=%d", c.client.GetV1Url(), page, pageSize)
+		params.Set("hostId", hostID)
 	}
 
+	endpoint := fmt.Sprintf("%s/hosts/connectors?%s", c.client.GetV1Url(), params.Encode())
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return HostConnectorPageResponse{}, err
@@ -71,12 +74,15 @@ func (c *HostConnectorsService) GetByPageAndHostID(page int, pageSize int, hostI
 
 // Update updates an existing host connector.
 func (c *HostConnectorsService) Update(connector HostConnector) (*HostConnector, error) {
+	if err := validateID(connector.ID); err != nil {
+		return nil, err
+	}
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s", c.client.GetV1Url(), connector.ID), bytes.NewBuffer(connectorJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "hosts", "connectors", connector.ID), bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +128,10 @@ func (c *HostConnectorsService) ListByHostID(hostID string) ([]HostConnector, er
 
 // GetByID retrieves a specific host connector by ID.
 func (c *HostConnectorsService) GetByID(id string) (*HostConnector, error) {
-	endpoint := fmt.Sprintf("%s/hosts/connectors/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "hosts", "connectors", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -167,7 +176,10 @@ func (c *HostConnectorsService) GetByName(name string) (*HostConnector, error) {
 
 // GetProfile retrieves the profile configuration for a host connector.
 func (c *HostConnectorsService) GetProfile(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors/%s/profile", c.client.GetV1Url(), id), nil)
+	if err := validateID(id); err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "hosts", "connectors", id, "profile"), nil)
 	if err != nil {
 		return "", err
 	}
@@ -181,7 +193,10 @@ func (c *HostConnectorsService) GetProfile(id string) (string, error) {
 
 // GetToken retrieves an encrypted token for a host connector.
 func (c *HostConnectorsService) GetToken(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors/%s/profile/encrypt", c.client.GetV1Url(), id), nil)
+	if err := validateID(id); err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "hosts", "connectors", id, "profile", "encrypt"), nil)
 	if err != nil {
 		return "", err
 	}
@@ -195,12 +210,18 @@ func (c *HostConnectorsService) GetToken(id string) (string, error) {
 
 // Create creates a new host connector for the specified host.
 func (c *HostConnectorsService) Create(connector HostConnector, hostID string) (*HostConnector, error) {
+	if err := validateID(hostID); err != nil {
+		return nil, err
+	}
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/hosts/connectors?hostId=%s", c.client.GetV1Url(), hostID), bytes.NewBuffer(connectorJSON))
+	params := url.Values{}
+	params.Set("hostId", hostID)
+	endpoint := fmt.Sprintf("%s/hosts/connectors?%s", c.client.GetV1Url(), params.Encode())
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +241,16 @@ func (c *HostConnectorsService) Create(connector HostConnector, hostID string) (
 
 // Delete deletes a host connector by ID.
 func (c *HostConnectorsService) Delete(connectorID string, hostID string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/hosts/connectors/%s?hostId=%s", c.client.GetV1Url(), connectorID, hostID), nil)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	if err := validateID(hostID); err != nil {
+		return err
+	}
+	params := url.Values{}
+	params.Set("hostId", hostID)
+	endpoint := fmt.Sprintf("%s?%s", buildURL(c.client.GetV1Url(), "hosts", "connectors", connectorID), params.Encode())
+	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -233,7 +263,10 @@ func (c *HostConnectorsService) Delete(connectorID string, hostID string) error 
 // connectorID: The ID of the connector to activate
 // Returns any error that occurred
 func (c *HostConnectorsService) Activate(connectorID string) error {
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s/activate", c.client.GetV1Url(), connectorID), nil)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "hosts", "connectors", connectorID, "activate"), nil)
 	if err != nil {
 		return err
 	}
@@ -246,7 +279,10 @@ func (c *HostConnectorsService) Activate(connectorID string) error {
 // connectorID: The ID of the connector to suspend
 // Returns any error that occurred
 func (c *HostConnectorsService) Suspend(connectorID string) error {
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/hosts/connectors/%s/suspend", c.client.GetV1Url(), connectorID), nil)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "hosts", "connectors", connectorID, "suspend"), nil)
 	if err != nil {
 		return err
 	}

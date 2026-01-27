@@ -128,12 +128,15 @@ func (c *NetworkConnectorsService) GetByPageAndNetworkID(page int, pageSize int,
 
 // Update updates an existing network connector.
 func (c *NetworkConnectorsService) Update(connector NetworkConnector) (*NetworkConnector, error) {
+	if err := validateID(connector.ID); err != nil {
+		return nil, err
+	}
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/networks/connectors/%s", c.client.GetV1Url(), connector.ID), bytes.NewBuffer(connectorJSON))
+	req, err := http.NewRequest(http.MethodPut, buildURL(c.client.GetV1Url(), "networks", "connectors", connector.ID), bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +198,10 @@ func (c *NetworkConnectorsService) ListByNetworkID(networkID string) ([]NetworkC
 
 // GetByID retrieves a specific network connector by its ID.
 func (c *NetworkConnectorsService) GetByID(id string) (*NetworkConnector, error) {
-	endpoint := fmt.Sprintf("%s/networks/connectors/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "connectors", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -240,7 +246,10 @@ func (c *NetworkConnectorsService) GetByName(name string) (*NetworkConnector, er
 
 // GetProfile retrieves the profile configuration for a specific network connector.
 func (c *NetworkConnectorsService) GetProfile(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors/%s/profile", c.client.GetV1Url(), id), nil)
+	if err := validateID(id); err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "networks", "connectors", id, "profile"), nil)
 	if err != nil {
 		return "", err
 	}
@@ -254,7 +263,10 @@ func (c *NetworkConnectorsService) GetProfile(id string) (string, error) {
 
 // GetToken retrieves an encrypted token for a specific network connector.
 func (c *NetworkConnectorsService) GetToken(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors/%s/profile/encrypt", c.client.GetV1Url(), id), nil)
+	if err := validateID(id); err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(http.MethodPost, buildURL(c.client.GetV1Url(), "networks", "connectors", id, "profile", "encrypt"), nil)
 	if err != nil {
 		return "", err
 	}
@@ -268,12 +280,18 @@ func (c *NetworkConnectorsService) GetToken(id string) (string, error) {
 
 // Create creates a new network connector.
 func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkID string) (*NetworkConnector, error) {
+	if err := validateID(networkID); err != nil {
+		return nil, err
+	}
 	connectorJSON, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/networks/connectors?networkId=%s", c.client.GetV1Url(), networkID), bytes.NewBuffer(connectorJSON))
+	params := url.Values{}
+	params.Set("networkId", networkID)
+	endpoint := fmt.Sprintf("%s/networks/connectors?%s", c.client.GetV1Url(), params.Encode())
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(connectorJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +311,16 @@ func (c *NetworkConnectorsService) Create(connector NetworkConnector, networkID 
 
 // Delete removes a network connector by its ID and network ID.
 func (c *NetworkConnectorsService) Delete(connectorID string, networkID string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/networks/connectors/%s?networkId=%s", c.client.GetV1Url(), connectorID, networkID), nil)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	if err := validateID(networkID); err != nil {
+		return err
+	}
+	params := url.Values{}
+	params.Set("networkId", networkID)
+	endpoint := fmt.Sprintf("%s?%s", buildURL(c.client.GetV1Url(), "networks", "connectors", connectorID), params.Encode())
+	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -304,7 +331,10 @@ func (c *NetworkConnectorsService) Delete(connectorID string, networkID string) 
 
 // StartIPsec starts an IPsec tunnel for the specified network connector.
 func (c *NetworkConnectorsService) StartIPsec(connectorID string) error {
-	endpoint := fmt.Sprintf("%s/networks/connectors/%s/ipsec/start", c.client.GetV1Url(), connectorID)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "connectors", connectorID, "ipsec", "start")
 	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
 		return err
@@ -319,7 +349,10 @@ func (c *NetworkConnectorsService) StartIPsec(connectorID string) error {
 
 // StopIPsec stops an IPsec tunnel for the specified network connector.
 func (c *NetworkConnectorsService) StopIPsec(connectorID string) error {
-	endpoint := fmt.Sprintf("%s/networks/connectors/%s/ipsec/stop", c.client.GetV1Url(), connectorID)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "connectors", connectorID, "ipsec", "stop")
 	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
 		return err
@@ -337,7 +370,10 @@ func (c *NetworkConnectorsService) StopIPsec(connectorID string) error {
 // connectorID: The ID of the connector to activate
 // Returns any error that occurred
 func (c *NetworkConnectorsService) Activate(connectorID string) error {
-	endpoint := fmt.Sprintf("%s/networks/connectors/%s/activate", c.client.GetV1Url(), connectorID)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "connectors", connectorID, "activate")
 	req, err := http.NewRequest(http.MethodPut, endpoint, nil)
 	if err != nil {
 		return err
@@ -351,7 +387,10 @@ func (c *NetworkConnectorsService) Activate(connectorID string) error {
 // connectorID: The ID of the connector to suspend
 // Returns any error that occurred
 func (c *NetworkConnectorsService) Suspend(connectorID string) error {
-	endpoint := fmt.Sprintf("%s/networks/connectors/%s/suspend", c.client.GetV1Url(), connectorID)
+	if err := validateID(connectorID); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "networks", "connectors", connectorID, "suspend")
 	req, err := http.NewRequest(http.MethodPut, endpoint, nil)
 	if err != nil {
 		return err

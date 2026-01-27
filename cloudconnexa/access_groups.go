@@ -96,7 +96,10 @@ func (c *AccessGroupsService) List() ([]AccessGroup, error) {
 
 // Get retrieves a specific access group by its ID from the CloudConnexa API.
 func (c *AccessGroupsService) Get(id string) (*AccessGroup, error) {
-	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "access-groups", id)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -140,7 +143,7 @@ func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, er
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/access-groups", c.client.GetV1Url())
+	endpoint := buildURL(c.client.GetV1Url(), "access-groups")
 
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(accessGroupJSON))
 	if err != nil {
@@ -163,12 +166,15 @@ func (c *AccessGroupsService) Create(accessGroup *AccessGroup) (*AccessGroup, er
 // Update updates an existing access group in the CloudConnexa API.
 // It returns the updated access group.
 func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroup) (*AccessGroup, error) {
+	if err := validateID(id); err != nil {
+		return nil, err
+	}
 	accessGroupJSON, err := json.Marshal(accessGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
+	endpoint := buildURL(c.client.GetV1Url(), "access-groups", id)
 
 	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(accessGroupJSON))
 	if err != nil {
@@ -190,7 +196,10 @@ func (c *AccessGroupsService) Update(id string, accessGroup *AccessGroup) (*Acce
 
 // Delete removes an access group from the CloudConnexa API by its ID.
 func (c *AccessGroupsService) Delete(id string) error {
-	endpoint := fmt.Sprintf("%s/access-groups/%s", c.client.GetV1Url(), id)
+	if err := validateID(id); err != nil {
+		return err
+	}
+	endpoint := buildURL(c.client.GetV1Url(), "access-groups", id)
 	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
