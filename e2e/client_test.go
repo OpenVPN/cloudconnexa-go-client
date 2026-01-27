@@ -272,7 +272,22 @@ func TestCreateNetwork(t *testing.T) {
 	timestamp := time.Now().Unix()
 	testName := fmt.Sprintf("test-%d-%d", timestamp, time.Now().Nanosecond())
 
-	networks, err := c.Networks.List()
+	// List networks with 429 retry/backoff
+	var networks []cloudconnexa.Network
+	var err error
+	for backoff, attempts := 200*time.Millisecond, 0; attempts < 8; attempts++ {
+		networks, err = c.Networks.List()
+		if err == nil {
+			break
+		}
+		var apiErr *cloudconnexa.ErrClientResponse
+		if errors.As(err, &apiErr) && apiErr.StatusCode() == 429 {
+			time.Sleep(backoff)
+			backoff *= 2
+			continue
+		}
+		break
+	}
 	require.NoError(t, err)
 	for _, n := range networks {
 		require.NotEqual(t, testName, n.Name, "Network with name %s already exists", testName)
