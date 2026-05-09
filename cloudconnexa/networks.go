@@ -28,6 +28,7 @@ type Network struct {
 	Connectors        []NetworkConnector `json:"connectors"`
 	Routes            []Route            `json:"routes"`
 	TunnelingProtocol string             `json:"tunnelingProtocol"`
+	GatewaysIDs       []string           `json:"gatewaysIds,omitempty"`
 }
 
 // NetworkPageResponse represents a paginated response of networks.
