@@ -1,6 +1,8 @@
 package cloudconnexa
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -94,6 +96,108 @@ func TestUsersService_Suspend_Error(t *testing.T) {
 	err := client.Users.Suspend("already-suspended-user")
 	if err == nil {
 		t.Error("Expected error for already suspended user, got nil")
+	}
+}
+
+func TestUsersService_List(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Expected GET request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/users" {
+			t.Errorf("Expected path /api/v1/users, got %s", r.URL.Path)
+		}
+
+		response := UserPageResponse{
+			Content: []User{
+				{ID: "user-1", Username: "alice", Role: "ADMIN"},
+				{ID: "user-2", Username: "bob", Role: "MEMBER"},
+			},
+			NumberOfElements: 2,
+			Page:             0,
+			Size:             100,
+			Success:          true,
+			TotalElements:    2,
+			TotalPages:       1,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := createTestClientWithUsers(server)
+
+	users, err := client.Users.List()
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(users) != 2 {
+		t.Errorf("Expected 2 users, got %d", len(users))
+	}
+
+	if users[0].Username != "alice" {
+		t.Errorf("Expected first user 'alice', got %s", users[0].Username)
+	}
+}
+
+func TestUsersService_FindByUsernameAndRole(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		response := UserPageResponse{
+			Content: []User{
+				{ID: "user-1", Username: "alice", Role: "ADMIN"},
+				{ID: "user-2", Username: "bob", Role: "MEMBER"},
+			},
+			NumberOfElements: 2,
+			Page:             0,
+			Size:             100,
+			Success:          true,
+			TotalElements:    2,
+			TotalPages:       1,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := createTestClientWithUsers(server)
+
+	user, err := client.Users.FindByUsernameAndRole("bob", "MEMBER")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if user.ID != "user-2" {
+		t.Errorf("Expected user ID 'user-2', got %s", user.ID)
+	}
+}
+
+func TestUsersService_FindByUsernameAndRole_NotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		response := UserPageResponse{
+			Content: []User{
+				{ID: "user-1", Username: "alice", Role: "ADMIN"},
+			},
+			NumberOfElements: 1,
+			Page:             0,
+			Size:             100,
+			Success:          true,
+			TotalElements:    1,
+			TotalPages:       1,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := createTestClientWithUsers(server)
+
+	_, err := client.Users.FindByUsernameAndRole("nobody", "ADMIN")
+	if !errors.Is(err, ErrUserNotFound) {
+		t.Errorf("Expected ErrUserNotFound, got %v", err)
 	}
 }
 
