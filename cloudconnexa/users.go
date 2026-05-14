@@ -78,11 +78,37 @@ func (c *UsersService) GetByPage(page int, pageSize int) (UserPageResponse, erro
 	return response, nil
 }
 
-// List retrieves a user by username and role
+// List retrieves all users by paginating through all available pages.
+// The CloudConnexa API does not support filtering server-side beyond
+// pagination — use FindByUsernameAndRole or GetByUsername for filtered lookups.
+// Returns the full slice of users and any error that occurred.
+func (c *UsersService) List() ([]User, error) {
+	var allUsers []User
+	page := 0
+
+	for {
+		response, err := c.GetByPage(page, defaultPageSize)
+		if err != nil {
+			return nil, err
+		}
+
+		allUsers = append(allUsers, response.Content...)
+
+		page++
+		if page >= response.TotalPages {
+			break
+		}
+	}
+	return allUsers, nil
+}
+
+// FindByUsernameAndRole returns the first user matching both username and role
+// by listing all users and filtering client-side. The CloudConnexa API does not
+// expose a username/role filter, so this pages through the full user list.
 // username: The username to search for
 // role: The role to filter by
 // Returns the user and any error that occurred
-func (c *UsersService) List(username string, role string) (*User, error) {
+func (c *UsersService) FindByUsernameAndRole(username string, role string) (*User, error) {
 	page := 0
 
 	for {
