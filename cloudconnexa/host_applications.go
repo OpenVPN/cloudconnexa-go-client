@@ -8,7 +8,8 @@ import (
 	"net/http"
 )
 
-// ApplicationRoute represents a route configuration for an application.
+// ApplicationRoute represents a route configuration for a host application.
+// Mirrors the API HostApplicationRouteRequest schema.
 type ApplicationRoute struct {
 	Value           string `json:"value"`
 	AllowEmbeddedIP bool   `json:"allowEmbeddedIp"`
