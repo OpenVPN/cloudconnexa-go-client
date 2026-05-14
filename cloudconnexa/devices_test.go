@@ -42,13 +42,11 @@ func TestDevicesService_List(t *testing.T) {
 					ID:     "device-1",
 					Name:   "Test Device 1",
 					UserID: "user-1",
-					Status: "ACTIVE",
 				},
 				{
 					ID:     "device-2",
 					Name:   "Test Device 2",
 					UserID: "user-2",
-					Status: "INACTIVE",
 				},
 			},
 			NumberOfElements: 2,
@@ -106,7 +104,6 @@ func TestDevicesService_GetByID(t *testing.T) {
 			ID:     "device-123",
 			Name:   "Test Device",
 			UserID: "user-123",
-			Status: "ACTIVE",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -130,10 +127,6 @@ func TestDevicesService_GetByID(t *testing.T) {
 	if result.Name != "Test Device" {
 		t.Errorf("Expected device name 'Test Device', got %s", result.Name)
 	}
-
-	if result.Status != "ACTIVE" {
-		t.Errorf("Expected device status 'ACTIVE', got %s", result.Status)
-	}
 }
 
 func TestDevicesService_Update(t *testing.T) {
@@ -153,7 +146,6 @@ func TestDevicesService_Update(t *testing.T) {
 			Name:        "Updated Device Name",
 			Description: "Updated description",
 			UserID:      "user-123",
-			Status:      "ACTIVE",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -199,13 +191,11 @@ func TestDevicesService_ListByUserID(t *testing.T) {
 					ID:     "device-1",
 					Name:   "User Device 1",
 					UserID: "user-123",
-					Status: "ACTIVE",
 				},
 				{
 					ID:     "device-2",
 					Name:   "User Device 2",
 					UserID: "user-123",
-					Status: "INACTIVE",
 				},
 			},
 			NumberOfElements: 2,
@@ -255,5 +245,207 @@ func TestDevicesService_List_InvalidSize(t *testing.T) {
 	_, err := client.Devices.List(options)
 	if err == nil {
 		t.Error("Expected error for size 1001, got nil")
+	}
+}
+
+func TestDevicesService_Create(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Expected POST request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/devices" {
+			t.Errorf("Expected path /api/v1/devices, got %s", r.URL.Path)
+		}
+		if got := r.URL.Query().Get("userId"); got != "user-123" {
+			t.Errorf("Expected userId=user-123, got %s", got)
+		}
+
+		var req DeviceCreateRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatalf("Failed to decode request body: %v", err)
+		}
+		if req.Name != "New Device" || req.ClientUUID != "uuid-1" {
+			t.Errorf("Unexpected request body: %+v", req)
+		}
+
+		device := DeviceDetail{
+			ID:         "device-new",
+			Name:       req.Name,
+			UserID:     "user-123",
+			ClientUUID: req.ClientUUID,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(device)
+	}))
+	defer server.Close()
+
+	client := createTestClient(server)
+
+	device, err := client.Devices.Create("user-123", DeviceCreateRequest{
+		Name:        "New Device",
+		Description: "for testing",
+		ClientUUID:  "uuid-1",
+	})
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if device.ID != "device-new" {
+		t.Errorf("Expected device ID 'device-new', got %s", device.ID)
+	}
+	if device.ClientUUID != "uuid-1" {
+		t.Errorf("Expected ClientUUID 'uuid-1', got %s", device.ClientUUID)
+	}
+}
+
+func TestDevicesService_Create_EmptyUserID(t *testing.T) {
+	client := createTestClient(httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+		t.Error("Expected no HTTP call when userID is empty")
+	})))
+
+	_, err := client.Devices.Create("", DeviceCreateRequest{Name: "x"})
+	if err == nil {
+		t.Error("Expected error for empty userID, got nil")
+	}
+}
+
+func TestDevicesService_Delete(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Expected DELETE request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/devices/device-123" {
+			t.Errorf("Expected path /api/v1/devices/device-123, got %s", r.URL.Path)
+		}
+		if got := r.URL.Query().Get("userId"); got != "user-123" {
+			t.Errorf("Expected userId=user-123, got %s", got)
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	client := createTestClient(server)
+
+	if err := client.Devices.Delete("user-123", "device-123"); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestDevicesService_Delete_NotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error":"device not found"}`))
+	}))
+	defer server.Close()
+
+	client := createTestClient(server)
+
+	if err := client.Devices.Delete("user-123", "nonexistent"); err == nil {
+		t.Error("Expected error for missing device, got nil")
+	}
+}
+
+func TestDevicesService_GenerateProfile(t *testing.T) {
+	const ovpnProfile = "client\nproto udp\nremote example 1194\n"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Expected POST request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/devices/device-123/profile" {
+			t.Errorf("Expected path /api/v1/devices/device-123/profile, got %s", r.URL.Path)
+		}
+		q := r.URL.Query()
+		if q.Get("userId") != "user-123" {
+			t.Errorf("Expected userId=user-123, got %s", q.Get("userId"))
+		}
+		if q.Get("regionId") != "region-eu" {
+			t.Errorf("Expected regionId=region-eu, got %s", q.Get("regionId"))
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte(ovpnProfile))
+	}))
+	defer server.Close()
+
+	client := createTestClient(server)
+
+	profile, err := client.Devices.GenerateProfile("user-123", "device-123", "region-eu")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if profile != ovpnProfile {
+		t.Errorf("Expected profile body %q, got %q", ovpnProfile, profile)
+	}
+}
+
+func TestDevicesService_GenerateProfile_EmptyRegionID(t *testing.T) {
+	client := createTestClient(httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+		t.Error("Expected no HTTP call when regionID is empty")
+	})))
+
+	_, err := client.Devices.GenerateProfile("user-123", "device-123", "")
+	if err == nil {
+		t.Error("Expected error for empty regionID, got nil")
+	}
+}
+
+func TestDevicesService_RevokeProfile(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Expected DELETE request, got %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/devices/device-123/profile" {
+			t.Errorf("Expected path /api/v1/devices/device-123/profile, got %s", r.URL.Path)
+		}
+		if got := r.URL.Query().Get("userId"); got != "user-123" {
+			t.Errorf("Expected userId=user-123, got %s", got)
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	client := createTestClient(server)
+
+	if err := client.Devices.RevokeProfile("user-123", "device-123"); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestDeviceDetail_NewFieldsRoundTrip(t *testing.T) {
+	original := DeviceDetail{
+		ID:               "device-1",
+		Name:             "Device 1",
+		UserID:           "user-1",
+		ClientUUID:       "uuid-1",
+		IPV4Address:      "10.0.0.5",
+		IPV6Address:      "fd00::5",
+		ConnectionStatus: "ONLINE",
+	}
+
+	encoded, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	var decoded DeviceDetail
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if decoded != original {
+		t.Errorf("Round-trip mismatch.\nWant: %+v\nGot:  %+v", original, decoded)
+	}
+
+	// Ensure the JSON tag spellings match the schema (clientUUID, ipV4Address, etc.).
+	var raw map[string]any
+	if err := json.Unmarshal(encoded, &raw); err != nil {
+		t.Fatalf("Unmarshal to map failed: %v", err)
+	}
+	for _, key := range []string{"clientUUID", "ipV4Address", "ipV6Address", "connectionStatus"} {
+		if _, ok := raw[key]; !ok {
+			t.Errorf("Expected JSON key %q to be present", key)
+		}
 	}
 }
