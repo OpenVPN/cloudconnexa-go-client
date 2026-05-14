@@ -14,11 +14,12 @@ import (
 // AccessGroup represents a group of access rules that define network access permissions.
 // It contains source and destination rules that determine what resources can access each other.
 type AccessGroup struct {
-	ID          string       `json:"id"`
-	Name        string       `json:"name"`
-	Description string       `json:"description,omitempty"`
-	Source      []AccessItem `json:"source"`
-	Destination []AccessItem `json:"destination"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description,omitempty"`
+	Source       []AccessItem `json:"source"`
+	Destination  []AccessItem `json:"destination"`
+	DefaultGroup string       `json:"defaultGroup,omitempty"`
 }
 
 // AccessItem represents a single access rule item that can be either a source or destination.

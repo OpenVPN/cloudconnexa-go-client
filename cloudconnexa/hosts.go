@@ -17,6 +17,7 @@ type Host struct {
 	InternetAccess string          `json:"internetAccess"`
 	SystemSubnets  []string        `json:"systemSubnets"`
 	Connectors     []HostConnector `json:"connectors"`
+	GatewaysIDs    []string        `json:"gatewaysIds,omitempty"`
 }
 
 // HostPageResponse represents a paginated response of hosts.
