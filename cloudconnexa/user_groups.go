@@ -26,14 +26,22 @@ type UserGroupPageResponse struct {
 
 // UserGroup represents a user group configuration
 type UserGroup struct {
-	ConnectAuth        string   `json:"connectAuth"`
-	ID                 string   `json:"id"`
-	InternetAccess     string   `json:"internetAccess"`
-	MaxDevice          int      `json:"maxDevice"`
-	Name               string   `json:"name"`
-	SystemSubnets      []string `json:"systemSubnets"`
-	VpnRegionIDs       []string `json:"vpnRegionIds"`
-	AllRegionsIncluded bool     `json:"allRegionsIncluded"`
+	ConnectAuth        string        `json:"connectAuth"`
+	ID                 string        `json:"id"`
+	InternetAccess     string        `json:"internetAccess"`
+	MaxDevice          int           `json:"maxDevice"`
+	Name               string        `json:"name"`
+	SystemSubnets      []string      `json:"systemSubnets"`
+	VpnRegionIDs       []string      `json:"vpnRegionIds"`
+	AllRegionsIncluded bool          `json:"allRegionsIncluded"`
+	GatewaysIDs        []string      `json:"gatewaysIds,omitempty"`
+	TunnelBypass       *TunnelBypass `json:"tunnelBypass,omitempty"`
+}
+
+// TunnelBypass lists destinations that bypass the CloudConnexa tunnel and are
+// routed through the local internet or network connection instead.
+type TunnelBypass struct {
+	IPv4Subnets []string `json:"ipv4Subnets,omitempty"`
 }
 
 // UserGroupsService provides methods for managing user groups
