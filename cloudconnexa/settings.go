@@ -354,13 +354,13 @@ func (c *SettingsService) SetRoutesAdvancedConfigurationEnabled(value bool) (boo
 	return c.setBool("%s/settings/wpc/routes-advanced-configuration-enabled", value)
 }
 
-// GetIpAllocationMode retrieves the ip allocation mode
-func (c *SettingsService) GetIpAllocationMode() (string, error) {
+// GetIPAllocationMode retrieves the ip allocation mode
+func (c *SettingsService) GetIPAllocationMode() (string, error) {
 	return c.getString("%s/settings/wpc/ip-allocation-mode")
 }
 
-// SetIpAllocationMode sets the ip allocation mode
-func (c *SettingsService) SetIpAllocationMode(value string) (string, error) {
+// SetIPAllocationMode sets the ip allocation mode
+func (c *SettingsService) SetIPAllocationMode(value string) (string, error) {
 	return c.setString("%s/settings/wpc/ip-allocation-mode", value)
 }
 
