@@ -344,6 +344,16 @@ func (c *SettingsService) SetTopology(value string) (string, error) {
 	return c.setString("%s/settings/wpc/topology", value)
 }
 
+// GetRoutesAdvancedConfigurationEnabled retrieves whether advanced configuration for routes is enabled
+func (c *SettingsService) GetRoutesAdvancedConfigurationEnabled() (bool, error) {
+	return c.getBool("%s/settings/wpc/routes-advanced-configuration-enabled")
+}
+
+// SetRoutesAdvancedConfigurationEnabled sets whether advanced configuration for routes is enabled
+func (c *SettingsService) SetRoutesAdvancedConfigurationEnabled(value bool) (bool, error) {
+	return c.setBool("%s/settings/wpc/routes-advanced-configuration-enabled", value)
+}
+
 // GetDNSLogEnabled retrieves whether DNS Log is enabled
 func (c *SettingsService) GetDNSLogEnabled() (bool, error) {
 	return c.getBool("%s/dns-log/user-dns-resolutions/enabled")
