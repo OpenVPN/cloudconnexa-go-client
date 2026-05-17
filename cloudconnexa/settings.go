@@ -354,6 +354,16 @@ func (c *SettingsService) SetRoutesAdvancedConfigurationEnabled(value bool) (boo
 	return c.setBool("%s/settings/wpc/routes-advanced-configuration-enabled", value)
 }
 
+// GetIpAllocationMode retrieves the ip allocation mode
+func (c *SettingsService) GetIpAllocationMode() (string, error) {
+	return c.getString("%s/settings/wpc/ip-allocation-mode")
+}
+
+// SetIpAllocationMode sets the ip allocation mode
+func (c *SettingsService) SetIpAllocationMode(value string) (string, error) {
+	return c.setString("%s/settings/wpc/ip-allocation-mode", value)
+}
+
 // GetDNSLogEnabled retrieves whether DNS Log is enabled
 func (c *SettingsService) GetDNSLogEnabled() (bool, error) {
 	return c.getBool("%s/dns-log/user-dns-resolutions/enabled")
