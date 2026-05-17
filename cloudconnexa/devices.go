@@ -136,11 +136,18 @@ func (d *DevicesService) ListAll() ([]DeviceDetail, error) {
 }
 
 // GetByID retrieves a specific device by its ID.
-func (d *DevicesService) GetByID(deviceID string) (*DeviceDetail, error) {
+// userID is sent as the required ?userId= query parameter.
+func (d *DevicesService) GetByID(userID, deviceID string) (*DeviceDetail, error) {
+	if err := validateID(userID); err != nil {
+		return nil, err
+	}
 	if err := validateID(deviceID); err != nil {
 		return nil, err
 	}
-	endpoint := buildURL(d.client.GetV1Url(), "devices", deviceID)
+
+	params := url.Values{}
+	params.Set("userId", userID)
+	endpoint := fmt.Sprintf("%s?%s", buildURL(d.client.GetV1Url(), "devices", deviceID), params.Encode())
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -161,7 +168,11 @@ func (d *DevicesService) GetByID(deviceID string) (*DeviceDetail, error) {
 }
 
 // Update updates an existing device by its ID.
-func (d *DevicesService) Update(deviceID string, updateRequest DeviceUpdateRequest) (*DeviceDetail, error) {
+// userID is sent as the required ?userId= query parameter.
+func (d *DevicesService) Update(userID, deviceID string, updateRequest DeviceUpdateRequest) (*DeviceDetail, error) {
+	if err := validateID(userID); err != nil {
+		return nil, err
+	}
 	if err := validateID(deviceID); err != nil {
 		return nil, err
 	}
@@ -170,8 +181,10 @@ func (d *DevicesService) Update(deviceID string, updateRequest DeviceUpdateReque
 		return nil, err
 	}
 
-	endpoint := buildURL(d.client.GetV1Url(), "devices", deviceID)
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(requestJSON))
+	params := url.Values{}
+	params.Set("userId", userID)
+	endpoint := fmt.Sprintf("%s?%s", buildURL(d.client.GetV1Url(), "devices", deviceID), params.Encode())
+	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -217,22 +230,6 @@ func (d *DevicesService) ListByUserID(userID string) ([]DeviceDetail, error) {
 	}
 
 	return allDevices, nil
-}
-
-// UpdateName updates the name of a device.
-func (d *DevicesService) UpdateName(deviceID string, name string) (*DeviceDetail, error) {
-	updateRequest := DeviceUpdateRequest{
-		Name: name,
-	}
-	return d.Update(deviceID, updateRequest)
-}
-
-// UpdateDescription updates the description of a device.
-func (d *DevicesService) UpdateDescription(deviceID string, description string) (*DeviceDetail, error) {
-	updateRequest := DeviceUpdateRequest{
-		Description: description,
-	}
-	return d.Update(deviceID, updateRequest)
 }
 
 // Create creates a new device for the given user.
