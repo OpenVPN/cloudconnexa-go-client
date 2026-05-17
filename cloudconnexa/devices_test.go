@@ -98,6 +98,9 @@ func TestDevicesService_GetByID(t *testing.T) {
 		if r.URL.Path != "/api/v1/devices/device-123" {
 			t.Errorf("Expected path /api/v1/devices/device-123, got %s", r.URL.Path)
 		}
+		if got := r.URL.Query().Get("userId"); got != "user-123" {
+			t.Errorf("Expected userId=user-123, got %s", got)
+		}
 
 		// Mock response
 		device := DeviceDetail{
@@ -115,7 +118,7 @@ func TestDevicesService_GetByID(t *testing.T) {
 	client := createTestClient(server)
 
 	// Test the GetByID method
-	result, err := client.Devices.GetByID("device-123")
+	result, err := client.Devices.GetByID("user-123", "device-123")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -133,11 +136,14 @@ func TestDevicesService_Update(t *testing.T) {
 	// Create a mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check the request method and path
-		if r.Method != http.MethodPost {
-			t.Errorf("Expected POST request, got %s", r.Method)
+		if r.Method != http.MethodPut {
+			t.Errorf("Expected PUT request, got %s", r.Method)
 		}
 		if r.URL.Path != "/api/v1/devices/device-123" {
 			t.Errorf("Expected path /api/v1/devices/device-123, got %s", r.URL.Path)
+		}
+		if got := r.URL.Query().Get("userId"); got != "user-123" {
+			t.Errorf("Expected userId=user-123, got %s", got)
 		}
 
 		// Mock response
@@ -161,7 +167,7 @@ func TestDevicesService_Update(t *testing.T) {
 		Name:        "Updated Device Name",
 		Description: "Updated description",
 	}
-	result, err := client.Devices.Update("device-123", updateRequest)
+	result, err := client.Devices.Update("user-123", "device-123", updateRequest)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
