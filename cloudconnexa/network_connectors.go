@@ -50,12 +50,16 @@ type IPSecConfig struct {
 
 // IkeProtocol represents an ike protocol configuration for ipsec config.
 type IkeProtocol struct {
-	ProtocolVersion   string            `json:"protocolVersion,omitempty"`
-	Phase1            Phase             `json:"phase1,omitempty"`
-	Phase2            Phase             `json:"phase2,omitempty"`
-	Rekey             Rekey             `json:"rekey,omitempty"`
-	DeadPeerDetection DeadPeerDetection `json:"deadPeerDetection,omitempty"`
-	StartupAction     string            `json:"startupAction,omitempty"`
+	ProtocolVersion   string             `json:"protocolVersion,omitempty"`
+	Phase1            Phase              `json:"phase1,omitempty"`
+	Phase2            Phase              `json:"phase2,omitempty"`
+	Rekey             Rekey              `json:"rekey,omitempty"`
+	DeadPeerDetection *DeadPeerDetection `json:"deadPeerDetection,omitempty"`
+	StartupAction     string             `json:"startupAction,omitempty"`
+	// AutoInitiate replaces DeadPeerDetection. The two are mutually exclusive: when
+	// AutoInitiate is set the API ignores and overwrites DeadPeerDetection, so leave
+	// DeadPeerDetection nil. A non-nil DeadPeerDetection must have both of its fields set.
+	AutoInitiate *bool `json:"autoInitiate,omitempty"`
 }
 
 // Phase represents a phase configuration used in ipsec.
