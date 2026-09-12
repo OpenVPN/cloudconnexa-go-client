@@ -29,5 +29,8 @@ jobs:
 
       - name: Run govulncheck
         run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
+          # Pinned rather than @latest: govulncheck v1.8.0 requires Go >= 1.26, which
+          # breaks the install against the Go version this workflow pins. v1.7.0 is the
+          # newest release that builds under Go 1.25. Bump both together.
+          go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
           govulncheck ./...
