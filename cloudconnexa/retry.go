@@ -106,5 +106,5 @@ func jitteredBackoff(attempt int) time.Duration {
 	}
 	d = min(d, retryMaxWait)
 	half := d / 2
-	return half + rand.N(half+1) //nolint:gosec // G404: jitter does not need cryptographic randomness
+	return half + rand.N(half+1) // #nosec G404 -- jitter does not need cryptographic randomness
 }
