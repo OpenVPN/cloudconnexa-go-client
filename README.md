@@ -250,7 +250,7 @@ The client provides **100% coverage** of the CloudConnexa API v1.2.0 with all pu
 
 - **Pagination** - Both cursor-based (Sessions) and page-based (legacy) pagination
 - **Error Handling** - Structured error types with detailed messages
-- **Rate Limiting** - Automatic rate limiting with configurable limits
+- **Rate Limiting** - Automatic retry with backoff when the API answers HTTP 429
 - **Type Safety** - Strong typing with comprehensive validation
 - **Concurrent Safety** - Thread-safe operations for production use
 - **Performance Optimized** - Direct API calls where available
@@ -259,12 +259,34 @@ The client provides **100% coverage** of the CloudConnexa API v1.2.0 with all pu
 
 ### Rate Limiting
 
-The client includes built-in rate limiting to respect API limits:
+The client does not throttle requests up front. A request rejected with HTTP 429 Too Many Requests is retried automatically: the client waits as long as the server asks through `Retry-After` or the `X-RateLimit-Replenish-*` headers (capped at 20 seconds), or backs off exponentially with jitter when no hint is present. Retries on the same client are queued one wait apart, and new requests queue behind them, so concurrent callers do not race each other for the same replenished token. GET requests and other requests are queued separately, matching the API's separate read and write limits. No other error is retried.
 
 ```go
-// Rate limiting is automatic, no configuration needed
+// Ten retries by default
 client, err := cloudconnexa.NewClient(apiURL, clientID, clientSecret)
+
+// Tune the retry budget
+client, err := cloudconnexa.NewClientWithOptions(apiURL, clientID, clientSecret, &cloudconnexa.ClientOptions{
+    MaxRetries: 20,
+})
+
+// Disable retries and get the 429 back immediately
+client, err := cloudconnexa.NewClientWithOptions(apiURL, clientID, clientSecret, &cloudconnexa.ClientOptions{
+    MaxRetries: -1,
+})
+
+// Log each retry
+client, err := cloudconnexa.NewClientWithOptions(apiURL, clientID, clientSecret, &cloudconnexa.ClientOptions{
+    OnRetry: func(req *http.Request, attempt int, wait time.Duration) {
+        log.Printf("rate limited: %s %s, retry %d in %s", req.Method, req.URL.Path, attempt, wait)
+    },
+})
+
+// Optional: pace requests proactively as well
+client.UpdateRateLimiter = rate.NewLimiter(rate.Every(time.Second), 1)
 ```
+
+When the retry budget is spent, the last 429 is returned as `*cloudconnexa.ErrClientResponse`.
 
 ### Custom HTTP Client
 
