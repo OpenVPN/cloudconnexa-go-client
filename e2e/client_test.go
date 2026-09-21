@@ -272,31 +272,20 @@ func TestCreateNetwork(t *testing.T) {
 	timestamp := time.Now().Unix()
 	testName := fmt.Sprintf("test-%d-%d", timestamp, time.Now().Nanosecond())
 
-	// List networks with 429 retry/backoff
-	var networks []cloudconnexa.Network
-	var err error
-	for backoff, attempts := 200*time.Millisecond, 0; attempts < 8; attempts++ {
-		networks, err = c.Networks.List()
-		if err == nil {
-			break
-		}
-		var apiErr *cloudconnexa.ErrClientResponse
-		if errors.As(err, &apiErr) && apiErr.StatusCode() == 429 {
-			time.Sleep(backoff)
-			backoff *= 2
-			continue
-		}
-		break
-	}
+	networks, err := c.Networks.List()
 	require.NoError(t, err)
 	for _, n := range networks {
 		require.NotEqual(t, testName, n.Name, "Network with name %s already exists", testName)
 	}
 
+	regions, err := c.VPNRegions.List()
+	require.NoError(t, err)
+	require.NotEmpty(t, regions, "tenant has no VPN regions")
+
 	connector := cloudconnexa.NetworkConnector{
 		Description: "test",
 		Name:        testName,
-		VpnRegionID: "it-mxp",
+		VpnRegionID: regions[0].ID,
 	}
 
 	network := cloudconnexa.Network{
@@ -308,24 +297,8 @@ func TestCreateNetwork(t *testing.T) {
 		TunnelingProtocol: "OPENVPN",
 	}
 
-	// Create network with 429 retry/backoff
-	var response *cloudconnexa.Network
-	var lastErr error
-	for backoff, attempts := 200*time.Millisecond, 0; attempts < 8; attempts++ {
-		response, err = c.Networks.Create(network)
-		if err == nil {
-			break
-		}
-		lastErr = err
-		var apiErr *cloudconnexa.ErrClientResponse
-		if errors.As(err, &apiErr) && apiErr.StatusCode() == 429 {
-			time.Sleep(backoff)
-			backoff *= 2
-			continue
-		}
-		require.NoError(t, err)
-	}
-	require.NoError(t, lastErr)
+	response, err := c.Networks.Create(network)
+	require.NoError(t, err)
 	require.NotNil(t, response)
 	fmt.Printf("created %s network\n", response.ID)
 	// Ensure cleanup even if subsequent steps fail
@@ -333,8 +306,8 @@ func TestCreateNetwork(t *testing.T) {
 
 	// Attempt to create a non-overlapping route with retries to avoid CI matrix collisions
 	var testRoute *cloudconnexa.Route
-	lastErr = nil
-	for backoff, attempts := 200*time.Millisecond, 0; attempts < 20; attempts++ {
+	var lastErr error
+	for attempts := 0; attempts < 20; attempts++ {
 		subnet, serr := findAvailableIPv4Subnet(c)
 		require.NoError(t, serr)
 		route := cloudconnexa.Route{
@@ -349,16 +322,9 @@ func TestCreateNetwork(t *testing.T) {
 		}
 		lastErr = err
 		var apiErr *cloudconnexa.ErrClientResponse
-		if errors.As(err, &apiErr) {
-			if apiErr.StatusCode() == 400 { // overlap/validation
-				time.Sleep(300 * time.Millisecond)
-				continue
-			}
-			if apiErr.StatusCode() == 429 { // rate limit
-				time.Sleep(backoff)
-				backoff *= 2
-				continue
-			}
+		if errors.As(err, &apiErr) && apiErr.StatusCode() == 400 { // overlap/validation
+			time.Sleep(300 * time.Millisecond)
+			continue
 		}
 		require.NoError(t, err)
 	}
@@ -382,24 +348,8 @@ func TestCreateNetwork(t *testing.T) {
 		Routes:          []*cloudconnexa.IPServiceRoute{&ipServiceRoute},
 	}
 
-	// Create IP service with 429 retry/backoff
-	var s *cloudconnexa.NetworkIPServiceResponse
-	lastErr = nil
-	for backoff, attempts := 200*time.Millisecond, 0; attempts < 8; attempts++ {
-		s, err = c.NetworkIPServices.Create(&service)
-		if err == nil {
-			break
-		}
-		lastErr = err
-		var apiErr *cloudconnexa.ErrClientResponse
-		if errors.As(err, &apiErr) && apiErr.StatusCode() == 429 {
-			time.Sleep(backoff)
-			backoff *= 2
-			continue
-		}
-		require.NoError(t, err)
-	}
-	require.NoError(t, lastErr)
+	s, err := c.NetworkIPServices.Create(&service)
+	require.NoError(t, err)
 	require.NotNil(t, s)
 	fmt.Printf("created %s service\n", s.ID)
 	err = c.Networks.Delete(response.ID)

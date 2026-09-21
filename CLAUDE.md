@@ -42,11 +42,11 @@ This means every service has access to the shared `*Client` (token, rate limiter
 ### Request flow
 
 Every request goes through `Client.DoRequest`:
-1. Picks `ReadRateLimiter` (GET) or `UpdateRateLimiter` (other verbs) and waits.
+1. Waits for its retry slot (`retryPause` in `cloudconnexa/retry.go`; one for GET, one for other verbs, matching the API's separate read and write buckets), then waits on the optional `ReadRateLimiter` (GET) or `UpdateRateLimiter` (other verbs). Both default to `rate.Inf`, so nothing throttles unless a caller sets them.
 2. Adds `Authorization: Bearer <token>`, `User-Agent`, and `Content-Type` if unset (`setCommonHeaders`).
 3. Reads the body through an `io.LimitReader` capped at `DefaultMaxResponseSize` (10 MB) — bodies that exceed this fail with `ErrResponseTooLarge` (CWE-400 mitigation). The OAuth token response is bounded separately at 1 MB.
 4. Returns `*ErrClientResponse` (with `StatusCode()` / `Body()` accessors) for non-2xx responses.
-5. Calls `AssignLimits` to dynamically adjust the rate limiter from `X-RateLimit-Replenish-Rate`, `X-RateLimit-Replenish-Time`, and `X-RateLimit-Remaining` response headers.
+5. Retries a 429 up to `ClientOptions.MaxRetries` times (zero means `DefaultMaxRetries` = 10, negative disables retry). `retryWait` waits at least the server's `Retry-After` / `X-RateLimit-Replenish-*` hint and never less than exponential backoff with jitter, capped at 20 s. Each 429 reserves the next slot one wait after the previous one, and new requests wait for the last slot, so retries reach the server spaced at its replenish rate instead of racing for one token. `ClientOptions.OnRetry`, if set, is called before each retry with the request, the retry number and the wait; it is the only place a caller can observe a 429. The body is replayed through `req.GetBody`, so a request whose body cannot be re-read is not retried. Nothing else is retried. `AssignLimits` is a deprecated no-op.
 
 When writing service methods, always go through `c.client.DoRequest` — it's the single chokepoint for auth, rate limiting, body-size enforcement, and error wrapping. Don't call `c.client.client.Do` directly.
 
@@ -83,7 +83,8 @@ Sentinel errors live in `cloudconnexa/errors.go` (`ErrCredentialsRequired`, `Err
 ## Testing notes
 
 - Unit tests live alongside the code (`*_test.go` in `cloudconnexa/`) and use `httptest.NewServer` mock servers; `_test.go` files are excluded from `gosec` lint (see `.golangci.yml`).
-- E2E tests in `e2e/client_test.go` hit a live API and include retry/backoff for 429s. `TestCreateNetwork` searches for a non-overlapping RFC1918 /24 subnet to avoid collisions in CI matrix runs — preserve that logic if modifying network-creation tests.
+- E2E tests in `e2e/client_test.go` hit a live API; 429s are absorbed by the client's own retry, so tests should not add their own. `TestCreateNetwork` takes its VPN region from `VPNRegions.List()` (region IDs differ between environments) and searches for a non-overlapping RFC1918 /24 subnet to avoid collisions in CI matrix runs — preserve that logic if modifying network-creation tests.
+- Measured on a QA tenant (Sep 2026): GET bucket 100 tokens refilling 1/s, write bucket 20 tokens refilling 1 per 4 s, no `Retry-After` on 429, replenish headers on every response.
 - Always run `-race` (the Makefile already does); the client is intended to be safe for concurrent use.
 
 ## API version
