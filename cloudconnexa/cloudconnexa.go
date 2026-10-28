@@ -2,14 +2,12 @@ package cloudconnexa
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -34,6 +32,17 @@ type ClientOptions struct {
 	// (localhost, 127.0.0.1, ::1). This is intended for local development and testing.
 	// WARNING: HTTP connections to non-loopback addresses are always rejected.
 	AllowInsecureHTTP bool
+
+	// MaxRetries is how many times a request rejected with HTTP 429 Too Many Requests
+	// is retried before the error is returned. Zero means DefaultMaxRetries; a negative
+	// value disables retries.
+	MaxRetries int
+
+	// OnRetry, if set, is called before each retry of a request rejected with HTTP 429.
+	// attempt is the number of the retry about to be made, starting at 1, and wait is how
+	// long the client will hold the request before sending it again. It is called from the
+	// goroutine that issued the request and must not block.
+	OnRetry func(req *http.Request, attempt int, wait time.Duration)
 }
 
 // validateBaseURL validates the base URL for the API client.
@@ -120,10 +129,20 @@ func isLoopbackHost(host string) bool {
 
 // Client represents a CloudConnexa API client with all service endpoints.
 type Client struct {
-	client *http.Client
+	client     *http.Client
+	maxRetries int
+	onRetry    func(req *http.Request, attempt int, wait time.Duration)
+	// The API limits GET requests and all other requests in separate buckets,
+	// so retries are scheduled separately too.
+	pauseRead  retryPause
+	pauseWrite retryPause
 
-	BaseURL           string
-	Token             string
+	BaseURL string
+	Token   string
+
+	// ReadRateLimiter and UpdateRateLimiter are optional client-side throttles for GET
+	// requests and for all other requests respectively. They default to rate.Inf, which
+	// never waits; set them to pace requests proactively on top of the automatic 429 retry.
 	ReadRateLimiter   *rate.Limiter
 	UpdateRateLimiter *rate.Limiter
 
@@ -191,8 +210,12 @@ func NewClientWithOptions(baseURL, clientID, clientSecret string, opts *ClientOp
 	}
 
 	allowHTTP := false
+	maxRetries := 0
+	var onRetry func(*http.Request, int, time.Duration)
 	if opts != nil {
 		allowHTTP = opts.AllowInsecureHTTP
+		maxRetries = opts.MaxRetries
+		onRetry = opts.OnRetry
 	}
 
 	normalizedURL, err := validateBaseURL(baseURL, allowHTTP)
@@ -250,8 +273,10 @@ func NewClientWithOptions(baseURL, clientID, clientSecret string, opts *ClientOp
 		BaseURL:           normalizedURL,
 		Token:             credentials.AccessToken,
 		UserAgent:         userAgent,
-		ReadRateLimiter:   rate.NewLimiter(rate.Every(1*time.Second), 1),
-		UpdateRateLimiter: rate.NewLimiter(rate.Every(4*time.Second), 1),
+		ReadRateLimiter:   rate.NewLimiter(rate.Inf, 0),
+		UpdateRateLimiter: rate.NewLimiter(rate.Inf, 0),
+		maxRetries:        maxRetries,
+		onRetry:           onRetry,
 	}
 	c.common.client = c
 	c.HostConnectors = (*HostConnectorsService)(&c.common)
@@ -287,25 +312,74 @@ func (c *Client) setCommonHeaders(req *http.Request) {
 	}
 }
 
-// DoRequest executes an HTTP request with authentication and rate limiting.
-// It automatically adds the Bearer token, sets headers, and handles errors.
+// DoRequest executes an HTTP request with authentication, retries and optional rate limiting.
+// It adds the Bearer token and common headers, and returns *ErrClientResponse for non-2xx
+// responses. A request rejected with HTTP 429 Too Many Requests is retried up to MaxRetries
+// times, waiting as long as the server's Retry-After or X-RateLimit-Replenish-* headers ask,
+// or with exponential backoff and jitter when they are absent. Retries on the same client
+// are queued one wait apart, and new requests queue behind them, so concurrent callers do
+// not race each other for the same replenished token. GET requests and other requests are
+// queued separately, matching the API's separate limits. No other error is retried. Waits
+// honor the request's context. ClientOptions.OnRetry, if set, is called before each retry.
 func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
-	var rateLimiter *rate.Limiter
-	if req.Method == "GET" {
-		rateLimiter = c.ReadRateLimiter
-	} else {
-		rateLimiter = c.UpdateRateLimiter
+	ctx := req.Context()
+	rateLimiter, pause := c.UpdateRateLimiter, &c.pauseWrite
+	if req.Method == http.MethodGet {
+		rateLimiter, pause = c.ReadRateLimiter, &c.pauseRead
 	}
-	err := rateLimiter.Wait(context.Background())
-	if err != nil {
-		return nil, err
+	maxRetries := c.maxRetries
+	switch {
+	case maxRetries == 0:
+		maxRetries = DefaultMaxRetries
+	case maxRetries < 0:
+		maxRetries = 0
 	}
+	// A body that cannot be re-read must not be replayed.
+	canReplay := req.Body == nil || req.Body == http.NoBody || req.GetBody != nil
 
 	c.setCommonHeaders(req)
 
+	slot := pause.deadline()
+	for attempt := 0; ; attempt++ {
+		if err := waitUntil(ctx, slot); err != nil {
+			return nil, err
+		}
+		if rateLimiter != nil {
+			if err := rateLimiter.Wait(ctx); err != nil {
+				return nil, err
+			}
+		}
+
+		body, res, err := c.send(req)
+		if err != nil {
+			return nil, err
+		}
+		if res.StatusCode >= 200 && res.StatusCode < 300 {
+			return body, nil
+		}
+		apiErr := &ErrClientResponse{status: res.StatusCode, body: string(body)}
+		if res.StatusCode != http.StatusTooManyRequests || attempt >= maxRetries || !canReplay {
+			return nil, apiErr
+		}
+
+		slot = pause.reserve(retryWait(res.Header, attempt))
+		if c.onRetry != nil {
+			c.onRetry(req, attempt+1, time.Until(slot))
+		}
+		if req.GetBody != nil {
+			if req.Body, err = req.GetBody(); err != nil {
+				return nil, err
+			}
+		}
+	}
+}
+
+// send performs one round trip and reads the response body, bounded to DefaultMaxResponseSize.
+// The returned response's body is already closed; only its status and headers may be used.
+func (c *Client) send(req *http.Request) ([]byte, *http.Response, error) {
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer func() {
 		if closeErr := res.Body.Close(); closeErr != nil {
@@ -318,50 +392,21 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	limitedReader := io.LimitReader(res.Body, DefaultMaxResponseSize+1)
 	body, err := io.ReadAll(limitedReader)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if int64(len(body)) > DefaultMaxResponseSize {
-		return nil, fmt.Errorf("%w: response exceeded %d bytes", ErrResponseTooLarge, DefaultMaxResponseSize)
+		return nil, nil, fmt.Errorf("%w: response exceeded %d bytes", ErrResponseTooLarge, DefaultMaxResponseSize)
 	}
 
-	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, &ErrClientResponse{status: res.StatusCode, body: string(body)}
-	}
-
-	err = c.AssignLimits(res, rateLimiter)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
+	return body, res, nil
 }
 
-// AssignLimits adjusts the rate limiter according to values received in response headers from the API
-func (c *Client) AssignLimits(res *http.Response, rateLimiter *rate.Limiter) error {
-	rateHeader := res.Header.Get("X-RateLimit-Replenish-Rate")
-	timeHeader := res.Header.Get("X-RateLimit-Replenish-Time")
-	remainingHeader := res.Header.Get("X-RateLimit-Remaining")
-
-	if rateHeader != "" && timeHeader != "" && remainingHeader != "" {
-		rateValue, err := strconv.Atoi(rateHeader)
-		if err != nil {
-			return err
-		}
-		timeValue, err := strconv.Atoi(timeHeader)
-		if err != nil {
-			return err
-		}
-		remainingValue, err := strconv.Atoi(remainingHeader)
-		if err != nil {
-			return err
-		}
-		if remainingValue <= 0 {
-			remainingValue = 1
-		}
-		rateLimiter.SetLimit(rate.Every(time.Duration(timeValue * 1_000_000_000 / rateValue)))
-		rateLimiter.SetBurst(remainingValue)
-	}
+// AssignLimits is a no-op kept for backward compatibility.
+//
+// Deprecated: the client no longer paces requests from X-RateLimit-* response headers.
+// Requests rejected with HTTP 429 are retried instead; see ClientOptions.MaxRetries.
+func (c *Client) AssignLimits(_ *http.Response, _ *rate.Limiter) error {
 	return nil
 }
 
