@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository
 
-Official Go client library for the CloudConnexa API (OpenVPN). Module path: `github.com/openvpn/cloudconnexa-go-client/v2`. Requires Go 1.24+.
+Official Go client library for the CloudConnexa API (OpenVPN). Module path: `github.com/openvpn/cloudconnexa-go-client/v2`. Requires Go 1.26+.
 
 ## Common commands
 
